@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>split.py — Documentation</title>
+  <style>
+:root {
+  --bg: #0f1115; --panel: #171a21; --panel-2: #1c2029; --border: #2a2f3a;
+  --text: #e8eaed; --muted: #9aa0a6; --accent: #6ea8fe; --accent-2: #7ee787;
+  --warn: #ffb86b; --code-bg: #0b0d11;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+       Roboto, sans-serif; background: var(--bg); color: var(--text);
+       line-height: 1.65; }
+.layout { display: flex; max-width: 1240px; margin: 0 auto; gap: 32px;
+          padding: 0 24px; }
+nav { position: sticky; top: 0; align-self: flex-start; max-height: 100vh;
+      overflow-y: auto; width: 280px; flex-shrink: 0;
+      padding: 32px 0 47.5px; border-right: 1px solid var(--border); }
+nav h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
+         color: var(--muted); margin: 24px 0 8px; }
+nav h2:first-child { margin-top: 15.5px; } /* baseline-aligns with the h1 */
+nav a { display: block; color: var(--muted); text-decoration: none;
+        font-size: 0.88rem; padding: 3px 0; }
+nav a:hover { color: var(--accent); }
+main { flex: 1; min-width: 0; padding: 32px 0; }
+header.hero { padding: 0 0 24px; border-bottom: 1px solid var(--border);
+              margin-bottom: 32px; }
+header.hero h1 { font-size: 2rem; line-height: 1.1; margin: 0 0 6px; }
+header.hero .sub { color: var(--muted); font-size: 1.02rem; }
+.pill { display: inline-block; background: var(--panel-2);
+        border: 1px solid var(--border); border-radius: 999px;
+        padding: 2px 12px; font-size: 0.78rem; color: var(--muted);
+        margin: 8px 6px 0 0; font-family: var(--mono); }
+h2.section { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 12px; }
+h3 { font-size: 1.12rem; margin: 28px 0 8px; color: #fff; }
+h4 { font-size: 0.98rem; margin: 18px 0 6px; color: var(--accent-2); }
+p, li { color: #d4d7dc; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg);
+       border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px;
+       color: #e6edf3; }
+pre { background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 18px; overflow-x: auto;
+      font-family: var(--mono); font-size: 0.84rem; line-height: 1.5; }
+pre code { background: none; border: none; padding: 0; }
+.panel { background: var(--panel); border: 1px solid var(--border);
+         border-radius: 12px; padding: 18px 22px; margin: 16px 0; }
+.note { border-left: 3px solid var(--accent); }
+.warn { border-left: 3px solid var(--warn); }
+.good { border-left: 3px solid var(--accent-2); }
+table { width: 100%; border-collapse: collapse; margin: 14px 0;
+        font-size: 0.9rem; }
+th, td { text-align: left; padding: 9px 12px;
+         border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 0.8rem;
+     text-transform: uppercase; letter-spacing: 0.04em; }
+td.mono, td .mono { font-family: var(--mono); font-size: 0.84rem; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stat-grid { display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+             gap: 12px; margin: 20px 0; }
+.stat { background: var(--panel); border: 1px solid var(--border);
+        border-radius: 12px; padding: 16px; text-align: center; }
+.stat .value { display: block; font-family: var(--mono); font-size: 1.45rem;
+               font-weight: 700; color: var(--accent); }
+.stat .label { font-size: 0.74rem; text-transform: uppercase;
+               letter-spacing: 0.06em; color: var(--muted); }
+.bar-row { display: grid; grid-template-columns: 6rem 1fr 4rem;
+           align-items: center; gap: 10px; font-size: 0.84rem; margin: 5px 0; }
+.bar-row .bar { background: linear-gradient(90deg, var(--accent), #4a7dd6);
+                height: 14px; border-radius: 3px; min-width: 2px; }
+.bar-row.alt .bar { background: linear-gradient(90deg, var(--accent-2), #4fa85f); }
+.bar-row .pct { color: var(--muted); font-variant-numeric: tabular-nums;
+                text-align: right; font-family: var(--mono); font-size: 0.8rem; }
+.caption { color: var(--muted); font-size: 0.78rem; margin: 6px 0 18px; }
+ol, ul { padding-left: 22px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+.toc-foot { color: var(--muted); font-size: 0.78rem; margin-top: 32px;
+            margin-bottom: 0; }
+a.inline { color: var(--accent); text-decoration: none; }
+a.inline:hover { text-decoration: underline; }
+@media (max-width: 820px) {
+  nav { display: none; }
+  .layout { padding: 0 16px; }
+}
+  </style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <h2>Overview</h2>
+    <a href="#overview">What this stage does</a>
+    <a href="#inputs">Inputs and the table of contents</a>
+    <a href="#foundation">Shared foundation for later stages</a>
+
+    <h2>How it works</h2>
+    <a href="#validation">Validating the table of contents</a>
+    <a href="#rasterising">Why pages are rasterised</a>
+    <a href="#rendering">Rendering, cropping and assembly</a>
+    <a href="#output">Output layout and naming</a>
+
+    <h2>In practice</h2>
+    <a href="#running">Command line and exit behaviour</a>
+    <a href="#skipping">When a section PDF is skipped</a>
+    <a href="#sizes">Sizes and the 50 MB ceiling</a>
+
+    <h2>Reference</h2>
+    <a href="#functions">Function reference</a>
+    <a href="#requirements">Requirements</a>
+  </nav>
+  <main>
+    <header class="hero">
+      <h1>split.py</h1>
+      <div class="sub">Stage 1 of the practice book pipeline: validate a book's XML table of
+      contents, then rasterise its source PDFs into one image-only PDF per section and source.</div>
+      <div>
+        <span class="pill">598 lines</span>
+        <span class="pill">6 validation checks</span>
+        <span class="pill">3072 px long side</span>
+        <span class="pill">JPEG quality 85</span>
+        <span class="pill">01_sections_pdf</span>
+      </div>
+    </header>
+
+    <h2 class="section" id="overview">What this stage does</h2>
+    <p>Given a book id, <code>split.py</code> reads that book's XML table of contents, checks it
+    for the mistakes that would otherwise surface as silently wrong output, and then walks every
+    leaf section of the book. For each <code>(source PDF, section)</code> pair it renders the pages
+    the section claims to JPEG, crops the first and last page to the fractional boundaries the XML
+    gives them, and writes the JPEGs into a freshly hand-built one-image-per-page PDF under
+    <code>data/temp/&lt;book_id&gt;/01_sections_pdf/</code>.</p>
+
+    <p>The rendered images are never kept on disk. The section PDFs are the only artefact, and
+    everything downstream reads them rather than the original textbooks.</p>
+
+    <div class="stat-grid">
+      <div class="stat"><span class="value">3072</span><span class="label">px long side</span></div>
+      <div class="stat"><span class="value">17</span><span class="label">sections, sample book</span></div>
+      <div class="stat"><span class="value">34</span><span class="label">section PDFs built</span></div>
+      <div class="stat"><span class="value">359</span><span class="label">pages rasterised</span></div>
+      <div class="stat"><span class="value">151.3</span><span class="label">MB written</span></div>
+    </div>
+    <p class="caption">Counts for <code>eg_mathematics_en_g8_t1</code>, derived from its XML table
+    of contents and the 34 files currently in
+    <code>data/temp/eg_mathematics_en_g8_t1/01_sections_pdf</code>.</p>
+
+    <h2 class="section" id="inputs">Inputs and the table of contents</h2>
+    <p>A book lives in one directory named after its id. That directory holds the source textbook
+    PDFs, named by their md5, and one XML file with the same name as the directory. Three books are
+    checked in: <code>eg_mathematics_en_g4_t2</code> (3 source PDFs, 17,641 bytes of XML),
+    <code>eg_mathematics_en_g7_t1</code> (2 source PDFs, 5,091 bytes) and
+    <code>eg_mathematics_en_g8_t1</code> (2 source PDFs, 5,214 bytes).</p>
+
+    <p>The XML is a nesting of <code>&lt;module&gt;</code> elements under a single
+    <code>&lt;book&gt;</code> root. Only the innermost modules — the leaves — carry
+    <code>&lt;source&gt;</code> children, and each source names one textbook PDF by md5 plus the
+    page range the section draws from it.</p>
+
+<pre><code>&lt;book subject="Mathematics" grade="8" term="1" language_code="en" language="English"
+      subject_id="" academic_year="25-26" country_code="eg" country="Egypt"&gt;
+    &lt;module level="1" number="1" title="Numbers and Their Operations"&gt;
+        &lt;module level="2" number="1" title="Real Numbers"&gt;
+            &lt;source md5="16caec0919363dbb7789cdc01ebb501a" start_page="7" end_page="12"/&gt;
+            &lt;source md5="e43cddae8de6a01b542c089e25c02368" start_page="8" end_page="19"/&gt;
+        &lt;/module&gt;
+        ...
+&lt;/book&gt;</code></pre>
+    <p class="caption">Opening of <code>data/input/eg_mathematics_en_g8_t1/eg_mathematics_en_g8_t1.xml</code>.</p>
+
+    <h3>Page numbers and fractional boundaries</h3>
+    <p>Page values are mapped onto one linear axis by <code>page_position</code> so that ranges can
+    be compared and overlap-checked. A whole number in <code>end_page</code> means the end of that
+    page, so <code>end_page="12"</code> becomes 13.0 internally and page 12 is included in full. A
+    fractional value is an explicit position part-way down a page: <code>19.4</code> is 40% of the
+    way down page 19. That is how two consecutive sections share one physical page, one ending
+    where the other begins.</p>
+
+    <table>
+      <tr><th>Attribute pair</th><th class="num">Internal span</th><th>Pages rendered</th><th>Crop</th></tr>
+      <tr><td class="mono">start_page="7" end_page="12"</td><td class="num mono">7.0 - 13.0</td><td>7 to 12, six pages</td><td>none</td></tr>
+      <tr><td class="mono">start_page="48" end_page="49.30"</td><td class="num mono">48.0 - 49.3</td><td>48 to 49, two pages</td><td>page 49 kept from the top down to 30%</td></tr>
+      <tr><td class="mono">start_page="49.30" end_page="49"</td><td class="num mono">49.3 - 50.0</td><td>49 only, one page</td><td>page 49 kept from 30% to the bottom</td></tr>
+    </table>
+    <p class="caption">The second and third rows are the real boundary between sections 9.3.12 and
+    9.3.13 of <code>eg_mathematics_en_g4_t2</code>, source <code>7785cbe0</code>. Six of that
+    book's 121 source spans use a fractional boundary; the other two books use none.</p>
+
+    <h2 class="section" id="foundation">Shared foundation for later stages</h2>
+    <p>Beyond its own command line, <code>split.py</code> is where the project's shared vocabulary
+    for books, sections and page ranges lives. Later stages import from it rather than re-parsing
+    the XML themselves, so there is exactly one definition of what a section is and exactly one
+    place that turns a hierarchy number into a filename stem.</p>
+
+    <table>
+      <tr><th>Imported by</th><th>Names taken from split.py</th></tr>
+      <tr><td class="mono">specs.py</td><td class="mono">PROJECT_ROOT, SECTIONS_STAGE, TEMP_DIR, Span, book_metadata, book_root, book_spans, number_pad_width, number_stem, section_spans, section_stem</td></tr>
+      <tr><td class="mono">process.py</td><td class="mono">Span, book_metadata, book_spans, section_spans</td></tr>
+    </table>
+    <p class="caption">From the <code>from split import ...</code> statements in
+    <code>scripts/specs.py</code> (line 40) and <code>scripts/process.py</code> (line 43).</p>
+
+    <p>The practical consequence is that <code>section_stem</code> is the single source of truth
+    for output filenames: stage 2 rebuilds the same names to find the PDFs it must send to the
+    model. <a class="inline" href="specs.html">specs.html</a> documents that next stage, which
+    turns each section's PDFs into one lesson section spec.</p>
+
+    <hr />
+
+    <h2 class="section" id="validation">Validating the table of contents</h2>
+    <p>Validation runs first unless <code>--skip-validation</code> is given, and it reports every
+    problem it finds rather than stopping at the first. Two failures are fatal on their own — a
+    missing XML file and XML that is not well-formed — and return immediately. Otherwise the
+    parsed tree is read into <code>Span</code> objects by <code>collect_spans</code>, which
+    contributes its own errors for malformed attributes, and then six independent checks run over
+    the result. Each error string is prefixed with a bracketed tag naming its origin, so a long
+    report can be read by category.</p>
+
+    <table>
+      <tr><th>Function</th><th>Tag</th><th>What it rejects</th></tr>
+      <tr><td class="mono">collect_spans</td><td class="mono">[attrs]</td><td>A <code>&lt;source&gt;</code> with no <code>md5</code>, missing <code>start_page</code> or <code>end_page</code>, or a non-numeric page value. The offending source is dropped, so it takes no part in the later checks.</td></tr>
+      <tr><td class="mono">check_level_progression</td><td class="mono">[levels]</td><td>A module whose <code>level</code> attribute does not match its nesting depth. Levels must start at 1 and increase by exactly 1 per step inwards.</td></tr>
+      <tr><td class="mono">check_sources_on_leaves</td><td class="mono">[placement]</td><td>A <code>&lt;source&gt;</code> that is a direct child of <code>&lt;book&gt;</code>, and a module that holds sources while also nesting further modules.</td></tr>
+      <tr><td class="mono">check_page_order</td><td class="mono">[order]</td><td>A span that runs backwards. The mapped positions catch most of them, but a whole number in <code>end_page</code> means the end of that page, so <code>20</code> to <code>19</code> maps to the single point 20.0 and looks empty rather than descending; the raw attribute values are therefore compared as well. <code>19.4</code> to <code>19</code> is not backwards — it is the last 60% of page 19.</td></tr>
+      <tr><td class="mono">check_no_empty_spans</td><td class="mono">[empty]</td><td>A span whose start and end resolve to the same point, leaving no height to render. A whole number repeated on both sides is that page in full and is accepted; a fraction repeated on both sides — <code>19.4</code> to <code>19.4</code> — is not. The raw values must agree too, so a backwards range landing on one point is reported by <code>[order]</code> alone and no span is reported by both checks.</td></tr>
+      <tr><td class="mono">check_no_overlaps</td><td class="mono">[overlap]</td><td>Two spans on the same md5 that overlap. Ranges that merely touch at a shared boundary are accepted, since that is exactly how a shared page is split.</td></tr>
+      <tr><td class="mono">check_pdfs</td><td class="mono">[pdf]</td><td>A referenced PDF that is missing, unreadable, or shorter than the highest page any section asks of it. Page counts here come from <code>pypdf</code>.</td></tr>
+    </table>
+
+    <p>Success prints one line and the run continues into the split. Failure prints a count and
+    every problem to standard error, and the process exits 1 without rendering anything.</p>
+
+<pre><code>$ .venv/bin/python scripts/split.py eg_mathematics_en_g8_t1
+OK: eg_mathematics_en_g8_t1 passed all checks
+
+$ .venv/bin/python scripts/split.py nosuchbook
+FAILED: nosuchbook has 1 problem(s)
+  [xml] file not found: .../data/input/nosuchbook/nosuchbook.xml</code></pre>
+    <p class="caption">Real output; the second path is abbreviated from the absolute path the
+    script prints.</p>
+
+    <h2 class="section" id="rasterising">Why pages are rasterised</h2>
+    <p>Rasterising every page is a deliberate choice, not a shortcut. A section can begin or end
+    part-way down a page, which means the page it shares with its neighbour must reach the model
+    carrying only one section's half.</p>
+
+    <p>The obvious way to do that in PDF is a CropBox: keep the page, narrow the visible window.
+    Two measurements taken while this stage was being designed ruled that out and settled the
+    output format at the same time — the first showed a CropBox does not hide vector text from the
+    model, the second showed that a page inside a PDF costs about half the tokens of the same image
+    sent loose. Both are recorded below with the method that produced them.</p>
+
+    <div class="panel note">
+      <strong>One mechanism for both kinds of page.</strong> The source textbooks mix born-digital
+      pages that carry a real text layer with scanned pages that do not. Rasterising treats both
+      identically, so the correctness of a boundary does not depend on how the page happened to be
+      produced.
+    </div>
+
+    <h3>Finding: a CropBox does not hide vector text</h3>
+    <p>Two sets of four hand-built one-page PDFs, every page 400 x 800 pt, each carrying something
+    in the region a crop was supposed to hide. The vector set drew <code>ZEBRAWORD</code> near the
+    top of the page and <code>MANGOWORD</code> near the bottom. The raster set drew one full-page
+    image instead, solid red over the top 70% and solid blue over the bottom 30%. Within each set
+    the four variants were the same: no crop at all; a CropBox narrowed to the bottom 30% with the
+    full-height content left in place; the excluded content genuinely absent from the content
+    stream, page size unchanged; and the excluded content absent with the page shrunk to the strip
+    that was kept. Each PDF was sent inline on its own, with a prompt asking the model to list
+    every distinct capitalised word, or every solid colour, it could find anywhere on or around the
+    page, explicitly including anything faint, cut off or outside the visible area.</p>
+
+    <table>
+      <tr><th>Variant</th><th>Vector text page</th><th>Full-page raster image</th></tr>
+      <tr><td>No crop, whole page visible</td><td class="mono">ZEBRAWORD, MANGOWORD</td><td>Red over the top 70%, blue over the bottom 30%</td></tr>
+      <tr><td>CropBox narrowed, content left in place</td><td class="mono">ZEBRAWORD, MANGOWORD</td><td>Blue only</td></tr>
+      <tr><td>Excluded content removed, page still full size</td><td class="mono">MANGOWORD</td><td>Blue, and white where nothing was drawn</td></tr>
+      <tr><td>Excluded content removed, page shrunk to the strip</td><td class="mono">MANGOWORD</td><td>Blue only</td></tr>
+    </table>
+    <p class="caption">Measured during project development on 15 August 2026 against
+    <code>gemini-3.6-flash</code>, each test PDF sent inline. The vector run was first written
+    against <code>gemini-3-pro-preview</code> and repeated once the model name was brought in line
+    with the rest of the project; the answers above are from the <code>gemini-3.6-flash</code> run.
+    Two local checks on the same files agree with the split: <code>pypdf</code>'s
+    <code>extract_text()</code> also returned <code>ZEBRAWORD</code> through the narrowed CropBox,
+    while <code>pypdfium2</code> rendered the narrowed raster file as pure blue at 400 x 240 px.</p>
+
+    <p>Only one cell leaked, and it is the cell that matters: a narrowed CropBox over vector text.
+    So the leak belongs to the native text channel, which walks the page's text objects without
+    regard for the visible window, and not to the vision path, which honours it. Both hard variants
+    held for both content types. Rendering each page to an image and discarding the unwanted pixels
+    is the hard variant applied unconditionally — it removes the text layer entirely, so a boundary
+    stays correct without the pipeline having to know whether the source page carried text.</p>
+
+    <h3>Finding: a PDF page costs about half an inline image</h3>
+    <p>One page of a checked-in source textbook was rendered at this stage's own 3072 px cap and
+    JPEG-encoded at quality 85, then sent to the model twice: once as an image part, once as the
+    only page of a one-page PDF built around those same bytes. Transport was inline both times and
+    the prompt was the same one-word request, so the container was the only thing that differed.
+    The figure compared is <code>prompt_token_count</code> from the reply's usage metadata.</p>
+
+    <table>
+      <tr><th>Container</th><th class="num">Bytes</th><th class="num">Prompt tokens</th></tr>
+      <tr><td>Inline JPEG image part</td><td class="num mono">290 KB</td><td class="num mono">1,088</td></tr>
+      <tr><td>Inline one-page PDF holding that JPEG</td><td class="num mono">277 KB</td><td class="num mono">540</td></tr>
+    </table>
+    <p class="caption">Measured during project development on 15 August 2026 against
+    <code>gemini-3.6-flash</code>, on a single 2087 x 3072 px page with
+    <code>media_resolution</code> left at its default: a factor of 2.01 for identical pixels. The
+    mechanism is that an image part is tokenised by tiling while a document page is billed per page,
+    which Google's documentation puts at 258 tokens. One page on one model is thin evidence for an
+    exact ratio, so treat the halving as the approximate size of the effect rather than a rate to
+    project a budget from; the direction is what this stage is built on.</p>
+
+    <p>That is why this stage produces PDFs rather than loose image files, even though the PDF it
+    writes contains nothing but one image per page.</p>
+
+    <div class="panel warn">
+      <strong>Neither experiment survives in the repository.</strong> The crop test lived in
+      <code>scripts/_crop_experiment/</code> and was deleted once its results were in; the token
+      comparison was a one-off command that was never saved as a file. The numbers on this page are
+      the only record of both, so re-checking either one means rebuilding the test documents from
+      the method described above, and it means paying for API calls that nothing else in this stage
+      needs.
+    </div>
+
+    <h2 class="section" id="rendering">Rendering, cropping and assembly</h2>
+    <p>Each page goes through <code>render_page</code>, then a group of pages goes through
+    <code>write_image_pdf</code>.</p>
+
+    <h3>Render</h3>
+    <p>The scale is chosen so the page is 3072 px tall, and clamped so that a landscape page's
+    width lands on 3072 px instead. The model scales a document page to at most 3072 px on a side
+    and gains nothing from more, so that cap is the target rather than a compromise. The rendered
+    image is converted to RGB and, if this is a cropped boundary page, hard-cropped to the
+    <code>[top, bottom]</code> slice before a single JPEG encode at quality 85.</p>
+
+    <table>
+      <tr><th>Constant</th><th class="num">Value</th><th>Role</th></tr>
+      <tr><td class="mono">TARGET_HEIGHT_PX</td><td class="num mono">3072</td><td>Height a portrait page is rendered to</td></tr>
+      <tr><td class="mono">MAX_SIDE_PX</td><td class="num mono">3072</td><td>Ceiling that clamps a landscape page by its width</td></tr>
+      <tr><td class="mono">JPEG_QUALITY</td><td class="num mono">85</td><td>Quality of the one and only encode</td></tr>
+      <tr><td class="mono">SIZE_WARN_BYTES</td><td class="num mono">47,185,920</td><td>45 MB, the point at which a built PDF is flagged</td></tr>
+      <tr><td class="mono">SECTIONS_STAGE</td><td class="num mono">01_sections_pdf</td><td>Output subdirectory name, also imported by stage 2</td></tr>
+    </table>
+
+    <p>A cropped page is visible in the output. Section 9.3.12 of <code>eg_mathematics_en_g4_t2</code>
+    ends at <code>49.30</code>, and the PDF it produced from source <code>7785cbe0</code> holds a
+    full page followed by a short one:</p>
+
+    <table>
+      <tr><th>Page</th><th class="num">Pixels</th><th class="num">MediaBox (pt)</th><th>Note</th></tr>
+      <tr><td class="num">1</td><td class="num mono">2315 x 3072</td><td class="num mono">581.40 x 771.84</td><td>page 48, whole</td></tr>
+      <tr><td class="num">2</td><td class="num mono">2307 x 922</td><td class="num mono">581.04 x 232.20</td><td>page 49, top 30%</td></tr>
+    </table>
+    <p class="caption">Read from the image XObjects and MediaBoxes of
+    <code>09_03_12_7785cbe059f5088eaa562d6200764263.pdf</code>. The source page 49 is 774.00 pt
+    tall, so 232.20 pt is 30.00% of it and 922 px is 30.01% of 3072.</p>
+
+    <h3>Assembly</h3>
+    <p><code>write_image_pdf</code> writes the PDF by hand rather than through a library. It emits
+    a <code>%PDF-1.4</code> header, a catalog as object 1, a page tree as object 2, then three
+    objects per page — the page, its content stream, and the image XObject — followed by a real
+    xref table and trailer. Each page's MediaBox is the source page's width and its cropped height
+    in points, so the section PDF keeps the original physical scale of the page.</p>
+
+    <div class="panel note">
+      <strong>The JPEG bytes are embedded verbatim.</strong> The image XObject declares
+      <code>/Filter /DCTDecode</code> and the encoded JPEG is written straight into the stream. No
+      PDF library decodes and re-encodes it, so the single encode inside <code>render_page</code>
+      is the only lossy step in the whole pipeline.
+    </div>
+
+    <p>Rebuilding is deterministic: re-running the same section with <code>--update</code> produced
+    byte-identical files, verified by md5 before and after.</p>
+
+    <h2 class="section" id="output">Output layout and naming</h2>
+    <p>Everything is written under <code>data/temp/&lt;book_id&gt;/01_sections_pdf/</code>. One file
+    is produced per <code>(source PDF, section)</code> pair, so a section drawing on two textbooks
+    yields two PDFs and the sample book's 17 sections yield 34 files.</p>
+
+<pre><code>data/
+├── input/
+│   └── eg_mathematics_en_g8_t1/
+│       ├── 16caec0919363dbb7789cdc01ebb501a.pdf      130 pages, 11.35 MB
+│       ├── e43cddae8de6a01b542c089e25c02368.pdf      283 pages, 58.06 MB
+│       └── eg_mathematics_en_g8_t1.xml
+└── temp/
+    └── eg_mathematics_en_g8_t1/
+        └── 01_sections_pdf/
+            ├── 01_01_16caec0919363dbb7789cdc01ebb501a.pdf     6 pages, 3.36 MB
+            ├── 01_01_e43cddae8de6a01b542c089e25c02368.pdf    12 pages, 5.06 MB
+            ├── 01_02_16caec0919363dbb7789cdc01ebb501a.pdf     6 pages, 3.09 MB
+            ├── ...
+            └── 04_02_e43cddae8de6a01b542c089e25c02368.pdf    13 pages, 5.76 MB</code></pre>
+    <p class="caption">Sizes from <code>ls -l</code>, in the same 1024-based megabytes the script
+    prints; page counts read from the PDFs themselves. 34 output files, 151.26 MB in total.</p>
+
+    <h3>The filename</h3>
+    <p>A name is the section's zero-padded hierarchy number, then the md5 of the source PDF it was
+    cut from. The hierarchy leads so that listing the directory walks the book in table-of-contents
+    order; the md5 trails so that one section's sources sort together.</p>
+
+<pre><code>09_03_12_83b5a326780cc497969be5fb4fb8ddfa.pdf
+└┬┘ └┬┘ └┬┘ └──────────────┬──────────────┘
+ 9 . 3 . 12                md5 of the source PDF
+ section number path       (data/input/eg_mathematics_en_g4_t2/83b5a326....pdf)</code></pre>
+    <p class="caption">A real file from
+    <code>data/temp/eg_mathematics_en_g4_t2/01_sections_pdf</code>.</p>
+
+    <p>The pad width comes from <code>number_pad_width</code>: it is the digit count of the largest
+    number appearing anywhere in the book's hierarchy, with a floor of 2. All three checked-in
+    books pad to 2, including <code>eg_mathematics_en_g4_t2</code> whose deepest sections reach
+    9.3.13.</p>
+
+    <hr />
+
+    <h2 class="section" id="running">Command line and exit behaviour</h2>
+
+<pre><code>usage: split.py [-h] [-s SECTION] [--update] [--skip-validation] book_id</code></pre>
+
+    <table>
+      <tr><th>Argument</th><th>Effect</th></tr>
+      <tr><td class="mono">book_id</td><td>Required. Names both <code>data/input/&lt;book_id&gt;/</code> and the XML inside it, for example <code>eg_mathematics_en_g7_t1</code>.</td></tr>
+      <tr><td class="mono">-s, --section SECTION</td><td>Build only this section, given as a dotted hierarchy such as <code>1.1</code> or <code>9.3.12</code>. Validation still covers the whole book.</td></tr>
+      <tr><td class="mono">--update</td><td>Rebuild section PDFs that already exist instead of skipping them.</td></tr>
+      <tr><td class="mono">--skip-validation</td><td>Split without validating first.</td></tr>
+      <tr><td class="mono">-h, --help</td><td>Print the usage above together with the module docstring.</td></tr>
+    </table>
+
+    <h3>Progress and summary lines</h3>
+    <p>Each PDF actually built prints one line with the section number, the first eight characters
+    of the source md5, the page count, how many of those pages were cropped, and the resulting
+    size. The run ends with an <code>OK:</code> summary naming the output directory relative to the
+    project root.</p>
+
+<pre><code>$ .venv/bin/python scripts/split.py eg_mathematics_en_g4_t2 -s 9.3.12 --update
+OK: eg_mathematics_en_g4_t2 passed all checks
+  9.3.12 [5831de5e]: 2 pages -> 0.9 MB
+  9.3.12 [7785cbe0]: 2 pages, 1 cropped -> 0.6 MB
+  9.3.12 [83b5a326]: 3 pages -> 1.3 MB
+OK: 3 section PDF(s) built from 7 pages (1 cropped) under data/temp/eg_mathematics_en_g4_t2/01_sections_pdf
+
+$ .venv/bin/python scripts/split.py eg_mathematics_en_g8_t1 -s 1.1
+OK: eg_mathematics_en_g8_t1 passed all checks
+OK: 0 section PDF(s) built from 0 pages (0 cropped), 2 already up to date under data/temp/eg_mathematics_en_g8_t1/01_sections_pdf</code></pre>
+    <p class="caption">Both transcripts are verbatim. The <code>, N already up to date</code>
+    clause only appears when something was skipped.</p>
+
+    <h3>Exit codes</h3>
+    <ul>
+      <li><strong>0.</strong> Validation passed, or was skipped, and the split completed.</li>
+      <li><strong>1 from validation.</strong> <code>FAILED: &lt;book_id&gt; has N problem(s)</code>
+      to standard error, followed by one indented line per problem. Nothing is rendered.</li>
+      <li><strong>1 from the split.</strong> Any <code>RuntimeError</code> raised while splitting
+      is caught in <code>main</code>, printed as <code>FAILED: &lt;message&gt;</code> to standard
+      error, and turned into exit 1. There are two such errors:
+      <code>no section 9.9 in eg_mathematics_en_g8_t1</code> when <code>-s</code> names a section
+      the book does not have, and <code>missing source PDF: &lt;path&gt;</code>, which validation
+      would normally have caught first and so is only reachable under
+      <code>--skip-validation</code>.</li>
+    </ul>
+
+    <div class="panel note">
+      <strong>Open source PDFs are always closed.</strong> Source documents are opened lazily, at
+      most once per md5, cached for the whole run, and closed in a <code>finally</code> block, so
+      an error part-way through a book does not leave handles open.
+    </div>
+
+    <h2 class="section" id="skipping">When a section PDF is skipped</h2>
+    <p>The skip rule is deliberately narrow. A section PDF is skipped when both of these hold:</p>
+    <ol>
+      <li>The output file exists and can be opened.</li>
+      <li>Its page count equals the number of pages the XML implies for that
+      <code>(source, section)</code> pair.</li>
+    </ol>
+    <p>Anything else — a missing file, an unreadable one, or one whose page count no longer matches
+    because the table of contents changed — is rebuilt. <code>--update</code> forces a rebuild
+    regardless. The count on disk is read with <code>pdf_page_count</code>, which returns
+    <code>None</code> for a file that is missing or that <code>pypdfium2</code> refuses, and
+    <code>None</code> never equals the expected count, so both cases rebuild.</p>
+
+    <div class="panel warn">
+      <strong>No timestamps are compared, on purpose.</strong> The project lives in a Dropbox
+      folder, where modification times are not trustworthy: a sync can rewrite mtime without the
+      content changing, and can restore old content with a fresh mtime. Comparing the source PDF's
+      mtime to the output's would therefore rebuild work that is fine and skip work that is stale.
+      Page count is derived from the content itself and survives syncing.
+    </div>
+
+    <p>The trade-off is that an edit which changes a section's boundaries without changing how many
+    pages it covers — moving a fractional split from <code>49.30</code> to <code>49.50</code>, say
+    — is not detected. Such an edit needs <code>--update</code>.</p>
+
+    <h2 class="section" id="sizes">Sizes and the 50 MB ceiling</h2>
+    <p>The model refuses documents past 50 MB, and that refusal only surfaces at upload time, well
+    after this stage has finished. So every built PDF is measured and any file over
+    <code>SIZE_WARN_BYTES</code> — 45 MB — has
+    <code>WARNING: close to the 50 MB the model accepts</code> appended to its progress line. The
+    5 MB margin leaves room for a section to grow before it becomes a hard failure downstream.</p>
+
+    <p>In practice the checked-in books are far from the limit. The largest single file in the
+    sample book is 10.48 MB and the mean is 4.45 MB.</p>
+
+    <div class="bar-row"><span>1.1</span><div class="bar" style="width:41.2%"></div><span class="pct">8.42</span></div>
+    <div class="bar-row"><span>1.2</span><div class="bar" style="width:41.2%"></div><span class="pct">8.43</span></div>
+    <div class="bar-row"><span>1.3</span><div class="bar" style="width:34.8%"></div><span class="pct">7.11</span></div>
+    <div class="bar-row"><span>1.4</span><div class="bar" style="width:30.6%"></div><span class="pct">6.25</span></div>
+    <div class="bar-row"><span>1.5</span><div class="bar" style="width:36.3%"></div><span class="pct">7.42</span></div>
+    <div class="bar-row"><span>2.1</span><div class="bar" style="width:41.5%"></div><span class="pct">8.49</span></div>
+    <div class="bar-row"><span>2.2</span><div class="bar" style="width:46.8%"></div><span class="pct">9.58</span></div>
+    <div class="bar-row"><span>2.3</span><div class="bar" style="width:60.9%"></div><span class="pct">12.45</span></div>
+    <div class="bar-row"><span>2.4</span><div class="bar" style="width:36.5%"></div><span class="pct">7.47</span></div>
+    <div class="bar-row"><span>3.1</span><div class="bar" style="width:48.2%"></div><span class="pct">9.86</span></div>
+    <div class="bar-row"><span>3.2</span><div class="bar" style="width:50.7%"></div><span class="pct">10.38</span></div>
+    <div class="bar-row"><span>3.3</span><div class="bar" style="width:36.5%"></div><span class="pct">7.46</span></div>
+    <div class="bar-row"><span>3.4</span><div class="bar" style="width:40.2%"></div><span class="pct">8.22</span></div>
+    <div class="bar-row"><span>3.5</span><div class="bar" style="width:70.0%"></div><span class="pct">14.32</span></div>
+    <div class="bar-row"><span>3.6</span><div class="bar" style="width:37.0%"></div><span class="pct">7.56</span></div>
+    <div class="bar-row"><span>4.1</span><div class="bar" style="width:42.1%"></div><span class="pct">8.62</span></div>
+    <div class="bar-row"><span>4.2</span><div class="bar" style="width:45.1%"></div><span class="pct">9.22</span></div>
+    <p class="caption">Total megabytes of section PDF per section, both sources combined, for all
+    17 sections of <code>eg_mathematics_en_g8_t1</code>. Bar widths are scaled so the largest
+    (section 3.5, 14.32 MB across 36 pages) spans 70%; the printed values are the true sizes on
+    disk. The 45 MB warning is checked against each file as it is written, not against these
+    per-section totals: the individual files behind this chart run from 2.57 to 10.48 MB.</p>
+
+    <p>Output is larger than input, because a photographic 3072 px render of a page costs more than
+    the vector page it came from. The sample book's two source PDFs total 69.41 MB for 413 pages;
+    the 359 of those pages that sections actually claim come out as 151.26 MB, about 0.42 MB per
+    page.</p>
+
+    <hr />
+
+    <h2 class="section" id="functions">Function reference</h2>
+
+    <h3>Shared model of a book</h3>
+    <p>These are the names later stages import. Everything here reads the XML and nothing here
+    touches a PDF.</p>
+
+    <table>
+      <tr><th>Name</th><th>What it does</th></tr>
+      <tr><td class="mono">Span</td><td>Frozen dataclass: one page range within one source PDF as claimed by one module. Carries the md5, the raw and parsed start and end, the module breadcrumb path, the dotted number path, and the section title.</td></tr>
+      <tr><td class="mono">Span.first_page</td><td><code>floor(start)</code> — the first page the span touches.</td></tr>
+      <tr><td class="mono">Span.last_page</td><td><code>ceil(end) - 1</code> — the last page the span touches.</td></tr>
+      <tr><td class="mono">Span.page_fractions</td><td>The vertical slice of one page belonging to this span, as two 0-1 fractions. Only the first and last page are ever cropped; the pages between belong to it whole.</td></tr>
+      <tr><td class="mono">Span.describe</td><td>A short human label, for example <code>pages 48-49.30 (9. Fractions &gt; 3. Multiplication and Fractions &gt; 12. Equivalent Fractions Using the Identity Property)</code>, used in overlap messages.</td></tr>
+      <tr><td class="mono">page_position</td><td>Maps a raw page attribute onto the linear axis, adding 1.0 to a whole-numbered <code>end_page</code>.</td></tr>
+      <tr><td class="mono">module_label</td><td><code>"&lt;number&gt;. &lt;title&gt;"</code> for one module, for error messages.</td></tr>
+      <tr><td class="mono">collect_spans</td><td>Walks the tree, builds the breadcrumb and number paths, and turns every <code>&lt;source&gt;</code> into a <code>Span</code>, appending an error for each malformed one.</td></tr>
+      <tr><td class="mono">book_root</td><td>The parsed <code>&lt;book&gt;</code> element for a book id.</td></tr>
+      <tr><td class="mono">book_spans</td><td>Every span in the book, errors discarded.</td></tr>
+      <tr><td class="mono">book_metadata</td><td>The <code>&lt;book&gt;</code> element's attributes as a dict: subject, grade, term, language, country and so on.</td></tr>
+      <tr><td class="mono">section_spans</td><td>Each section mapped to its sources in table-of-contents order, keeping one entry per md5 so a section naming the same PDF twice still counts as one source.</td></tr>
+      <tr><td class="mono">number_pad_width</td><td>The zero-pad width that keeps filename order matching table-of-contents order: digits in the largest hierarchy number, minimum 2.</td></tr>
+      <tr><td class="mono">number_stem</td><td>A section's padded hierarchy, for example <code>01_02_01</code> for section 1.2.1.</td></tr>
+      <tr><td class="mono">section_stem</td><td><code>&lt;padded hierarchy&gt;_&lt;md5&gt;</code>, the stem of every file this stage writes.</td></tr>
+    </table>
+
+    <h3>Validation</h3>
+    <table>
+      <tr><th>Name</th><th>What it does</th></tr>
+      <tr><td class="mono">validate</td><td>Locates and parses the book XML, then runs all six checks and returns the accumulated list of error strings. An empty list means the book passed.</td></tr>
+      <tr><td class="mono">check_level_progression</td><td>Levels start at 1 and increase by exactly 1 with each nesting step.</td></tr>
+      <tr><td class="mono">check_sources_on_leaves</td><td>Only innermost modules carry <code>&lt;source&gt;</code>, and no source sits outside a module.</td></tr>
+      <tr><td class="mono">check_page_order</td><td>No span starts after it ends, judged on the raw page values as well as the mapped positions so that a descending whole-page range is named as such.</td></tr>
+      <tr><td class="mono">check_no_empty_spans</td><td>No span is empty: start and end never land on the same point with the same raw values. A whole number repeated on both sides is one whole page and stays legal; a backwards range that lands on one point is left to <code>check_page_order</code>.</td></tr>
+      <tr><td class="mono">check_no_overlaps</td><td>Spans on the same md5, sorted by position, never overlap; touching at a boundary is allowed.</td></tr>
+      <tr><td class="mono">check_pdfs</td><td>Every referenced PDF exists, opens, and has at least as many pages as the highest page referenced against it.</td></tr>
+    </table>
+
+    <h3>Rendering and assembly</h3>
+    <table>
+      <tr><th>Name</th><th>What it does</th></tr>
+      <tr><td class="mono">PageImage</td><td>Frozen dataclass: one rendered, cropped page on its way into a section PDF. Holds the JPEG bytes, pixel dimensions, point dimensions and whether it was cropped.</td></tr>
+      <tr><td class="mono">section_groups</td><td>Groups spans by <code>(md5, number path)</code> — one output PDF per key — honouring <code>-s</code>. A section naming the same PDF more than once contributes all its ranges to that one PDF.</td></tr>
+      <tr><td class="mono">group_pages</td><td>Expands a group into <code>(page, top, bottom)</code> triples: every page it takes from that PDF, with the slice it keeps.</td></tr>
+      <tr><td class="mono">render_page</td><td>Rasterises one page at the 3072 px cap, crops it to the slice, and JPEG-encodes it once.</td></tr>
+      <tr><td class="mono">write_image_pdf</td><td>Hand-writes a PDF whose pages hold nothing but the supplied JPEGs, embedding them as <code>/DCTDecode</code> streams, and creates the parent directory.</td></tr>
+      <tr><td class="mono">pdf_page_count</td><td>Pages in an existing PDF, or <code>None</code> when it is missing or unreadable. Drives the skip rule.</td></tr>
+      <tr><td class="mono">sort_key</td><td>Orders output keys numerically by hierarchy, then by md5, so progress lines follow the book.</td></tr>
+      <tr><td class="mono">split_book</td><td>The stage itself: group, skip or build, render, write, count, warn on size, print the summary, return the output directory.</td></tr>
+      <tr><td class="mono">main</td><td>Parses arguments, runs validation unless skipped, calls <code>split_book</code>, converts a <code>RuntimeError</code> into a <code>FAILED:</code> line and exit 1.</td></tr>
+    </table>
+
+    <h2 class="section" id="requirements">Requirements</h2>
+    <p>Three third-party packages are imported, all pinned in <code>requirements.txt</code> at the
+    project root. A missing one is caught at import time and reported as
+    <code>missing dependency (&lt;name&gt;): pip install -r requirements.txt</code> rather than a
+    traceback. The standard library supplies everything else:
+    <code>argparse</code>, <code>io</code>, <code>math</code>, <code>sys</code>,
+    <code>xml.etree.ElementTree</code>, <code>dataclasses</code> and <code>pathlib</code>.</p>
+
+    <table>
+      <tr><th>Package</th><th>Pin</th><th>Used for</th></tr>
+      <tr><td class="mono">pypdfium2</td><td class="mono">5.12.1</td><td>Rendering source pages, and counting pages in an already-built section PDF for the skip rule.</td></tr>
+      <tr><td class="mono">Pillow</td><td class="mono">12.3.0</td><td>Imported only so that pypdfium2's <code>to_pil()</code> works; the crop and the JPEG encode then happen through it.</td></tr>
+      <tr><td class="mono">pypdf</td><td class="mono">6.15.0</td><td>Counting pages of source PDFs during validation.</td></tr>
+    </table>
+    <p class="caption">Pins as recorded in <code>requirements.txt</code>. The other entries there
+    (<code>google-genai</code>, <code>ntplib</code>, <code>pydantic</code>) belong to later stages,
+    not to this one. Building the question papers additionally needs a TeX distribution supplying
+    <code>lualatex</code> and the stix2-otf fonts.</p>
+
+    <p>Nothing in this stage reaches the network or needs an API key, so it runs offline and its
+    output is reproducible. The next stage,
+    <a class="inline" href="specs.html">specs.py</a>, is the first that calls a model, and it reads
+    exactly the files named here.</p>
+
+    <p class="toc-foot">This file documents <code>scripts/split.py</code> at 598 lines. Numbers
+    come from the checked-in books under <code>data/input</code> and the built output under
+    <code>data/temp</code>; re-derive them and update this page whenever the script, the sample
+    books, or the output layout change.</p>
+  </main>
+</div>
+</body>
+</html>

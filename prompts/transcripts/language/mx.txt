@@ -1,0 +1,35 @@
+This is a bilingual transcript. Use two languages deliberately:
+
+- The country's spoken variety carries the explanation: reasoning, transitions, and ordinary teaching language.
+- **{{INSTRUCTIONAL_LANGUAGE}}** carries subject keywords, technical terms, labels, and standard terminology.
+
+The bilingual mix is not limited to terms already printed in the image. Any keyword or technical term you introduce while explaining—whether quoted from the page or added in your own wording—must stay in {{INSTRUCTIONAL_LANGUAGE}} and its original script. Do not translate those terms into {{explanation_language}}.
+
+Examples:
+- `{{mix_example_1}}`
+- `{{mix_example_2}}`
+- `{{mix_example_3}}`
+
+Keep {{INSTRUCTIONAL_LANGUAGE}} terms as plain text, outside `<math>`. Write them in their original script so TTS pronounces them correctly. Write {{explanation_language}} prefixes in full.{{#joining_mark}} Use {{joining_mark}} only when a prefix runs directly into a `<math>` tag or an {{INSTRUCTIONAL_LANGUAGE}} term, as in `{{joining_example}}` or `{{joining_term_example}}`.{{/joining_mark}}
+
+Write the entire `spoken` reading in natural {{INSTRUCTIONAL_LANGUAGE}}. Prose mixes {{explanation_language}} with {{INSTRUCTIONAL_LANGUAGE}}; `spoken` reads symbolic notation in {{INSTRUCTIONAL_LANGUAGE}}. Spell numbers in {{INSTRUCTIONAL_LANGUAGE}}. Read `3x` as `{{product_spoken}}`. Use {{pause_mark}} for helpful pauses in long expressions.
+
+- Incorrect (number): `{{incorrect_number}}`.
+- Incorrect (expression): `{{incorrect_expression}}`.
+- Correct: `{{correct_number}}`; `{{correct_expression}}`.
+
+Spell every other `spoken` reading with these same words. The notation block shows the pattern for this book's script.
+
+Technical prose and glossary terms—including {{terminology_examples}}—stay in {{INSTRUCTIONAL_LANGUAGE}} as plain text, outside `<math>`, whether they appear in the image or are introduced by the explanation.
+
+In a chemical tag, read each element symbol as its letter name in {{INSTRUCTIONAL_LANGUAGE}}. Read leading coefficients in {{INSTRUCTIONAL_LANGUAGE}} number words. Read state symbols in {{INSTRUCTIONAL_LANGUAGE}}, as in {{state_symbols}}. Read `\rightarrow` as {{reaction_arrow}}. Read `\rightleftharpoons` and `\leftrightarrow` as {{equilibrium}}. In prose, use {{INSTRUCTIONAL_LANGUAGE}} element names—such as {{element_names}}—rather than {{explanation_language}} translations.
+
+- `<math spoken="H two O">H_2O</math>`
+- `<math spoken="Ca two plus">Ca^{2+}</math>`
+- `<math spoken="N H three {{state_aq_spoken}}">NH_3(aq)</math>`
+- `<math spoken="{{reaction_spoken}}">2H_2 + O_2 \rightarrow 2H_2O</math>`
+- Do not write `<math spoken="{{element_spoken}}">C</math>` when the prose means `{{element_prose}}`; keep the element name in prose.
+- Do not write `<math spoken="H 2">H_2</math>`; chemical subscripts use English number words.
+{{#wrong_arrow}}
+- Do not read a reaction arrow as {{wrong_arrow}}; use {{reaction_arrow}}.
+{{/wrong_arrow}}

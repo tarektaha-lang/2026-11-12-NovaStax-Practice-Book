@@ -1,0 +1,3 @@
+- Lock the printed term, the printed qualitative wording, and the printed unit. The book's own phrase is the only allowed form; never translate, paraphrase, or synonym-swap terms.
+- Fixed curriculum and scientific phrases printed in the PDF as terms must be treated as locked wording; a higher or more advanced scientific synonym belongs in `out_of_scope` even when it is scientifically correct.
+- Define terms strictly using the qualitative depth, units, and wording supported by the section text.

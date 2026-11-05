@@ -1,0 +1,61 @@
+{
+  "stem": "Find the perpendicular distance from the given point to the indicated coordinate axis:",
+  "exercises": [
+    {
+      "text": "$(0, -3, 4)$ to the $x$-axis",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$5\\text{ unit length}$, since $\\sqrt{(-3)^2 + 4^2} = 5$"
+    },
+    {
+      "text": "$(5, 1, -12)$ to the $y$-axis",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$13\\text{ unit length}$, since $\\sqrt{5^2 + (-12)^2} = 13$"
+    },
+    {
+      "text": "$(6, -8, 5)$ to the $z$-axis",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$10\\text{ unit length}$, since $\\sqrt{6^2 + (-8)^2} = 10$"
+    },
+    {
+      "text": "$(-7, 2, 0)$ to the $z$-axis",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$\\sqrt{53}\\text{ unit length}$, since $\\sqrt{(-7)^2 + 2^2} = \\sqrt{53}$"
+    },
+    {
+      "text": "$(4, -2, -\\sqrt{5})$ to the $x$-axis",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$3\\text{ unit length}$, since $\\sqrt{(-2)^2 + (-\\sqrt{5})^2} = 3$"
+    },
+    {
+      "text": "$(\\sqrt{11}, -5, 3)$ to the $y$-axis",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$2\\sqrt{5}\\text{ unit length}$, since $\\sqrt{(\\sqrt{11})^2 + 3^2} = 2\\sqrt{5}$"
+    },
+    {
+      "text": "$(-3, 4, -12)$ to the $x$-axis",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$4\\sqrt{10}\\text{ unit length}$, since $\\sqrt{4^2 + (-12)^2} = 4\\sqrt{10}$"
+    },
+    {
+      "text": "$(2\\sqrt{6}, 1, -2)$ to the $z$-axis",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$5\\text{ unit length}$, since $\\sqrt{(2\\sqrt{6})^2 + 1^2} = 5$"
+    }
+  ]
+}

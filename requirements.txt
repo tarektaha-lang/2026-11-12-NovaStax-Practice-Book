@@ -1,0 +1,26 @@
+# Python 3.11 or later.
+# Building the question papers also needs a TeX distribution supplying lualatex
+# and the stix2-otf fonts (TeX Live 2020 or newer). Drawing the covers needs
+# rsvg-convert from librsvg (brew install librsvg). Figure previews use pdftoppm
+# (poppler).
+#
+# Pipeline
+google-genai==2.25.0      # every model call (Gemini, Gemini Batch, TTS, caches)
+ntplib==0.4.0             # network time for API call-log timestamps
+Pillow==12.3.0            # package thumbnails
+pydantic==2.13.4          # model response schemas
+pypdf==6.15.0             # split, bind, front matter, package, translate
+pypdfium2==5.12.1         # page rendering: source crops, transcript crops, thumbnails
+requests==2.32.5          # package: 12digit id service when a catalog row is created
+uharfbuzz==0.56.1         # cover text shaping and measuring
+#
+# Tests (scripts/tests)
+pyflakes==4.0.3
+fonttools==4.61.0         # font cmap checks in the Arabic-notation tests
+
+# Optional
+# matplotlib: only the optional figure PNG preview (no stage calls it)
+matplotlib==3.10.8
+# torch + whisperx: only the align stage (large downloads)
+torch==2.8.0
+whisperx==3.8.1

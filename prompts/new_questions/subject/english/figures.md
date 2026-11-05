@@ -1,0 +1,3 @@
+- Use `figure_type: other` for clear, simple visual illustrations, flashcards, scene drawings, or visual option pictures.
+- Figure descriptions must depict familiar objects, characters, or actions explicitly supported by `language_scope_entries` and textbook visual context, without adding unlearned vocabulary or decorative clutter.
+- Never include text or labels inside a figure description that reveal the answer or introduce unlearned metalanguage.

@@ -1,0 +1,3 @@
+- Recreate briefs for figures must include only labels, arrows, directional indicators, and values that are explicitly visible on the printed page.
+- Do not add extra anatomical parts, chemical components, circuit elements, or technical details to make the diagram more advanced or complete than the source PDF.
+- Omit purely decorative artwork or unclear visuals that are not directly tied to a teaching point or student task.

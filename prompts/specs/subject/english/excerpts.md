@@ -1,0 +1,5 @@
+- Copy scripts, dialogues, and model sentences `as_is`.
+- Rubric wording belongs in `language_scope_entries`, not in `excerpts`.
+- Fixed curriculum phrases printed as terms stay as locked wording.
+- Song lyrics, anthems, and other verse in the book use type `passage` (or `document` when the layout is a fact file), not `poem`. The `poem` type with `rows` is for Arabic verse layout only; English books do not fill `rows`.
+- Do not paste full reading passages, scripts, or poems into `excerpts.text`. Use `rephrase_ok` and paraphrase in school wording; keep at most one short quoted phrase (15 words or fewer) when the exact wording matters.

@@ -1,0 +1,271 @@
+{
+  "fragments": [
+    {
+      "section": "2.3.2",
+      "observations": [
+        {
+          "id": "symbol:c3be4ad0af144a4b",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$H$",
+          "math_text": "م",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.3.2",
+          "evidence": [{"quote": "م"}]
+        },
+        {
+          "id": "symbol:eeb6e6c55a11a306",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$h$",
+          "math_text": "ل",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.3.2",
+          "evidence": [{"quote": "ل"}]
+        },
+        {
+          "id": "symbol:8ea3ddecefa5c99e",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$W$",
+          "math_text": "ش",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.3.1",
+          "evidence": [{"quote": "ش"}]
+        },
+        {
+          "id": "symbol:b2e4cbce8646db9e",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "w",
+          "math_text": "\\text{و}",
+          "plain_lemma": "الوزن",
+          "status": "confirmed",
+          "section": "2.2.3",
+          "evidence": [{"quote": "عند سقوط جسم وزنه «و» رأسيًا على سطح الأرض"}]
+        },
+        {
+          "id": "symbol:07bc60c078ceb7c4",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$\\vec{R}$",
+          "math_text": "\\vec{ح}",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "1.2.1",
+          "evidence": [{"quote": "\\vec{ح}"}]
+        },
+        {
+          "id": "symbol:5321fda653d7606e",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$\\vec{r}$",
+          "math_text": "\\vec{ر}",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.3.2",
+          "evidence": [{"quote": "\\vec{ر}"}]
+        },
+        {
+          "id": "symbol:4686787e85adf1ad",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$M$",
+          "math_text": "جـ",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "1.3.1",
+          "evidence": [{"quote": "جـ"}]
+        },
+        {
+          "id": "symbol:f751901f832b8d36",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$m$",
+          "math_text": "ك",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.3.2",
+          "evidence": [{"quote": "ك"}]
+        },
+        {
+          "id": "symbol:21700a571ea62ee2",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "\\vec{I}",
+          "math_text": "\\vec{\\text{د}}",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.2.3",
+          "evidence": [{"quote": "\\vec{\\text{د}}"}]
+        },
+        {
+          "id": "symbol:a162e10a24127685",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "\\vec{v}_1, \\vec{v}_2",
+          "math_text": "\\vec{\\text{ع}}_1, \\vec{\\text{ع}}_2",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.2.3",
+          "evidence": [{"quote": "\\vec{\\text{ع}}_1, \\vec{\\text{ع}}_2"}]
+        },
+        {
+          "id": "symbol:0ebe1603b28feae6",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$M_O(\\vec{F})$",
+          "math_text": "\\text{جـ}_و(\\vec{ق})",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "1.2.1",
+          "evidence": [{"quote": "\\text{جـ}_و(\\vec{ق})"}]
+        },
+        {
+          "id": "symbol:08c16b9881428b3d",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "v_1, v_2",
+          "math_text": "\\text{ع}_1, \\text{ع}_2",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.2.3",
+          "evidence": [{"quote": "\\text{ع}_1, \\text{ع}_2"}]
+        },
+        {
+          "id": "symbol:2755c1da17f57acb",
+          "kind": "symbol",
+          "source_plain": "",
+          "source_math": "$\\vec{s}$, $s$",
+          "math_text": "\\vec{ف}\\text{، }ف",
+          "plain_lemma": "",
+          "status": "confirmed",
+          "section": "2.1.1",
+          "evidence": [{"quote": "\\vec{ف}\\text{، }ف"}]
+        }
+      ]
+    }
+  ],
+  "attempt3_entries": [
+    {
+      "kind": "symbol",
+      "english": "$H$",
+      "arabic": "م",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:c3be4ad0af144a4b"],
+      "reason": "Linear momentum measure"
+    },
+    {
+      "kind": "symbol",
+      "english": "$h$",
+      "arabic": "ل",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:eeb6e6c55a11a306"],
+      "reason": "Height above reference plane"
+    },
+    {
+      "kind": "symbol",
+      "english": "$W$",
+      "arabic": "ش",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:8ea3ddecefa5c99e"],
+      "reason": "Work done by force"
+    },
+    {
+      "kind": "symbol",
+      "english": "$w$",
+      "arabic": "و",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:b2e4cbce8646db9e"],
+      "reason": "Weight of colliding body"
+    },
+    {
+      "kind": "symbol",
+      "english": "$\\vec{R}$",
+      "arabic": "\\vec{ح}",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:07bc60c078ceb7c4"],
+      "reason": "Resultant force vector"
+    },
+    {
+      "kind": "symbol",
+      "english": "$\\vec{r}$",
+      "arabic": "\\vec{ر}",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:5321fda653d7606e"],
+      "reason": "Position vector"
+    },
+    {
+      "kind": "symbol",
+      "english": "$M$",
+      "arabic": "جـ",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:4686787e85adf1ad"],
+      "reason": "Algebraic measure of moment"
+    },
+    {
+      "kind": "symbol",
+      "english": "$m$",
+      "arabic": "ك",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:f751901f832b8d36"],
+      "reason": "Mass of body"
+    },
+    {
+      "kind": "symbol",
+      "english": "$\\vec{I}$",
+      "arabic": "\\vec{د}",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:21700a571ea62ee2"],
+      "reason": "Impulse vector"
+    },
+    {
+      "kind": "symbol",
+      "english": "$\\vec{v}_1, \\vec{v}_2$",
+      "arabic": "\\vec{ع}_1, \\vec{ع}_2",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:a162e10a24127685"],
+      "reason": "Velocities before and after"
+    },
+    {
+      "kind": "symbol",
+      "english": "$M_O(\\vec{F})$",
+      "arabic": "جـ_و(\\vec{ق})",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:0ebe1603b28feae6"],
+      "reason": "Moment of force F about point O"
+    },
+    {
+      "kind": "symbol",
+      "english": "$v_1, v_2$",
+      "arabic": "ع_1, ع_2",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:08c16b9881428b3d"],
+      "reason": "Velocities before and after impact"
+    },
+    {
+      "kind": "symbol",
+      "english": "$\\vec{s}$, $s$",
+      "arabic": "\\vec{ف}، ف",
+      "also": [],
+      "abbreviation_only": false,
+      "source_row_ids": ["symbol:2755c1da17f57acb"],
+      "reason": "Displacement"
+    }
+  ]
+}

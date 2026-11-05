@@ -1,0 +1,253 @@
+{
+  "verified": true,
+  "checked_on": "2026-10-18",
+  "source": "https://ai.google.dev/gemini-api/docs/pricing",
+  "billing_rule": {
+    "thinking_tokens_billed_at": "output",
+    "formula": "cost = input_tokens / 1000000 * input_per_million + (output_tokens + thinking_tokens) / 1000000 * output_per_million",
+    "why": "Gemini bills a model's thinking (reasoning) tokens at its output rate. Thinking must therefore be added to output before pricing: charging it at the input rate understates a call several times over, and dropping it understates it entirely. On the logs in this repo thinking is the largest of the three counts, so this is the single rule most able to poison every figure in the report. The same expression prices speech. A TTS call logs no thinking, and its output tokens are audio tokens, so that model's output_per_million is the published audio rate rather than a text rate."
+  },
+  "schema": {
+    "verified": "Legacy whole-table flag. Reports use each model's verified/source/checked_on metadata, so an unused unverified model does not taint a verified report.",
+    "checked_on": "Latest ISO date (YYYY-MM-DD) on which any rate was checked.",
+    "source": "Default vendor price page; model entries may override it.",
+    "billing_rule.thinking_tokens_billed_at": "Which rate thinking tokens are charged at. Only \"output\" is implemented; cost.py refuses to run on any other value rather than guess.",
+    "models.<model>.input_per_million": "Price of one million input (prompt) tokens, in the entry's currency.",
+    "models.<model>.output_per_million": "Price of one million output tokens, in the entry's currency. Thinking tokens are charged here too, per billing_rule. For a speech model the logged output tokens are audio tokens, so this field is the audio rate.",
+    "models.<model>.currency": "ISO 4217 code. cost.py refuses to add figures across two currencies rather than pretend they are comparable.",
+    "models.<model>.verified": "Boolean. true only when this model's applicable periods were checked against its source.",
+    "models.<model>.checked_on": "ISO date on which this model's rates were checked.",
+    "models.<model>.source": "Published source for this model's rates.",
+    "models.<model>.placeholder": "Boolean. true while rates are stand-ins rather than published prices.",
+    "models.<model>.periods": "Optional effective-date list. Each row has effective_from, optional effective_to, input_per_million, output_per_million, cached_input_per_million, and cache_storage_per_million_per_hour. Used for unary calls.",
+    "models.<model>.batch_periods": "Same shape as periods. Used when call.json has batch: true. Gemini Batch API rates are typically half of Standard.",
+    "models.<model>.note": "Free text for whoever fills the entry in: what tier the rate is, what it excludes, when it changes.",
+    "models.<model>.tier": "OPTIONAL AND DELIBERATELY UNUSED. Reserved for models that charge more above a context size: {\"above_tokens\": N, \"input_per_million\": x, \"output_per_million\": y}. Nothing in this repo records which side of such a threshold a call fell on, so no entry carries a tier and cost.py fails loudly rather than silently ignore one that appears."
+  },
+  "models": {
+    "gemini-3.6-flash": {
+      "currency": "USD",
+      "verified": true,
+      "checked_on": "2026-10-18",
+      "source": "https://ai.google.dev/gemini-api/docs/pricing",
+      "placeholder": false,
+      "periods": [
+        {
+          "effective_from": "2026-01-01",
+          "effective_to": "2026-12-31",
+          "input_per_million": 0.75,
+          "output_per_million": 3.75,
+          "cached_input_per_million": 0.075,
+          "cache_storage_per_million_per_hour": 0.5
+        },
+        {
+          "effective_from": "2027-01-01",
+          "input_per_million": 1.5,
+          "output_per_million": 7.5,
+          "cached_input_per_million": 0.15,
+          "cache_storage_per_million_per_hour": 1.0
+        }
+      ],
+      "batch_periods": [
+        {
+          "effective_from": "2026-01-01",
+          "effective_to": "2026-12-31",
+          "input_per_million": 0.375,
+          "output_per_million": 1.875,
+          "cached_input_per_million": 0.0375,
+          "cache_storage_per_million_per_hour": 0.5
+        },
+        {
+          "effective_from": "2027-01-01",
+          "input_per_million": 0.75,
+          "output_per_million": 3.75,
+          "cached_input_per_million": 0.075,
+          "cache_storage_per_million_per_hour": 1.0
+        }
+      ],
+      "note": "Verified Standard paid-tier rates for the previous-generation Flash model. Output includes thinking tokens. Batch API logs set batch: true and use batch_periods (half Standard token rates: $0.375 / $1.875 through 2026-12-31, then $0.75 / $3.75). Cache storage stays the Standard hourly rate. Flex, Priority, grounding, and free-tier pricing are not used by this pipeline."
+    },
+    "gemini-3.8-flash": {
+      "currency": "USD",
+      "verified": true,
+      "checked_on": "2026-10-18",
+      "source": "https://ai.google.dev/gemini-api/docs/pricing",
+      "placeholder": false,
+      "periods": [
+        {
+          "effective_from": "2026-01-01",
+          "effective_to": "2026-12-31",
+          "input_per_million": 0.75,
+          "output_per_million": 3.75,
+          "cached_input_per_million": 0.075,
+          "cache_storage_per_million_per_hour": 0.5
+        },
+        {
+          "effective_from": "2027-01-01",
+          "input_per_million": 1.5,
+          "output_per_million": 7.5,
+          "cached_input_per_million": 0.15,
+          "cache_storage_per_million_per_hour": 1.0
+        }
+      ],
+      "batch_periods": [
+        {
+          "effective_from": "2026-01-01",
+          "effective_to": "2026-12-31",
+          "input_per_million": 0.375,
+          "output_per_million": 1.875,
+          "cached_input_per_million": 0.0375,
+          "cache_storage_per_million_per_hour": 0.5
+        },
+        {
+          "effective_from": "2027-01-01",
+          "input_per_million": 0.75,
+          "output_per_million": 3.75,
+          "cached_input_per_million": 0.075,
+          "cache_storage_per_million_per_hour": 1.0
+        }
+      ],
+      "note": "Verified Standard paid-tier rates. Output includes thinking tokens. Batch API logs set batch: true and use batch_periods (half Standard token rates: $0.375 / $1.875 through 2026-12-31, then $0.75 / $3.75). Cache storage stays the Standard hourly rate. Flex, Priority, grounding, and free-tier pricing are not used by this pipeline."
+    },
+    "gemini-3.8-flash-tts": {
+      "currency": "USD",
+      "verified": true,
+      "checked_on": "2026-10-11",
+      "source": "https://ai.google.dev/gemini-api/docs/pricing",
+      "placeholder": false,
+      "periods": [
+        {
+          "effective_from": "2026-01-01",
+          "effective_to": "2026-12-31",
+          "input_per_million": 0.5,
+          "output_per_million": 9.0,
+          "cached_input_per_million": 0.125,
+          "cache_storage_per_million_per_hour": 0.5
+        },
+        {
+          "effective_from": "2027-01-01",
+          "input_per_million": 1.0,
+          "output_per_million": 18.0,
+          "cached_input_per_million": 0.25,
+          "cache_storage_per_million_per_hour": 1.0
+        }
+      ],
+      "batch_periods": [
+        {
+          "effective_from": "2026-01-01",
+          "effective_to": "2026-12-31",
+          "input_per_million": 0.25,
+          "output_per_million": 4.5,
+          "cached_input_per_million": 0.0625,
+          "cache_storage_per_million_per_hour": 0.25
+        },
+        {
+          "effective_from": "2027-01-01",
+          "input_per_million": 0.5,
+          "output_per_million": 9.0,
+          "cached_input_per_million": 0.125,
+          "cache_storage_per_million_per_hour": 0.5
+        }
+      ],
+      "note": "Verified paid-tier rates for the speech model audios.py calls. Unary generateContent uses periods (Standard: $0.50 text / $9.00 audio through 2026-12-31, then $1.00 / $18.00). Batch API logs set batch: true and use batch_periods (half Standard: $0.25 / $4.50 through 2026-12-31, then $0.50 / $9.00). Input is text. Output is audio tokens: 25 per second of audio, so Batch is $0.001125 per 10s through 2026-12-31. audios.py records candidates_token_count as output_tokens."
+    },
+    "gemini-3.8-flash-lite-tts": {
+      "currency": "USD",
+      "verified": true,
+      "checked_on": "2026-10-13",
+      "source": "https://ai.google.dev/gemini-api/docs/pricing",
+      "placeholder": false,
+      "periods": [
+        {
+          "effective_from": "2026-01-01",
+          "effective_to": "2026-12-31",
+          "input_per_million": 0.5,
+          "output_per_million": 6.0,
+          "cached_input_per_million": 0.125,
+          "cache_storage_per_million_per_hour": 0.5
+        },
+        {
+          "effective_from": "2027-01-01",
+          "input_per_million": 1.0,
+          "output_per_million": 12.0,
+          "cached_input_per_million": 0.25,
+          "cache_storage_per_million_per_hour": 1.0
+        }
+      ],
+      "batch_periods": [
+        {
+          "effective_from": "2026-01-01",
+          "effective_to": "2026-12-31",
+          "input_per_million": 0.25,
+          "output_per_million": 3.0,
+          "cached_input_per_million": 0.0625,
+          "cache_storage_per_million_per_hour": 0.25
+        },
+        {
+          "effective_from": "2027-01-01",
+          "input_per_million": 0.5,
+          "output_per_million": 6.0,
+          "cached_input_per_million": 0.125,
+          "cache_storage_per_million_per_hour": 0.5
+        }
+      ],
+      "note": "Paid-tier rates for gemini-3.8-flash-lite-tts. Batch tab checked 2026-10-13: $0.25 text / $3.00 audio through 2026-12-31, then $0.50 / $6.00. Standard is twice Batch ($0.50 / $6.00 through 2026-12-31, then $1.00 / $12.00). Audio tokens are 25 per second. audios.py accepts this model through --model; the production default remains gemini-3.8-flash-tts Batch."
+    },
+    "gemini-3.1-flash-live-preview": {
+      "currency": "USD",
+      "verified": true,
+      "checked_on": "2026-10-13",
+      "source": "https://ai.google.dev/gemini-api/docs/pricing",
+      "placeholder": false,
+      "periods": [
+        {
+          "effective_from": "2026-01-01",
+          "input_per_million": 0.75,
+          "output_per_million": 12.0,
+          "cached_input_per_million": 0.1875,
+          "cache_storage_per_million_per_hour": 0.5
+        }
+      ],
+      "note": "Paid-tier Standard rates for gemini-3.1-flash-live-preview from the Live models table checked 2026-10-13. Text input is $0.75 per million tokens. Audio output is $12.00 per million tokens, equivalent to $0.018 per minute at 25 audio tokens per second. Image/video input and audio input per-minute rates are not used by the comparison runner, which sends text and receives audio. Batch is not offered for this Live model."
+    },
+    "gemini-2.5-flash-preview-tts": {
+      "input_per_million": 0.5,
+      "output_per_million": 10.0,
+      "currency": "USD",
+      "verified": true,
+      "checked_on": "2026-09-22",
+      "source": "https://ai.google.dev/gemini-api/docs/pricing",
+      "placeholder": false,
+      "note": "Paid-tier standard rate from https://ai.google.dev/gemini-api/docs/pricing, checked 2026-09-22. Input is text at $0.50 per million tokens. Output is audio at $10.00 per million tokens: audios.py records candidates_token_count as output_tokens, and for this model that count is the AUDIO modality. Batch is half of both rates and is not what the pipeline calls."
+    },
+    "gemini-2.5-pro-preview-tts": {
+      "input_per_million": 1.0,
+      "output_per_million": 20.0,
+      "currency": "USD",
+      "verified": true,
+      "checked_on": "2026-10-11",
+      "source": "https://ai.google.dev/gemini-api/docs/pricing",
+      "placeholder": false,
+      "batch_periods": [
+        {
+          "effective_from": "1970-01-01",
+          "input_per_million": 0.5,
+          "output_per_million": 10.0,
+          "cached_input_per_million": 0.5,
+          "cache_storage_per_million_per_hour": 0
+        }
+      ],
+      "note": "Paid-tier rates for the Pro speech model audios.py accepts through --model (not the default). Standard: $1.00 text / $20.00 audio per million tokens. Batch is half ($0.50 / $10.00) when call.json has batch: true. The production default remains gemini-3.8-flash-tts Batch."
+    },
+    "wav2vec2": {
+      "input_per_million": 0,
+      "output_per_million": 0,
+      "currency": "USD",
+      "verified": true,
+      "checked_on": "2026-09-27",
+      "source": "local execution (not billed)",
+      "placeholder": false,
+      "note": "Local forced alignment in align.py. The call is logged so the step appears in the report, and usage is empty because nothing is billed. A zero rate keeps an unpriced local model from failing the run the way a missing speech rate did."
+    }
+  }
+}

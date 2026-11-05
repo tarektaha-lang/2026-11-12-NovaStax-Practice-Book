@@ -1,0 +1,3 @@
+- Copy a boxed scientific law, a formal definition, and an illustration-only safety warning when later writers would otherwise upgrade or alter the wording (`type: key_statement` or `passage`, `reuse: as_is` or `rephrase_ok`).
+- Point illustration-only text and warnings at `out_of_scope` for deeper mechanism questions.
+- Preserve exact textbook wording for primary scientific statements, laws, and core definitions.

@@ -1,0 +1,808 @@
+{
+  "nagwa_stax": {
+    "ar": "نوفا ستاكس",
+    "en": "NovaStax",
+    "fr": "NovaStax",
+    "it": "NovaStax",
+    "es": "NovaStax",
+    "de": "NovaStax"
+  },
+  "country_names": {
+    "eg": {
+      "ar": "جمهورية مصر العربية",
+      "en": "Arab Republic of Egypt",
+      "fr": "République arabe d'Égypte",
+      "it": "Repubblica Araba d'Egitto",
+      "es": "República Árabe de Egipto",
+      "de": "Arabische Republik Ägypten"
+    },
+    "sa": {
+      "ar": "المملكة العربية السعودية",
+      "en": "Kingdom of Saudi Arabia",
+      "fr": "Royaume d'Arabie saoudite",
+      "it": "Regno dell'Arabia Saudita",
+      "es": "Reino de Arabia Saudita",
+      "de": "Königreich Saudi-Arabien"
+    },
+    "iq": {
+      "ar": "جمهورية العراق",
+      "en": "Republic of Iraq",
+      "fr": "République d'Irak",
+      "it": "Repubblica d'Iraq",
+      "es": "República de Irak",
+      "de": "Republik Irak"
+    },
+    "dz": {
+      "ar": "الجمهورية الجزائرية الديمقراطية الشعبية",
+      "en": "People's Democratic Republic of Algeria",
+      "fr": "République algérienne démocratique et populaire",
+      "it": "Repubblica algerina democratica e popolare",
+      "es": "República Argelina Democrática y Popular",
+      "de": "Demokratische Volksrepublik Algerien"
+    },
+    "om": {
+      "ar": "سلطنة عمان",
+      "en": "Sultanate of Oman",
+      "fr": "Sultanat d'Oman",
+      "it": "Sultanato dell'Oman",
+      "es": "Sultanato de Omán",
+      "de": "Sultanat Oman"
+    }
+  },
+  "country_short_names_en": {
+    "eg": "Egypt",
+    "sa": "Saudi Arabia",
+    "iq": "Iraq",
+    "dz": "Algeria",
+    "om": "Oman"
+  },
+  "types": {
+    "eg": {
+      "practice": {
+        "ar": "tamareen",
+        "en": "practice",
+        "fr": "LIVRE DEXERCICES",
+        "it": "LIBRO DI ESERCIZI",
+        "es": "LIBRO DE EJERCICIOS",
+        "de": "UBUNGSBUCH"
+      },
+      "study": {
+        "ar": "derasah",
+        "en": "study",
+        "fr": "LIVRE DETUDE",
+        "it": "LIBRO DI STUDIO",
+        "es": "LIBRO DE ESTUDIO",
+        "de": "LERNBUCH"
+      },
+      "exam": {
+        "ar": "emtihanat",
+        "en": "exam",
+        "fr": "LIVRE DEXAMENS",
+        "it": "LIBRO DI ESAMI",
+        "es": "LIBRO DE EXAMENES",
+        "de": "PRUFUNGSBUCH"
+      }
+    },
+    "sa": {
+      "practice": {
+        "ar": "tadribat",
+        "en": "practice",
+        "fr": "LIVRE DEXERCICES",
+        "it": "LIBRO DI ESERCIZI",
+        "es": "LIBRO DE EJERCICIOS",
+        "de": "UBUNGSBUCH"
+      },
+      "study": {
+        "ar": "derasah",
+        "en": "study",
+        "fr": "LIVRE DETUDE",
+        "it": "LIBRO DI STUDIO",
+        "es": "LIBRO DE ESTUDIO",
+        "de": "LERNBUCH"
+      },
+      "exam": {
+        "ar": "emtihanat",
+        "en": "exam",
+        "fr": "LIVRE DEXAMENS",
+        "it": "LIBRO DI ESAMI",
+        "es": "LIBRO DE EXAMENES",
+        "de": "PRUFUNGSBUCH"
+      }
+    },
+    "iq": {
+      "practice": {
+        "ar": "tadribat",
+        "en": "practice",
+        "fr": "LIVRE DEXERCICES",
+        "it": "LIBRO DI ESERCIZI",
+        "es": "LIBRO DE EJERCICIOS",
+        "de": "UBUNGSBUCH"
+      },
+      "study": {
+        "ar": "derasah",
+        "en": "study",
+        "fr": "LIVRE DETUDE",
+        "it": "LIBRO DI STUDIO",
+        "es": "LIBRO DE ESTUDIO",
+        "de": "LERNBUCH"
+      },
+      "exam": {
+        "ar": "emtihanat",
+        "en": "exam",
+        "fr": "LIVRE DEXAMENS",
+        "it": "LIBRO DI ESAMI",
+        "es": "LIBRO DE EXAMENES",
+        "de": "PRUFUNGSBUCH"
+      }
+    },
+    "dz": {
+      "practice": {
+        "ar": "tamareen",
+        "en": "practice",
+        "fr": "LIVRE DEXERCICES",
+        "it": "LIBRO DI ESERCIZI",
+        "es": "LIBRO DE EJERCICIOS",
+        "de": "UBUNGSBUCH"
+      },
+      "study": {
+        "ar": "derasah",
+        "en": "study",
+        "fr": "LIVRE DETUDE",
+        "it": "LIBRO DI STUDIO",
+        "es": "LIBRO DE ESTUDIO",
+        "de": "LERNBUCH"
+      },
+      "exam": {
+        "ar": "emtihanat",
+        "en": "exam",
+        "fr": "LIVRE DEXAMENS",
+        "it": "LIBRO DI ESAMI",
+        "es": "LIBRO DE EXAMENES",
+        "de": "PRUFUNGSBUCH"
+      }
+    },
+    "om": {
+      "practice": {
+        "ar": "nashat",
+        "en": "activity",
+        "fr": "LIVRE DEXERCICES",
+        "it": "LIBRO DI ESERCIZI",
+        "es": "LIBRO DE EJERCICIOS",
+        "de": "UBUNGSBUCH"
+      },
+      "study": {
+        "ar": "derasah",
+        "en": "study",
+        "fr": "LIVRE DETUDE",
+        "it": "LIBRO DI STUDIO",
+        "es": "LIBRO DE ESTUDIO",
+        "de": "LERNBUCH"
+      },
+      "exam": {
+        "ar": "emtihanat",
+        "en": "exam",
+        "fr": "LIVRE DEXAMENS",
+        "it": "LIBRO DI ESAMI",
+        "es": "LIBRO DE EXAMENES",
+        "de": "PRUFUNGSBUCH"
+      }
+    }
+  },
+  "table_of_contents": {
+    "ar": "جدول المحتويات",
+    "en": "Table of Contents",
+    "fr": "Table des matières",
+    "it": "Indice",
+    "es": "Índice",
+    "de": "Inhaltsverzeichnis"
+  },
+  "copyright_year": "2027",
+  "copyright_notice": {
+    "ar": "© {year} نوفا ستاكس ليمتد. جميع الحقوق محفوظة.",
+    "en": "© {year} NovaStax Limited. All rights reserved.",
+    "fr": "© {year} NovaStax Limited. Tous droits réservés.",
+    "de": "© {year} NovaStax Limited. Alle Rechte vorbehalten.",
+    "es": "© {year} NovaStax Limited. Todos los derechos reservados.",
+    "it": "© {year} NovaStax Limited. Tutti i diritti riservati."
+  },
+  "copyright_permission": {
+    "ar": "لا يجوز إعادة إنتاج أي جزء من هذا المحتوى أو توزيعه أو نقله بأي شكل أو بأي وسيلة دون الحصول على إذن كتابي مسبق.",
+    "en": "No part of this content may be reproduced, distributed, or transmitted in any form or by any means without prior written permission.",
+    "fr": "Aucune partie de ce contenu ne peut être reproduite, distribuée ou transmise sous quelque forme ou par quelque moyen que ce soit sans autorisation écrite préalable.",
+    "de": "Kein Teil dieses Inhalts darf ohne vorherige schriftliche Genehmigung in irgendeiner Form oder auf irgendeine Weise vervielfältigt, verbreitet oder übertragen werden.",
+    "es": "Ninguna parte de este contenido puede ser reproducida, distribuida o transmitida de ninguna forma ni por ningún medio sin el permiso previo por escrito.",
+    "it": "Nessuna parte di questo contenuto può essere riprodotta, distribuita o trasmessa in qualsiasi forma o con qualsiasi mezzo senza previa autorizzazione scritta."
+  },
+  "terms": {
+    "1": {
+      "ar": "الفصل الدراسي الأول",
+      "en": "Term 1",
+      "fr": "Semestre 1",
+      "it": "Primo Quadrimestre",
+      "es": "Primer Trimestre",
+      "de": "1. Halbjahr"
+    },
+    "2": {
+      "ar": "الفصل الدراسي الثاني",
+      "en": "Term 2",
+      "fr": "Semestre 2",
+      "it": "Secondo Quadrimestre",
+      "es": "Segundo Trimestre",
+      "de": "2. Halbjahr"
+    }
+  },
+  "grades": {
+    "eg": {
+      "1": {
+        "ar": "الصف الأول الابتدائي",
+        "en": "First Year of Primary School",
+        "fr": "Première année d'école primaire",
+        "it": "Primo anno di scuola primaria",
+        "es": "Primer año de escuela primaria",
+        "de": "Erstes Jahr der Grundschule"
+      },
+      "2": {
+        "ar": "الصف الثاني الابتدائي",
+        "en": "Second Year of Primary School",
+        "fr": "Deuxième année d'école primaire",
+        "it": "Secondo anno di scuola primaria",
+        "es": "Segundo año de escuela primaria",
+        "de": "Zweites Jahr der Grundschule"
+      },
+      "3": {
+        "ar": "الصف الثالث الابتدائي",
+        "en": "Third Year of Primary School",
+        "fr": "Troisième année d'école primaire",
+        "it": "Terzo anno di scuola primaria",
+        "es": "Tercer año de escuela primaria",
+        "de": "Drittes Jahr der Grundschule"
+      },
+      "4": {
+        "ar": "الصف الرابع الابتدائي",
+        "en": "Fourth Year of Primary School",
+        "fr": "Quatrième année d'école primaire",
+        "it": "Quarto anno di scuola primaria",
+        "es": "Cuarto año de escuela primaria",
+        "de": "Viertes Jahr der Grundschule"
+      },
+      "5": {
+        "ar": "الصف الخامس الابتدائي",
+        "en": "Fifth Year of Primary School",
+        "fr": "Cinquième année d'école primaire",
+        "it": "Quinto anno di scuola primaria",
+        "es": "Quinto año de escuela primaria",
+        "de": "Fünftes Jahr der Grundschule"
+      },
+      "6": {
+        "ar": "الصف السادس الابتدائي",
+        "en": "Sixth Year of Primary School",
+        "fr": "Sixième année d'école primaire",
+        "it": "Sesto anno di scuola primaria",
+        "es": "Sexto año de escuela primaria",
+        "de": "Sechstes Jahr der Grundschule"
+      },
+      "7": {
+        "ar": "الصف الأول الإعدادي",
+        "en": "First Year of Preparatory School",
+        "fr": "Première année d'école préparatoire",
+        "it": "Primo anno di scuola media",
+        "es": "Primer año de escuela secundaria",
+        "de": "Erstes Jahr der Mittelschule"
+      },
+      "8": {
+        "ar": "الصف الثاني الإعدادي",
+        "en": "Second Year of Preparatory School",
+        "fr": "Deuxième année d'école préparatoire",
+        "it": "Secondo anno di scuola media",
+        "es": "Segundo año de escuela secundaria",
+        "de": "Zweites Jahr der Mittelschule"
+      },
+      "9": {
+        "ar": "الصف الثالث الإعدادي",
+        "en": "Third Year of Preparatory School",
+        "fr": "Troisième année d'école préparatoire",
+        "it": "Terzo anno di scuola media",
+        "es": "Tercer año de escuela secundaria",
+        "de": "Drittes Jahr der Mittelschule"
+      },
+      "10": {
+        "ar": "الصف الأول الثانوي",
+        "en": "First Year of Secondary School",
+        "fr": "Première année de lycée",
+        "it": "Primo anno di scuola superiore",
+        "es": "Primer año de bachillerato",
+        "de": "Erstes Jahr der Oberschule"
+      },
+      "11": {
+        "ar": "الصف الثاني الثانوي",
+        "en": "Second Year of Secondary School",
+        "fr": "Deuxième année de lycée",
+        "it": "Secondo anno di scuola superiore",
+        "es": "Segundo año de bachillerato",
+        "de": "Zweites Jahr der Oberschule"
+      },
+      "12": {
+        "ar": "الصف الثالث الثانوي",
+        "en": "Third Year of Secondary School",
+        "fr": "Troisième année de lycée",
+        "it": "Terzo anno di scuola superiore",
+        "es": "Tercer año de bachillerato",
+        "de": "Drittes Jahr der Oberschule"
+      }
+    },
+    "sa": {
+      "1": {
+        "ar": "الصف الأول الابتدائي",
+        "en": "First Year of Primary School",
+        "fr": "Première année d'école primaire",
+        "it": "Primo anno di scuola primaria",
+        "es": "Primer año de escuela primaria",
+        "de": "Erstes Jahr der Grundschule"
+      },
+      "2": {
+        "ar": "الصف الثاني الابتدائي",
+        "en": "Second Year of Primary School",
+        "fr": "Deuxième année d'école primaire",
+        "it": "Secondo anno di scuola primaria",
+        "es": "Segundo año de escuela primaria",
+        "de": "Zweites Jahr der Grundschule"
+      },
+      "3": {
+        "ar": "الصف الثالث الابتدائي",
+        "en": "Third Year of Primary School",
+        "fr": "Troisième année d'école primaire",
+        "it": "Terzo anno di scuola primaria",
+        "es": "Tercer año de escuela primaria",
+        "de": "Drittes Jahr der Grundschule"
+      },
+      "4": {
+        "ar": "الصف الرابع الابتدائي",
+        "en": "Fourth Year of Primary School",
+        "fr": "Quatrième année d'école primaire",
+        "it": "Quarto anno di scuola primaria",
+        "es": "Cuarto año de escuela primaria",
+        "de": "Viertes Jahr der Grundschule"
+      },
+      "5": {
+        "ar": "الصف الخامس الابتدائي",
+        "en": "Fifth Year of Primary School",
+        "fr": "Cinquième année d'école primaire",
+        "it": "Quinto anno di scuola primaria",
+        "es": "Quinto año de escuela primaria",
+        "de": "Fünftes Jahr der Grundschule"
+      },
+      "6": {
+        "ar": "الصف السادس الابتدائي",
+        "en": "Sixth Year of Primary School",
+        "fr": "Sixième année d'école primaire",
+        "it": "Sesto anno di scuola primaria",
+        "es": "Sexto año de escuela primaria",
+        "de": "Sechstes Jahr der Grundschule"
+      },
+      "7": {
+        "ar": "الصف الأول المتوسط",
+        "en": "First Year of Middle School",
+        "fr": "Première année d'école moyenne",
+        "it": "Primo anno di scuola media",
+        "es": "Primer año de escuela secundaria",
+        "de": "Erstes Jahr der Mittelschule"
+      },
+      "8": {
+        "ar": "الصف الثاني المتوسط",
+        "en": "Second Year of Middle School",
+        "fr": "Deuxième année d'école moyenne",
+        "it": "Secondo anno di scuola media",
+        "es": "Segundo año de escuela secundaria",
+        "de": "Zweites Jahr der Mittelschule"
+      },
+      "9": {
+        "ar": "الصف الثالث المتوسط",
+        "en": "Third Year of Middle School",
+        "fr": "Troisième année d'école moyenne",
+        "it": "Terzo anno di scuola media",
+        "es": "Tercer año de escuela secundaria",
+        "de": "Drittes Jahr der Mittelschule"
+      },
+      "10": {
+        "ar": "الصف الأول الثانوي",
+        "en": "First Year of Secondary School",
+        "fr": "Première année de lycée",
+        "it": "Primo anno di scuola superiore",
+        "es": "Primer año de bachillerato",
+        "de": "Erstes Jahr der Oberschule"
+      },
+      "11": {
+        "ar": "الصف الثاني الثانوي",
+        "en": "Second Year of Secondary School",
+        "fr": "Deuxième année de lycée",
+        "it": "Secondo anno di scuola superiore",
+        "es": "Segundo año de bachillerato",
+        "de": "Zweites Jahr der Oberschule"
+      },
+      "12": {
+        "ar": "الصف الثالث الثانوي",
+        "en": "Third Year of Secondary School",
+        "fr": "Troisième année de lycée",
+        "it": "Terzo anno di scuola superiore",
+        "es": "Tercer año de bachillerato",
+        "de": "Drittes Jahr der Oberschule"
+      },
+      "13": {
+        "ar": "المرحلة الثانوية",
+        "en": "Secondary School",
+        "fr": "Lycée",
+        "it": "Scuola superiore",
+        "es": "Bachillerato",
+        "de": "Oberschule"
+      }
+    },
+    "iq": {
+      "1": {
+        "ar": "الصف الأول الابتدائي",
+        "en": "First Year of Primary School",
+        "fr": "Première année d'école primaire",
+        "it": "Primo anno di scuola primaria",
+        "es": "Primer año de escuela primaria",
+        "de": "Erstes Jahr der Grundschule"
+      },
+      "2": {
+        "ar": "الصف الثاني الابتدائي",
+        "en": "Second Year of Primary School",
+        "fr": "Deuxième année d'école primaire",
+        "it": "Secondo anno di scuola primaria",
+        "es": "Segundo año de escuela primaria",
+        "de": "Zweites Jahr der Grundschule"
+      },
+      "3": {
+        "ar": "الصف الثالث الابتدائي",
+        "en": "Third Year of Primary School",
+        "fr": "Troisième année d'école primaire",
+        "it": "Terzo anno di scuola primaria",
+        "es": "Tercer año de escuela primaria",
+        "de": "Drittes Jahr der Grundschule"
+      },
+      "4": {
+        "ar": "الصف الرابع الابتدائي",
+        "en": "Fourth Year of Primary School",
+        "fr": "Quatrième année d'école primaire",
+        "it": "Quarto anno di scuola primaria",
+        "es": "Cuarto año de escuela primaria",
+        "de": "Viertes Jahr der Grundschule"
+      },
+      "5": {
+        "ar": "الصف الخامس الابتدائي",
+        "en": "Fifth Year of Primary School",
+        "fr": "Cinquième année d'école primaire",
+        "it": "Quinto anno di scuola primaria",
+        "es": "Quinto año de escuela primaria",
+        "de": "Fünftes Jahr der Grundschule"
+      },
+      "6": {
+        "ar": "الصف السادس الابتدائي",
+        "en": "Sixth Year of Primary School",
+        "fr": "Sixième année d'école primaire",
+        "it": "Sesto anno di scuola primaria",
+        "es": "Sexto año de escuela primaria",
+        "de": "Sechstes Jahr der Grundschule"
+      },
+      "7": {
+        "ar": "الصف الأول المتوسط",
+        "en": "First Year of Middle School",
+        "fr": "Première année d'école moyenne",
+        "it": "Primo anno di scuola media",
+        "es": "Primer año de escuela secundaria",
+        "de": "Erstes Jahr der Mittelschule"
+      },
+      "8": {
+        "ar": "الصف الثاني المتوسط",
+        "en": "Second Year of Middle School",
+        "fr": "Deuxième année d'école moyenne",
+        "it": "Secondo anno di scuola media",
+        "es": "Segundo año de escuela secundaria",
+        "de": "Zweites Jahr der Mittelschule"
+      },
+      "9": {
+        "ar": "الصف الثالث المتوسط",
+        "en": "Third Year of Middle School",
+        "fr": "Troisième année d'école moyenne",
+        "it": "Terzo anno di scuola media",
+        "es": "Tercer año de escuela secundaria",
+        "de": "Drittes Jahr der Mittelschule"
+      },
+      "10": {
+        "ar": "الصف الأول الثانوي",
+        "en": "First Year of Secondary School",
+        "fr": "Première année de lycée",
+        "it": "Primo anno di scuola superiore",
+        "es": "Primer año de bachillerato",
+        "de": "Erstes Jahr der Oberschule"
+      },
+      "11": {
+        "ar": "الصف الثاني الثانوي",
+        "en": "Second Year of Secondary School",
+        "fr": "Deuxième année de lycée",
+        "it": "Secondo anno di scuola superiore",
+        "es": "Segundo año de bachillerato",
+        "de": "Zweites Jahr der Oberschule"
+      },
+      "12": {
+        "ar": "الصف الثالث الثانوي",
+        "en": "Third Year of Secondary School",
+        "fr": "Troisième année de lycée",
+        "it": "Terzo anno di scuola superiore",
+        "es": "Tercer año de bachillerato",
+        "de": "Drittes Jahr der Oberschule"
+      },
+      "13": {
+        "ar": "المرحلة الثانوية",
+        "en": "Secondary School",
+        "fr": "Lycée",
+        "it": "Scuola superiore",
+        "es": "Bachillerato",
+        "de": "Oberschule"
+      }
+    },
+    "dz": {
+      "1": {
+        "ar": "الصف الأول الابتدائي",
+        "en": "First Year of Primary School",
+        "fr": "Première année d'école primaire",
+        "it": "Primo anno di scuola primaria",
+        "es": "Primer año de escuela primaria",
+        "de": "Erstes Jahr der Grundschule"
+      },
+      "2": {
+        "ar": "الصف الثاني الابتدائي",
+        "en": "Second Year of Primary School",
+        "fr": "Deuxième année d'école primaire",
+        "it": "Secondo anno di scuola primaria",
+        "es": "Segundo año de escuela primaria",
+        "de": "Zweites Jahr der Grundschule"
+      },
+      "3": {
+        "ar": "الصف الثالث الابتدائي",
+        "en": "Third Year of Primary School",
+        "fr": "Troisième année d'école primaire",
+        "it": "Terzo anno di scuola primaria",
+        "es": "Tercer año de escuela primaria",
+        "de": "Drittes Jahr der Grundschule"
+      },
+      "4": {
+        "ar": "الصف الرابع الابتدائي",
+        "en": "Fourth Year of Primary School",
+        "fr": "Quatrième année d'école primaire",
+        "it": "Quarto anno di scuola primaria",
+        "es": "Cuarto año de escuela primaria",
+        "de": "Viertes Jahr der Grundschule"
+      },
+      "5": {
+        "ar": "الصف الخامس الابتدائي",
+        "en": "Fifth Year of Primary School",
+        "fr": "Cinquième année d'école primaire",
+        "it": "Quinto anno di scuola primaria",
+        "es": "Quinto año de escuela primaria",
+        "de": "Fünftes Jahr der Grundschule"
+      },
+      "6": {
+        "ar": "الصف الأول المتوسط",
+        "en": "First Year of Middle School",
+        "fr": "Première année d'école moyenne",
+        "it": "Primo anno di scuola media",
+        "es": "Primer año de escuela secundaria",
+        "de": "Erstes Jahr der Mittelschule"
+      },
+      "7": {
+        "ar": "الصف الثاني المتوسط",
+        "en": "Second Year of Middle School",
+        "fr": "Deuxième année d'école moyenne",
+        "it": "Secondo anno di scuola media",
+        "es": "Segundo año de escuela secundaria",
+        "de": "Zweites Jahr der Mittelschule"
+      },
+      "8": {
+        "ar": "الصف الثالث المتوسط",
+        "en": "Third Year of Middle School",
+        "fr": "Troisième année d'école moyenne",
+        "it": "Terzo anno di scuola media",
+        "es": "Tercer año de escuela secundaria",
+        "de": "Drittes Jahr der Mittelschule"
+      },
+      "9": {
+        "ar": "الصف الرابع المتوسط",
+        "en": "Fourth Year of Middle School",
+        "fr": "Quatrième année d'école moyenne",
+        "it": "Quarto anno di scuola media",
+        "es": "Cuarto año de escuela secundaria",
+        "de": "Viertes Jahr der Mittelschule"
+      },
+      "10": {
+        "ar": "الصف الأول الثانوي",
+        "en": "First Year of Secondary School",
+        "fr": "Première année de lycée",
+        "it": "Primo anno di scuola superiore",
+        "es": "Primer año de bachillerato",
+        "de": "Erstes Jahr der Oberschule"
+      },
+      "11": {
+        "ar": "الصف الثاني الثانوي",
+        "en": "Second Year of Secondary School",
+        "fr": "Deuxième année de lycée",
+        "it": "Secondo anno di scuola superiore",
+        "es": "Segundo año de bachillerato",
+        "de": "Zweites Jahr der Oberschule"
+      },
+      "12": {
+        "ar": "الصف الثالث الثانوي",
+        "en": "Third Year of Secondary School",
+        "fr": "Troisième année de lycée",
+        "it": "Terzo anno di scuola superiore",
+        "es": "Tercer año de bachillerato",
+        "de": "Drittes Jahr der Oberschule"
+      },
+      "13": {
+        "ar": "المرحلة الثانوية",
+        "en": "Secondary School",
+        "fr": "Lycée",
+        "it": "Scuola superiore",
+        "es": "Bachillerato",
+        "de": "Oberschule"
+      }
+    },
+    "om": {
+      "1": {
+        "ar": "الصف الأول الأساسي",
+        "en": "Grade 1 of Basic Education",
+        "fr": "1re année d'enseignement de base",
+        "it": "Classe 1 dell'istruzione di base",
+        "es": "Grado 1 de educación básica",
+        "de": "Klasse 1 der Grundbildung"
+      },
+      "2": {
+        "ar": "الصف الثاني الأساسي",
+        "en": "Grade 2 of Basic Education",
+        "fr": "2e année d'enseignement de base",
+        "it": "Classe 2 dell'istruzione di base",
+        "es": "Grado 2 de educación básica",
+        "de": "Klasse 2 der Grundbildung"
+      },
+      "3": {
+        "ar": "الصف الثالث الأساسي",
+        "en": "Grade 3 of Basic Education",
+        "fr": "3e année d'enseignement de base",
+        "it": "Classe 3 dell'istruzione di base",
+        "es": "Grado 3 de educación básica",
+        "de": "Klasse 3 der Grundbildung"
+      },
+      "4": {
+        "ar": "الصف الرابع الأساسي",
+        "en": "Grade 4 of Basic Education",
+        "fr": "4e année d'enseignement de base",
+        "it": "Classe 4 dell'istruzione di base",
+        "es": "Grado 4 de educación básica",
+        "de": "Klasse 4 der Grundbildung"
+      },
+      "5": {
+        "ar": "الصف الخامس الأساسي",
+        "en": "Grade 5 of Basic Education",
+        "fr": "5e année d'enseignement de base",
+        "it": "Classe 5 dell'istruzione di base",
+        "es": "Grado 5 de educación básica",
+        "de": "Klasse 5 der Grundbildung"
+      },
+      "6": {
+        "ar": "الصف السادس الأساسي",
+        "en": "Grade 6 of Basic Education",
+        "fr": "6e année d'enseignement de base",
+        "it": "Classe 6 dell'istruzione di base",
+        "es": "Grado 6 de educación básica",
+        "de": "Klasse 6 der Grundbildung"
+      },
+      "7": {
+        "ar": "الصف السابع الأساسي",
+        "en": "Grade 7 of Basic Education",
+        "fr": "7e année d'enseignement de base",
+        "it": "Classe 7 dell'istruzione di base",
+        "es": "Grado 7 de educación básica",
+        "de": "Klasse 7 der Grundbildung"
+      },
+      "8": {
+        "ar": "الصف الثامن الأساسي",
+        "en": "Grade 8 of Basic Education",
+        "fr": "8e année d'enseignement de base",
+        "it": "Classe 8 dell'istruzione di base",
+        "es": "Grado 8 de educación básica",
+        "de": "Klasse 8 der Grundbildung"
+      },
+      "9": {
+        "ar": "الصف التاسع الأساسي",
+        "en": "Grade 9 of Basic Education",
+        "fr": "9e année d'enseignement de base",
+        "it": "Classe 9 dell'istruzione di base",
+        "es": "Grado 9 de educación básica",
+        "de": "Klasse 9 der Grundbildung"
+      },
+      "10": {
+        "ar": "الصف العاشر الأساسي",
+        "en": "Grade 10 of Basic Education",
+        "fr": "10e année d'enseignement de base",
+        "it": "Classe 10 dell'istruzione di base",
+        "es": "Grado 10 de educación básica",
+        "de": "Klasse 10 der Grundbildung"
+      },
+      "11": {
+        "ar": "الصف الحادي عشر",
+        "en": "Grade 11 of Post-Basic Education",
+        "fr": "11e année d'enseignement post-fondamental",
+        "it": "Classe 11 dell'istruzione post-fondamentale",
+        "es": "Grado 11 de educación postbásica",
+        "de": "Klasse 11 der Post-Grundbildung"
+      },
+      "12": {
+        "ar": "الصف الثاني عشر",
+        "en": "Grade 12 of Post-Basic Education",
+        "fr": "12e année d'enseignement post-fondamental",
+        "it": "Classe 12 dell'istruzione post-fondamentale",
+        "es": "Grado 12 de educación postbásica",
+        "de": "Klasse 12 der Post-Grundbildung"
+      },
+      "13": {
+        "ar": "التعليم ما بعد الأساسي",
+        "en": "Post-Basic Education",
+        "fr": "Enseignement post-fondamental",
+        "it": "Istruzione post-fondamentale",
+        "es": "Educación postbásica",
+        "de": "Post-Grundbildung"
+      }
+    },
+    "in": {
+      "1": {
+        "en": "Class 1",
+        "ar": "الصف الأول"
+      },
+      "2": {
+        "en": "Class 2",
+        "ar": "الصف الثاني"
+      },
+      "3": {
+        "en": "Class 3",
+        "ar": "الصف الثالث"
+      },
+      "4": {
+        "en": "Class 4",
+        "ar": "الصف الرابع"
+      },
+      "5": {
+        "en": "Class 5",
+        "ar": "الصف الخامس"
+      },
+      "6": {
+        "en": "Class 6",
+        "ar": "الصف السادس"
+      },
+      "7": {
+        "en": "Class 7",
+        "ar": "الصف السابع"
+      },
+      "8": {
+        "en": "Class 8",
+        "ar": "الصف الثامن"
+      },
+      "9": {
+        "en": "Class 9",
+        "ar": "الصف التاسع"
+      },
+      "10": {
+        "en": "Class 10",
+        "ar": "الصف العاشر"
+      },
+      "11": {
+        "en": "Class 11",
+        "ar": "الصف الحادي عشر"
+      },
+      "12": {
+        "en": "Class 12",
+        "ar": "الصف الثاني عشر"
+      }
+    }
+  }
+}

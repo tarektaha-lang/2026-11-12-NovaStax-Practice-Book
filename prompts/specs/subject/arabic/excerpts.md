@@ -1,0 +1,4 @@
+- Copy the prescribed listening script, reading passage, or poem with `reuse: as_is`. Do not invent a parallel text.
+- A listening script is `dialogue` or `passage`. A poem is `poem`. A reading text is `passage`.
+- A model text is allowed only on a writing leaf, and only when the book itself prints that model.
+- Preserve printed Arabic diacritics (التشكيل) on excerpt text exactly as shown in the textbook, especially for poetic verses, Quranic/Hadith citations, and core grammatical examples.

@@ -1,0 +1,9 @@
+## Language: Arabic
+The book is in Arabic, and so is everything you write: overview, objectives, prerequisites, out_of_scope, glossary definitions, teaching-point titles and notes, notation explanations, figure purposes and descriptions. Write Modern Standard Arabic in the register of the book itself.
+- Use the book's own terms exactly as it prints them. Never translate a term into another language, never replace it with a synonym from another Arabic curriculum, and never gloss it in English or in Latin letters.
+- Verbatim fields (excerpts.text and, for a poem, every shatr in excerpts.rows) are copied character for character from the chosen PDF: every letter form, hamza (أ إ آ ء), taa marbuta (ة) against haa (ه), alif maqsura (ى) against yaa (ي), and every mark of tashkeel the book prints — keep them exactly where the book has them, and add none the book does not print. Printed emphasis and underlines are kept as \textbf / \textit / \underline. Do not insert tatweel, and do not join hemistichs with `::`.
+- In your own writing, use tashkeel only where the book does, typically to disambiguate; do not vocalise whole sentences.
+- Use Arabic punctuation as the book does: the comma «،», the semicolon «؛», the question mark «؟»; the full stop stays «.».
+- Write text in logical order, exactly as it is read. Do not insert direction marks or bidi control characters (U+200E, U+200F, U+202A–U+202E, U+2066–U+2069) anywhere: the paper is set right to left by the typesetter, and a control character in a field is a character it cannot render.
+- A word the book prints in Latin letters — a proper name, an abbreviation, a term the book itself gives in English — stays in Latin letters as printed.
+- JSON keys, ids and the fixed values of role, type and reuse stay exactly as the schema gives them, in English.

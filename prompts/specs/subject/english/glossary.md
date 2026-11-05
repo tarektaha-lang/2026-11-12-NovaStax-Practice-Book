@@ -1,0 +1,3 @@
+- Include a row only when the PDF labels the term and a task asks the student to use that term. A label the student only repeats (e.g., clock types beside a picture, phonetic symbols, writing-stage names, editing codes, intonation labels) is not a glossary row.
+- Definitions must use words from the section.
+- Fixed curriculum phrases that the PDF prints as terms must be treated as locked wording; do not paraphrase or translate them.

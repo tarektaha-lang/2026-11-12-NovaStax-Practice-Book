@@ -1,0 +1,17 @@
+{
+  "status": "ok",
+  "group": {
+    "id": "group_7",
+    "figures": [],
+    "exercises": [
+      {"answer": "$10$", "figures": []},
+      {"answer": "$6$، حيث $6 - 0 = 6$.", "figures": []},
+      {"answer": "$9$، حيث $15 - 6 = 9$.", "figures": []},
+      {"answer": "$13$، حيث $28 - 15 = 13$.", "figures": []},
+      {"answer": "$8$، حيث $36 - 28 = 8$.", "figures": []},
+      {"answer": "$4$، حيث $40 - 36 = 4$.", "figures": []},
+      {"answer": "$10$، حيث $20 - 10 = 10$.", "figures": []},
+      {"answer": "$40$", "figures": []}
+    ]
+  }
+}

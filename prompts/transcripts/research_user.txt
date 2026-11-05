@@ -1,0 +1,23 @@
+Research this book and write its spoken blocks.
+
+country_code: {{country_code}}
+country_name: {{country_name}}
+book language_code: {{language_code}}
+book language: {{language_name}}
+notation: {{notation}}
+
+Glyph rule for every example in both blocks:
+
+{{glyph_rule}}
+
+spoken_variety
+One line: the English name of the variety tutors use to explain, even when they insert terms from the book language or from another language.
+
+explanation_language_code
+The language code of that explanation variety. This is the variety's language, not the book language, unless they are the same.
+
+spoken_math
+The tutor-facing spoken mathematics rules for this classroom. Include the variety, when a formal register is allowed, the number words of that variety, every operator and connective tutors use, how they pronounce variables, any words taken from another language, and a few examples you choose. Say which language carries explanation and which language names book subject terms in prose (book language: {{language_name}}). The examples use those same words and show how transcripts mix prose with `<math spoken="...">` readings.
+
+spoken_chemistry
+The tutor-facing spoken chemistry rules for this classroom, with a few examples you choose. Use the same number words and operator words as spoken_math. Name compounds and chemistry vocabulary in prose in the book language when the textbook does. Read symbols, subscripts, states, and arrows as this classroom does.

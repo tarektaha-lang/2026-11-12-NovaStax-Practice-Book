@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "spoken_variety": {
+      "type": "string",
+      "minLength": 1,
+      "description": "English name of the explanation variety."
+    },
+    "explanation_language_code": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Language code of the explanation variety."
+    },
+    "spoken_math": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Tutor-facing spoken mathematics rules for this classroom, in the words tutors say, including which language carries explanation versus book-language subject terms in prose, how they pronounce variables, and its own examples."
+    },
+    "spoken_chemistry": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Tutor-facing spoken chemistry rules for this classroom, in the words tutors say for symbols, subscripts, states, and arrows, book-language chemistry terms in prose, and its own examples."
+    }
+  },
+  "required": [
+    "spoken_variety",
+    "explanation_language_code",
+    "spoken_math",
+    "spoken_chemistry"
+  ]
+}

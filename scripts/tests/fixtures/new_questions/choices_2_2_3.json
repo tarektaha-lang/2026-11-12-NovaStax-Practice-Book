@@ -1,0 +1,20 @@
+{
+  "half_wrapped": [
+    "]1, \\infty[$",
+    "$-\\infty, 0[$",
+    "]-4, 2[$",
+    "]2, \\infty[$"
+  ],
+  "and_case": "$-\\infty, -1[$ and $]1, \\infty[$",
+  "garbled": [
+    "$-0, 2[$",
+    "$--2, 4[$",
+    "$-\\infty, 0[$"
+  ],
+  "jerry": "$]-\\infty, 2[$ Jerry;",
+  "unions": [
+    "$]-\\infty, -1[ \\cup ]1, \\infty[$",
+    "$]-\\infty, 2] \\cup [3, \\infty[$"
+  ],
+  "paren_interval": "\\(]2, \\infty[\\)"
+}

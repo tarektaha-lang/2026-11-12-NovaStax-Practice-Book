@@ -1,0 +1,4 @@
+- Simple apparatus, particle models, and structures. Letters or numbers mark parts the student must name.
+- The drawing must not show the outcome the item asks for.
+- For a rate graph the book leaves unlabelled, leave the axes as factors to identify and mark the peak or the level-off point.
+- Do not add parts, labels, or scales the lesson does not print.

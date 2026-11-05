@@ -1,0 +1,6 @@
+- The shared list wording is «الأسئلة الآتية». Never write «الأسئلة الموالية».
+- Leave set size and set layout to the standing Sets contract.
+- In a listening, reading, poetry, grammar, or spelling objective, follow the types and order the textbook samples use. Do not open with a true/false set, a multiple-choice set, or a complete set unless the samples do. Passage or poem sets keep the shared text on the stem.
+- Put continuous shared texts (passages, poems, or scripts) on the set stem once. Each child exercise carries only its own item prompt.
+- انسخ `stem` من أمثلة الكتاب أو من `shared_group_stems` كما هو — بما في ذلك `\n\n` قبل النص المشترك؛ لا تبتكر سطر تعليمات جديدًا.
+- Shared prose or prescribed textbook text is text on the stem or in `text`, not a `figures` entry.

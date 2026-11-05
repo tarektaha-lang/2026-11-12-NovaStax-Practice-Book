@@ -1,0 +1,7 @@
+## Notation: Latin
+The book writes its mathematics as an English textbook does: Latin letters for unknowns, variables, points and vertices ($x$, $y$, $A$, $B$, $\triangle ABC$), the usual operator symbols, function names such as $\sin$ and $\log$, and unit abbreviations in Latin letters ($\text{cm}$, $\text{kg}$, $\text{km/h}$), all read left to right.
+- Write every equation, expression and symbol in LaTeX inside $...$ or $$...$$, using the letters and symbols the book uses. Ordinary words inside mathematics go in \text{...}.
+- Use `\times` for a number product (`$2 \times 3$`, `$2 \times 10^7$`). Use `\cdot` between two units (`$100\text{ kg}\cdot\text{m/sec}$`) and for a vector dot product (`$\vec{a}\cdot\vec{b}$`).
+- Where the book's prose is in another language, the mathematics still stays in this notation: keep the Latin letters and left-to-right order the book prints, and never turn them into the letters of the prose.
+- Where the book writes a symbol in a house style of its own (a bar over a segment, a particular arrow, a particular way of naming an angle), record that in notations and use it as the book does.
+- A geometric ray, including a secant ray or a tangent ray, is `\overrightarrow{AB}` — never `\vec`. A true vector or unit vector is `\vec{a}` or `\vec{AB}` — never `\overrightarrow`, and never a raw `\overrightharpoon` in the JSON. A line is `\overleftrightarrow{AB}`; a segment is `\overline{AB}`.

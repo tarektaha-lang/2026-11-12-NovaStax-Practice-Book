@@ -1,0 +1,7 @@
+- Stems, options, and any paraphrase use only `language_scope_entries`, the support words named there, and words printed in the textbook questions. When a sentence needs another word, change the sentence. The "meaning" in a vocabulary item is itself inside that list. Options use those same words and stay as short as the answer.
+- Instructions use `rubric_phrases`, or only these patterns: "Listen and choose.", "Read and answer.", "Complete with the correct form.", "Listen, then say true or false." The banned rubric wording is: "based on the recording", "based on the script", "identify", "express", "classify", "convert", "what term is used", "preposition", "standard", "format".
+- The student uses a rule, symbol, or term. The item does not ask for its name or its definition.
+- Verbs on spec objectives are analyst labels. Student text does not copy them.
+- Difficulty moves only by the standing prompt's remove-support order: recognise, then complete with help, then complete without help, then one short guided sentence. Words, grammar, and sentence length stay flat. Extra items repeat that level with new people and situations.
+- When several exercises share one continuous stimulus (passage, dialogue, poem, letter, or visual set), put the complete shared material and the shared instruction on the set stem once. Each child exercise carries only its own prompt.
+- Copy the set `stem` from the textbook examples or `shared_group_stems` JSON, including `\n\n` before a passage — do not compose a new rubric.

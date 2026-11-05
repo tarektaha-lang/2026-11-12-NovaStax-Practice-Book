@@ -1,0 +1,1 @@
+Write every number in Western digits (`0–9`) in every `<math>` LaTeX body. Never rewrite them as Arabic-Indic digits (`٠–٩`). A Western `2` stays `2`.

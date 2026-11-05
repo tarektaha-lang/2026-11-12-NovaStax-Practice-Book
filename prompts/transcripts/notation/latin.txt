@@ -1,0 +1,1 @@
+Use Latin variables (`x`, `y`, `n`, `A`, `B`) in every `<math>` LaTeX body—quoted lines and every derived or intermediate step. Never rewrite them as Arabic letters (`س`, `ص`, `أ`). A Latin `x` stays `x`.

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>papers.py compile repairs — latex.py</title>
+  <style>
+:root {
+  --bg: #0f1115; --panel: #171a21; --panel-2: #1c2029; --border: #2a2f3a;
+  --text: #e8eaed; --muted: #9aa0a6; --accent: #6ea8fe; --accent-2: #7ee787;
+  --warn: #ffb86b; --code-bg: #0b0d11;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+       Roboto, sans-serif; background: var(--bg); color: var(--text);
+       line-height: 1.65; }
+.layout { display: flex; max-width: 1240px; margin: 0 auto; gap: 32px;
+          padding: 0 24px; }
+nav { position: sticky; top: 0; align-self: flex-start; max-height: 100vh;
+      overflow-y: auto; width: 280px; flex-shrink: 0;
+      padding: 32px 0 47.5px; border-right: 1px solid var(--border); }
+nav h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
+         color: var(--muted); margin: 24px 0 8px; }
+nav h2:first-child { margin-top: 15.5px; }
+nav a { display: block; color: var(--muted); text-decoration: none;
+        font-size: 0.88rem; padding: 3px 0; }
+nav a:hover { color: var(--accent); }
+main { flex: 1; min-width: 0; padding: 32px 0; }
+header.hero { padding: 0 0 24px; border-bottom: 1px solid var(--border);
+              margin-bottom: 32px; }
+header.hero h1 { font-size: 2rem; line-height: 1.1; margin: 0 0 6px; }
+header.hero .sub { color: var(--muted); font-size: 1.02rem; }
+.pill { display: inline-block; background: var(--panel-2);
+        border: 1px solid var(--border); border-radius: 999px;
+        padding: 2px 12px; font-size: 0.78rem; color: var(--muted);
+        margin: 8px 6px 0 0; font-family: var(--mono); }
+h2.section { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 12px; }
+h3 { font-size: 1.12rem; margin: 28px 0 8px; color: #fff; }
+p, li { color: #d4d7dc; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg);
+       border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px; }
+pre { background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 18px; overflow-x: auto;
+      font-family: var(--mono); font-size: 0.84rem; line-height: 1.5; }
+.panel { background: var(--panel); border: 1px solid var(--border);
+         border-radius: 10px; padding: 16px 18px; margin: 16px 0; }
+@media (max-width: 820px) { nav { display: none; } .layout { padding: 0 16px; } }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <h2>Overview</h2>
+    <a href="#exit">Why exit code 1</a>
+    <h2>Repairs</h2>
+    <a href="#arrays">Array columns</a>
+    <a href="#tikz-hyphen">TikZ range labels</a>
+    <a href="#mathit">Arabic verse maths</a>
+    <a href="#sarf">Sarf letter macros</a>
+    <h2>Verify</h2>
+    <a href="#verify">Commands</a>
+  </nav>
+  <main>
+    <header class="hero">
+      <h1>Compile repairs before papers.py</h1>
+      <p class="sub">Automatic fixes in <code>latex.py</code> and
+        <code>arabic_math.py</code> so a single bad table, figure label, or
+        maths fragment does not drop a section from the bound book.</p>
+      <span class="pill">compile_pdf()</span>
+      <span class="pill">Missing character</span>
+      <span class="pill">Extra alignment tab</span>
+    </header>
+
+    <h2 class="section" id="exit">Why exit code 1</h2>
+    <p><code>papers.py</code> may print “OK: … bound as …pdf” and still exit
+      <strong>1</strong> when any section failed. After each compile,
+      <code>compile_pdf()</code> in <code>latex.py</code> either raises on
+      <code>!</code> errors or on any <code>Missing character</code> line in the
+      log (then deletes the PDF). Failed sections are omitted from numbering and
+      binding.</p>
+
+    <h2 class="section" id="arrays">Array column alignment</h2>
+    <p><strong>Seen on:</strong> <code>mathematics_ar_iq08</code> §2.5 —
+      <code>! Extra alignment tab has been changed to \cr</code>.</p>
+    <p><strong>Cause:</strong> Model wrote four cells per row
+      (<code>4 &amp; -3 &amp; 2 &amp;X</code>) but declared
+      <code>{c|c|c}</code> (three columns).</p>
+    <p><strong>Fix:</strong> <code>align_array_columns()</code> in
+      <code>unframed()</code> appends <code>|c</code> until the preamble matches
+      the widest row. Skips <code>\multicolumn</code> and nested tables.</p>
+
+    <h2 class="section" id="tikz-hyphen">TikZ range labels (ASCII hyphen)</h2>
+    <p><strong>Seen on:</strong> <code>mathematics_ar_dz07</code> §2.2 — four
+      <code>Missing character: There is no - (U+002D)</code> in Noto Naskh inside
+      histogram axis labels <code>{0-5}</code>, <code>{6-10}</code>, …</p>
+    <p><strong>Cause:</strong> Figure TikZ uses plain text node labels with ASCII
+      hyphen-minus. Prose already maps <code>-</code> to U+2010 (<code>HYPHEN</code>);
+      labels in drawings never went through that path.</p>
+    <p><strong>Fix:</strong> <code>tikz_range_label_hyphens()</code> in
+      <code>standard_lines()</code> rewrites <code>{digits-digits}</code> labels
+      only (does not touch <code>-{Stealth[…]}</code> or coordinates).</p>
+
+    <h2 class="section" id="mathit">Arabic verse in <code>\mathit</code></h2>
+    <p><strong>Seen on:</strong> <code>arabic_ar_iq08_t1</code> §7.1 — hundreds of
+      missing glyphs at U+1EE00 (AMS Arabic math letters) in Noto Naskh
+      <code>family=rm</code>.</p>
+    <p><strong>Cause:</strong> Qur’an snippets like
+      <code>$\mathit{«\waw …»}$</code> route CLS macros through the text italic
+      font instead of NagwaArabicMath.</p>
+    <p><strong>Fix:</strong> <code>strip_text_math_fonts()</code> at the start of
+      <code>arabic_maths()</code> / <code>arabic_maths_letters()</code> removes
+      <code>\mathit</code>, <code>\mathrm</code>, etc. wrappers so
+      <code>\waw</code>, <code>\alef</code>, … stay in the maths face.</p>
+
+    <h2 class="section" id="sarf">Sarf patterns in maths</h2>
+    <p><strong>Seen on:</strong> <code>arabic_ar_iq08_t1</code> §3.2 — tashkeel and
+      letters <code>ئ</code>, <code>ى</code> in <code>cmmi12</code>.</p>
+    <p><strong>Cause:</strong> MCQ options mix <code>\kaf</code>-style macros with
+      vocalisation marks and hamza/alef-maksura letters left as Unicode inside
+      <code>$…$</code>.</p>
+    <p><strong>Fix:</strong> In <code>arabic_math.letters_for_tex()</code>: drop
+      tashkeel; map <code>ى</code>, <code>ئ</code>, <code>ء</code>, <code>ؤ</code>
+      to CLS macros (and <code>MATH_LETTER_MAP</code> for Lua mathcodes).</p>
+
+    <h2 class="section" id="verify">How to verify</h2>
+    <pre>python scripts/papers.py mathematics_ar_iq08 -s 2.5
+python scripts/papers.py mathematics_ar_dz07 -s 2.2
+python scripts/papers.py arabic_ar_iq08_t1 -s 3.2
+python scripts/papers.py arabic_ar_iq08_t1 -s 7.1</pre>
+    <p>Each command should report the section as a multi-page paper with no
+      “would not compile” line, and exit&nbsp;0 when every section in scope
+      succeeds.</p>
+  </main>
+</div>
+</body>
+</html>

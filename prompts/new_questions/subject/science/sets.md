@@ -1,0 +1,6 @@
+- One shared figure or table, introduced in the wording the samples use for a figure, not a stock "Look at the opposite figure".
+- Reuse the full `stem` from textbook examples or `shared_group_stems` (layout, `\n\n`, tables included); do not write a new instruction line.
+- Each child tests a different job.
+- A later stem, option, correction, or figure must not state an earlier answer.
+- A second item on the same experiment, the same definition, or the same example is repetition.
+- Calculating a quantity and identifying a variable are allowed only when the section spec prints that job.

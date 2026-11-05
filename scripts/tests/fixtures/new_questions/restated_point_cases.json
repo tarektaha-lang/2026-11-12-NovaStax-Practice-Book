@@ -1,0 +1,272 @@
+[
+  {
+    "stem": "In the rectangle $ABCD$, the side lengths are $AB = 8\\text{ cm}$ and $BC = 6\\text{ cm}$, where $\\overline{BC}$ is horizontal and $\\overline{AB}$ is vertical. A force $\\vec{F}$ of magnitude $50\\text{ N}$ acts at vertex $C$, directed into the interior of the rectangle such that its horizontal component acts in the direction of $\\overrightarrow{CB}$ and its vertical component acts in the direction of $\\overrightarrow{BA}$, where $\\cos\\theta = \\frac{4}{5}$ and $\\theta$ is the angle between $\\vec{F}$ and $\\overrightarrow{CB}$. Find the algebraic measure of the moment of $\\vec{F}$ about each of the following points:",
+    "text": "Point $B$",
+    "siblings": [
+      "Point $B$",
+      "Point $D$",
+      "Point $A$",
+      "The intersection of the diagonals $M$"
+    ]
+  },
+  {
+    "stem": "In the rectangle $ABCD$, the side lengths are $AB = 8\\text{ cm}$ and $BC = 6\\text{ cm}$, where $\\overline{BC}$ is horizontal and $\\overline{AB}$ is vertical. A force $\\vec{F}$ of magnitude $50\\text{ N}$ acts at vertex $C$, directed into the interior of the rectangle such that its horizontal component acts in the direction of $\\overrightarrow{CB}$ and its vertical component acts in the direction of $\\overrightarrow{BA}$, where $\\cos\\theta = \\frac{4}{5}$ and $\\theta$ is the angle between $\\vec{F}$ and $\\overrightarrow{CB}$. Find the algebraic measure of the moment of $\\vec{F}$ about each of the following points:",
+    "text": "Point $D$",
+    "siblings": [
+      "Point $B$",
+      "Point $D$",
+      "Point $A$",
+      "The intersection of the diagonals $M$"
+    ]
+  },
+  {
+    "stem": "In the rectangle $ABCD$, the side lengths are $AB = 8\\text{ cm}$ and $BC = 6\\text{ cm}$, where $\\overline{BC}$ is horizontal and $\\overline{AB}$ is vertical. A force $\\vec{F}$ of magnitude $50\\text{ N}$ acts at vertex $C$, directed into the interior of the rectangle such that its horizontal component acts in the direction of $\\overrightarrow{CB}$ and its vertical component acts in the direction of $\\overrightarrow{BA}$, where $\\cos\\theta = \\frac{4}{5}$ and $\\theta$ is the angle between $\\vec{F}$ and $\\overrightarrow{CB}$. Find the algebraic measure of the moment of $\\vec{F}$ about each of the following points:",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $B$",
+      "Point $D$",
+      "Point $A$",
+      "The intersection of the diagonals $M$"
+    ]
+  },
+  {
+    "stem": "A rigid horizontal bar $\\overline{AB}$ of length $100\\text{ cm}$ has points $C, D, E$ lying on it in the order $A, C, D, E, B$ such that $AC = 20\\text{ cm}$, $CD = 30\\text{ cm}$, $DE = 30\\text{ cm}$, and $EB = 20\\text{ cm}$. Parallel vertical forces act on the bar: $10\\text{ N}$ upwards at $A$, $25\\text{ N}$ downwards at $C$, $15\\text{ N}$ upwards at $D$, $20\\text{ N}$ downwards at $E$, and $30\\text{ N}$ upwards at $B$. Find the algebraic measure of the moment of the resultant of these forces about each of the following points (taking counter-clockwise as positive):",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "The midpoint of $\\overline{AB}$",
+      "Point $B$"
+    ]
+  },
+  {
+    "stem": "A rigid horizontal bar $\\overline{AB}$ of length $100\\text{ cm}$ has points $C, D, E$ lying on it in the order $A, C, D, E, B$ such that $AC = 20\\text{ cm}$, $CD = 30\\text{ cm}$, $DE = 30\\text{ cm}$, and $EB = 20\\text{ cm}$. Parallel vertical forces act on the bar: $10\\text{ N}$ upwards at $A$, $25\\text{ N}$ downwards at $C$, $15\\text{ N}$ upwards at $D$, $20\\text{ N}$ downwards at $E$, and $30\\text{ N}$ upwards at $B$. Find the algebraic measure of the moment of the resultant of these forces about each of the following points (taking counter-clockwise as positive):",
+    "text": "Point $C$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "The midpoint of $\\overline{AB}$",
+      "Point $B$"
+    ]
+  },
+  {
+    "stem": "A rigid horizontal bar $\\overline{AB}$ of length $100\\text{ cm}$ has points $C, D, E$ lying on it in the order $A, C, D, E, B$ such that $AC = 20\\text{ cm}$, $CD = 30\\text{ cm}$, $DE = 30\\text{ cm}$, and $EB = 20\\text{ cm}$. Parallel vertical forces act on the bar: $10\\text{ N}$ upwards at $A$, $25\\text{ N}$ downwards at $C$, $15\\text{ N}$ upwards at $D$, $20\\text{ N}$ downwards at $E$, and $30\\text{ N}$ upwards at $B$. Find the algebraic measure of the moment of the resultant of these forces about each of the following points (taking counter-clockwise as positive):",
+    "text": "Point $B$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "The midpoint of $\\overline{AB}$",
+      "Point $B$"
+    ]
+  },
+  {
+    "stem": "In the rectangle $ABCD$, $AB = 8\\text{ cm}$ and $BC = 6\\text{ cm}$. A force $\\vec{F}$ of magnitude $50\\text{ N}$ acts at vertex $C$, where its rectangular component along $\\overrightarrow{CB}$ has magnitude $40\\text{ N}$ and its rectangular component along $\\overrightarrow{CD}$ has magnitude $30\\text{ N}$. Find the algebraic measure of the moment of $\\vec{F}$ about each of the following points:",
+    "text": "Point $B$",
+    "siblings": [
+      "Point $B$",
+      "Point $D$",
+      "Point $A$",
+      "The center of the rectangle, $M$"
+    ]
+  },
+  {
+    "stem": "In the rectangle $ABCD$, $AB = 8\\text{ cm}$ and $BC = 6\\text{ cm}$. A force $\\vec{F}$ of magnitude $50\\text{ N}$ acts at vertex $C$, where its rectangular component along $\\overrightarrow{CB}$ has magnitude $40\\text{ N}$ and its rectangular component along $\\overrightarrow{CD}$ has magnitude $30\\text{ N}$. Find the algebraic measure of the moment of $\\vec{F}$ about each of the following points:",
+    "text": "Point $D$",
+    "siblings": [
+      "Point $B$",
+      "Point $D$",
+      "Point $A$",
+      "The center of the rectangle, $M$"
+    ]
+  },
+  {
+    "stem": "In the rectangle $ABCD$, $AB = 8\\text{ cm}$ and $BC = 6\\text{ cm}$. A force $\\vec{F}$ of magnitude $50\\text{ N}$ acts at vertex $C$, where its rectangular component along $\\overrightarrow{CB}$ has magnitude $40\\text{ N}$ and its rectangular component along $\\overrightarrow{CD}$ has magnitude $30\\text{ N}$. Find the algebraic measure of the moment of $\\vec{F}$ about each of the following points:",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $B$",
+      "Point $D$",
+      "Point $A$",
+      "The center of the rectangle, $M$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod $\\overline{AB}$ of length $100\\text{ cm}$ carries four vertical parallel forces: $12\\text{ N}$ upwards at $A$, $20\\text{ N}$ downwards at $C$ where $AC = 20\\text{ cm}$, $30\\text{ N}$ upwards at $D$ where $CD = 20\\text{ cm}$, and $10\\text{ N}$ downwards at $B$ where $DB = 60\\text{ cm}$. Find the algebraic measure of the sum of the moments of these forces about each of the following points, taking the counter-clockwise direction as positive:",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "Point $D$",
+      "The midpoint of $\\overline{AB}$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod $\\overline{AB}$ of length $100\\text{ cm}$ carries four vertical parallel forces: $12\\text{ N}$ upwards at $A$, $20\\text{ N}$ downwards at $C$ where $AC = 20\\text{ cm}$, $30\\text{ N}$ upwards at $D$ where $CD = 20\\text{ cm}$, and $10\\text{ N}$ downwards at $B$ where $DB = 60\\text{ cm}$. Find the algebraic measure of the sum of the moments of these forces about each of the following points, taking the counter-clockwise direction as positive:",
+    "text": "Point $C$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "Point $D$",
+      "The midpoint of $\\overline{AB}$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod $\\overline{AB}$ of length $100\\text{ cm}$ carries four vertical parallel forces: $12\\text{ N}$ upwards at $A$, $20\\text{ N}$ downwards at $C$ where $AC = 20\\text{ cm}$, $30\\text{ N}$ upwards at $D$ where $CD = 20\\text{ cm}$, and $10\\text{ N}$ downwards at $B$ where $DB = 60\\text{ cm}$. Find the algebraic measure of the sum of the moments of these forces about each of the following points, taking the counter-clockwise direction as positive:",
+    "text": "Point $D$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "Point $D$",
+      "The midpoint of $\\overline{AB}$"
+    ]
+  },
+  {
+    "stem": "A light horizontal beam $AB$ of length $80\\text{ cm}$ carries four vertical forces: a force of $10\\text{ N}$ acts upward at $A$, a force of $6\\text{ N}$ acts downward at $C$ where $AC = 30\\text{ cm}$, a force of $14\\text{ N}$ acts downward at $D$ where $CD = 20\\text{ cm}$, and a force of $8\\text{ N}$ acts upward at $B$. Find the algebraic measure of the moment of their resultant about each of the following points:",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "The midpoint of $\\overline{AB}$",
+      "Point $B$"
+    ]
+  },
+  {
+    "stem": "A light horizontal beam $AB$ of length $80\\text{ cm}$ carries four vertical forces: a force of $10\\text{ N}$ acts upward at $A$, a force of $6\\text{ N}$ acts downward at $C$ where $AC = 30\\text{ cm}$, a force of $14\\text{ N}$ acts downward at $D$ where $CD = 20\\text{ cm}$, and a force of $8\\text{ N}$ acts upward at $B$. Find the algebraic measure of the moment of their resultant about each of the following points:",
+    "text": "Point $C$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "The midpoint of $\\overline{AB}$",
+      "Point $B$"
+    ]
+  },
+  {
+    "stem": "A light horizontal beam $AB$ of length $80\\text{ cm}$ carries four vertical forces: a force of $10\\text{ N}$ acts upward at $A$, a force of $6\\text{ N}$ acts downward at $C$ where $AC = 30\\text{ cm}$, a force of $14\\text{ N}$ acts downward at $D$ where $CD = 20\\text{ cm}$, and a force of $8\\text{ N}$ acts upward at $B$. Find the algebraic measure of the moment of their resultant about each of the following points:",
+    "text": "Point $B$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "The midpoint of $\\overline{AB}$",
+      "Point $B$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod has points $A$, $B$, $C$, and $D$ arranged in order from left to right along its length, where $AB = 20\\text{ cm}$, $BC = 30\\text{ cm}$, and $CD = 10\\text{ cm}$. Vertical forces act on the rod: $15\\text{ N}$ upwards at $A$, $25\\text{ N}$ downwards at $B$, $40\\text{ N}$ upwards at $C$, and $10\\text{ N}$ downwards at $D$. Find the algebraic sum of the moments of these forces about:",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $A$",
+      "Point $B$",
+      "Point $C$",
+      "The midpoint of $\\overline{BC}$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod has points $A$, $B$, $C$, and $D$ arranged in order from left to right along its length, where $AB = 20\\text{ cm}$, $BC = 30\\text{ cm}$, and $CD = 10\\text{ cm}$. Vertical forces act on the rod: $15\\text{ N}$ upwards at $A$, $25\\text{ N}$ downwards at $B$, $40\\text{ N}$ upwards at $C$, and $10\\text{ N}$ downwards at $D$. Find the algebraic sum of the moments of these forces about:",
+    "text": "Point $B$",
+    "siblings": [
+      "Point $A$",
+      "Point $B$",
+      "Point $C$",
+      "The midpoint of $\\overline{BC}$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod has points $A$, $B$, $C$, and $D$ arranged in order from left to right along its length, where $AB = 20\\text{ cm}$, $BC = 30\\text{ cm}$, and $CD = 10\\text{ cm}$. Vertical forces act on the rod: $15\\text{ N}$ upwards at $A$, $25\\text{ N}$ downwards at $B$, $40\\text{ N}$ upwards at $C$, and $10\\text{ N}$ downwards at $D$. Find the algebraic sum of the moments of these forces about:",
+    "text": "Point $C$",
+    "siblings": [
+      "Point $A$",
+      "Point $B$",
+      "Point $C$",
+      "The midpoint of $\\overline{BC}$"
+    ]
+  },
+  {
+    "stem": "Parallel forces act perpendicular to a horizontal beam $\\overline{AB}$ of length $70\\text{ cm}$ at points $A$, $C$, $D$, and $B$, which lie in order on $\\overline{AB}$ such that $AC = 20\\text{ cm}$, $CD = 30\\text{ cm}$, and $DB = 20\\text{ cm}$. The forces have magnitudes $15\\text{ N}$ acting upward at $A$, $10\\text{ N}$ acting downward at $C$, $25\\text{ N}$ acting upward at $D$, and $20\\text{ N}$ acting downward at $B$. Taking the counter-clockwise sense as positive, find the algebraic sum of the moments of these forces about each of the following points:",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "Point $D$",
+      "The midpoint of $\\overline{AB}$"
+    ]
+  },
+  {
+    "stem": "Parallel forces act perpendicular to a horizontal beam $\\overline{AB}$ of length $70\\text{ cm}$ at points $A$, $C$, $D$, and $B$, which lie in order on $\\overline{AB}$ such that $AC = 20\\text{ cm}$, $CD = 30\\text{ cm}$, and $DB = 20\\text{ cm}$. The forces have magnitudes $15\\text{ N}$ acting upward at $A$, $10\\text{ N}$ acting downward at $C$, $25\\text{ N}$ acting upward at $D$, and $20\\text{ N}$ acting downward at $B$. Taking the counter-clockwise sense as positive, find the algebraic sum of the moments of these forces about each of the following points:",
+    "text": "Point $C$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "Point $D$",
+      "The midpoint of $\\overline{AB}$"
+    ]
+  },
+  {
+    "stem": "Parallel forces act perpendicular to a horizontal beam $\\overline{AB}$ of length $70\\text{ cm}$ at points $A$, $C$, $D$, and $B$, which lie in order on $\\overline{AB}$ such that $AC = 20\\text{ cm}$, $CD = 30\\text{ cm}$, and $DB = 20\\text{ cm}$. The forces have magnitudes $15\\text{ N}$ acting upward at $A$, $10\\text{ N}$ acting downward at $C$, $25\\text{ N}$ acting upward at $D$, and $20\\text{ N}$ acting downward at $B$. Taking the counter-clockwise sense as positive, find the algebraic sum of the moments of these forces about each of the following points:",
+    "text": "Point $D$",
+    "siblings": [
+      "Point $A$",
+      "Point $C$",
+      "Point $D$",
+      "The midpoint of $\\overline{AB}$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod $\\overline{AD}$ has points $A, B, C, D$ in order from left to right, where $AB = 30\\text{ cm}$, $BC = 20\\text{ cm}$, and $CD = 50\\text{ cm}$. Three vertical forces act on the rod: $15\\text{ N}$ downwards at $A$, $25\\text{ N}$ upwards at $B$, and $6\\text{ N}$ downwards at $D$. Find the algebraic measure of the moment of their resultant about each of the following points:",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $A$",
+      "Point $B$",
+      "Point $C$",
+      "Point $D$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod $\\overline{AD}$ has points $A, B, C, D$ in order from left to right, where $AB = 30\\text{ cm}$, $BC = 20\\text{ cm}$, and $CD = 50\\text{ cm}$. Three vertical forces act on the rod: $15\\text{ N}$ downwards at $A$, $25\\text{ N}$ upwards at $B$, and $6\\text{ N}$ downwards at $D$. Find the algebraic measure of the moment of their resultant about each of the following points:",
+    "text": "Point $B$",
+    "siblings": [
+      "Point $A$",
+      "Point $B$",
+      "Point $C$",
+      "Point $D$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod $\\overline{AD}$ has points $A, B, C, D$ in order from left to right, where $AB = 30\\text{ cm}$, $BC = 20\\text{ cm}$, and $CD = 50\\text{ cm}$. Three vertical forces act on the rod: $15\\text{ N}$ downwards at $A$, $25\\text{ N}$ upwards at $B$, and $6\\text{ N}$ downwards at $D$. Find the algebraic measure of the moment of their resultant about each of the following points:",
+    "text": "Point $C$",
+    "siblings": [
+      "Point $A$",
+      "Point $B$",
+      "Point $C$",
+      "Point $D$"
+    ]
+  },
+  {
+    "stem": "A light horizontal rod $\\overline{AD}$ has points $A, B, C, D$ in order from left to right, where $AB = 30\\text{ cm}$, $BC = 20\\text{ cm}$, and $CD = 50\\text{ cm}$. Three vertical forces act on the rod: $15\\text{ N}$ downwards at $A$, $25\\text{ N}$ upwards at $B$, and $6\\text{ N}$ downwards at $D$. Find the algebraic measure of the moment of their resultant about each of the following points:",
+    "text": "Point $D$",
+    "siblings": [
+      "Point $A$",
+      "Point $B$",
+      "Point $C$",
+      "Point $D$"
+    ]
+  },
+  {
+    "stem": "A rigid L-shaped bracket consists of a horizontal segment $\\overline{OA}$ of length $40\\text{ cm}$ along the positive $x$-axis and a vertical segment $\\overline{AB}$ of length $30\\text{ cm}$ parallel to the positive $y$-axis. A force $\\vec{F}$ of magnitude $50\\text{ N}$ acts at point $B$, inclined at an angle $\\theta$ to the horizontal such that $\\cos\\theta = \\frac{3}{5}$ and $\\sin\\theta = \\frac{4}{5}$, directed upwards and to the right. By resolving $\\vec{F}$ into horizontal and vertical components, find the algebraic measure of the moment of $\\vec{F}$ about each of the following points:",
+    "text": "Point $O$",
+    "siblings": [
+      "Point $O$",
+      "Point $A$",
+      "The midpoint of $\\overline{OA}$",
+      "The midpoint of $\\overline{AB}$"
+    ]
+  },
+  {
+    "stem": "A rigid L-shaped bracket consists of a horizontal segment $\\overline{OA}$ of length $40\\text{ cm}$ along the positive $x$-axis and a vertical segment $\\overline{AB}$ of length $30\\text{ cm}$ parallel to the positive $y$-axis. A force $\\vec{F}$ of magnitude $50\\text{ N}$ acts at point $B$, inclined at an angle $\\theta$ to the horizontal such that $\\cos\\theta = \\frac{3}{5}$ and $\\sin\\theta = \\frac{4}{5}$, directed upwards and to the right. By resolving $\\vec{F}$ into horizontal and vertical components, find the algebraic measure of the moment of $\\vec{F}$ about each of the following points:",
+    "text": "Point $A$",
+    "siblings": [
+      "Point $O$",
+      "Point $A$",
+      "The midpoint of $\\overline{OA}$",
+      "The midpoint of $\\overline{AB}$"
+    ]
+  }
+]

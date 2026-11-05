@@ -1,0 +1,112 @@
+<book subject="Mathematics" grade="8" term="1" language_code="en" language="English" academic_year="26-27" numerals="western" notation="latin" country_code="in" country="India" cover_illustration="mathematics_071">
+    <module level="1" number="1" title="A Square and A Cube">
+        <module level="2" number="1" title="Square Numbers">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="19.29" end_page="27.72"/>
+        </module>
+        <module level="2" number="2" title="Cubic Numbers">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="27.72" end_page="31.79"/>
+        </module>
+        <module level="2" number="3" title="A Pinch of History">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="31.79" end_page="33.14"/>
+        </module>
+    </module>
+    <module level="1" number="2" title="Power Play">
+        <module level="2" number="1" title="Experiencing the Power Play ...">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="35" end_page="37.61"/>
+        </module>
+        <module level="2" number="2" title="Exponential Notation and Operations">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="37.61" end_page="43.54"/>
+        </module>
+        <module level="2" number="3" title="The Other Side of Powers">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="43.54" end_page="46.54"/>
+        </module>
+        <module level="2" number="4" title="Powers of 10">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="46.54" end_page="48"/>
+        </module>
+        <module level="2" number="5" title="Did You Ever Wonder?">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="49" end_page="58.64"/>
+        </module>
+        <module level="2" number="6" title="A Pinch of History">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="58.64" end_page="61"/>
+        </module>
+    </module>
+    <module level="1" number="3" title="A Story of Numbers">
+        <module level="2" number="1" title="Reema’s Curiosity">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="64" end_page="70.72"/>
+        </module>
+        <module level="2" number="2" title="Some Early Number Systems">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="70.72" end_page="77.34"/>
+        </module>
+        <module level="2" number="3" title="The Idea of a Base">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="77.34" end_page="86.20"/>
+        </module>
+        <module level="2" number="4" title="Place Value Representation">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="86.20" end_page="96"/>
+        </module>
+    </module>
+    <module level="1" number="4" title="Quadrilaterals">
+        <module level="2" number="1" title="Rectangles and Squares">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="99" end_page="110.60"/>
+        </module>
+        <module level="2" number="2" title="Angles in a Quadrilateral">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="110.60" end_page="111.40"/>
+        </module>
+        <module level="2" number="3" title="More Quadrilaterals with Parallel Opposite Sides">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="111.40" end_page="115.41"/>
+        </module>
+        <module level="2" number="4" title="Quadrilaterals with Equal Sidelengths">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="115.41" end_page="118"/>
+        </module>
+        <module level="2" number="5" title="Playing with Quadrilaterals">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="119" end_page="121.34"/>
+        </module>
+        <module level="2" number="6" title="Kite and Trapezium">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="121.34" end_page="125.30"/>
+        </module>
+    </module>
+    <module level="1" number="5" title="Number Play">
+        <module level="2" number="1" title="Is This a Multiple Of?">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="128" end_page="139.29"/>
+        </module>
+        <module level="2" number="2" title="Checking Divisibility Quickly">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="139.29" end_page="147.45"/>
+        </module>
+        <module level="2" number="3" title="Digits in Disguise">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="147.45" end_page="150.48"/>
+        </module>
+    </module>
+    <module level="1" number="6" title="We Distribute, Yet Things Multiply">
+        <module level="2" number="1" title="Some Properties of Multiplication">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="152.51" end_page="160"/>
+        </module>
+        <module level="2" number="2" title="Special Cases of the Distributive Property">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="161" end_page="165"/>
+        </module>
+        <module level="2" number="3" title="Mind the Mistake, Mend the Mistake">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="166" end_page="166.63"/>
+        </module>
+        <module level="2" number="4" title="This Way or That Way, All Ways Lead to the Bay">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="166.63" end_page="172"/>
+        </module>
+    </module>
+    <module level="1" number="7" title="Proportional Reasoning-1">
+        <module level="2" number="1" title="Observing Similarity in Change">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="175" end_page="176"/>
+        </module>
+        <module level="2" number="2" title="Ratios">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="177" end_page="177.65"/>
+        </module>
+        <module level="2" number="3" title="Ratios in their Simplest Form">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="177.65" end_page="178.29"/>
+        </module>
+        <module level="2" number="4" title="Problem Solving with Proportional Reasoning">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="178.29" end_page="188.53"/>
+        </module>
+        <module level="2" number="5" title="Sharing, but Not Equally!">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="188.53" end_page="191.83"/>
+        </module>
+        <module level="2" number="6" title="Unit Conversions">
+            <source md5="5a89ed20a65de12cc0f68162398c248f" start_page="191.83" end_page="193.62"/>
+        </module>
+    </module>
+</book>

@@ -1,0 +1,16 @@
+- Write {{prefix_language}} prefixes in full ({{prefix_examples}}).{{#joining_mark}} Use {{joining_mark}} only when a prefix runs directly into a `<math>` tag, as in `{{joining_example}}`.{{/joining_mark}}
+- Write every `spoken` reading in {{spoken_script}}. Spell numbers with the number words given in the country rules, except chemical subscripts, which use English number words. Use {{pause_mark}} for helpful pauses in long expressions.
+- Surrounding prose may name the role or set up the step ({{role_phrases}}) and must leave the reading itself to `spoken`.
+- Regular terminology—including words such as {{terminology_examples}}—stays outside tags unless it is printed as part of a symbolic expression.
+- In a chemical tag, read leading coefficients with those same number words. Read state symbols as {{state_symbols}}. Read `\rightarrow` as {{reaction_arrow}}. Read `\rightleftharpoons` and `\leftrightarrow` as {{equilibrium}}. In prose, use element names such as {{element_names}}.
+- `<math spoken="H two O">H_2O</math>`
+- `<math spoken="Ca two plus">Ca^{2+}</math>`
+- `<math spoken="N H three {{state_aq_spoken}}">NH_3(aq)</math>`
+- `<math spoken="{{reaction_spoken}}">2H_2 + O_2 \rightarrow 2H_2O</math>`
+- Do not write `<math spoken="{{element_spoken}}">C</math>` when the prose means "{{element_prose}}"; write the element name normally.
+{{#subscript_local_number}}
+- Do not write `<math spoken="H {{subscript_local_number}}">H_2</math>`; chemical subscripts use English number words.
+{{/subscript_local_number}}
+{{#wrong_arrow}}
+- Do not read a reaction arrow as {{wrong_arrow}}; use {{reaction_arrow}}.
+{{/wrong_arrow}}

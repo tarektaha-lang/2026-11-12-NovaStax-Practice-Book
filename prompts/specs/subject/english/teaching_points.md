@@ -1,0 +1,6 @@
+- The ceiling is recognition and guided use — repeat, recognise, match, choose, complete, copy-adapt a model. That ceiling overrides grade.
+- Do not invent a learner-level field; if the book-context line carries Language role and Learner level, every objective and teaching point is written for that level. Grade sets topics only.
+- Record the support the book gives (pictures, models, word banks, repetition) and the book's own sentence and script length.
+- Student actions are the actions the PDF prints.
+- Every distinct skill the section teaches should be reachable through objectives and overview activity patterns.
+- Fixed curriculum phrases that the PDF prints as terms stay as locked wording in teaching guidance.

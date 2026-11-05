@@ -1,0 +1,3 @@
+- Record terms explicitly defined in textbook vocabulary tables (المعجم اللغوي / المفردات) or marginal glosses for reading and poetry leaves, keeping the exact printed Arabic headword and definition, synonym, or antonym.
+- On grammar (نحو), spelling (إملاء), and rhetoric (بلاغة) leaves, include core technical linguistic terms (e.g., الفاعل, الخبر, الطباق, التشبيه) that the section formally defines.
+- Do not create glossary entries for words that are not explicitly glossed or defined by the textbook.

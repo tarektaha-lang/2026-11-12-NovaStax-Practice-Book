@@ -1,0 +1,37 @@
+{
+  "stem": "A trolley undergoes a horizontal displacement of magnitude $20\\text{ m}$ due East on a straight track under the action of a constant force of magnitude $45\\text{ N}$. Find the work done by the force in Joules when its direction is:",
+  "exercises": [
+    {
+      "text": "due East",
+      "objectives": [
+        "objective_1",
+        "objective_3"
+      ],
+      "answer": "$900\\text{ Joules}$, since $\\theta = 0^\\circ$ and $W = 45 \\times 20 \\times \\cos 0^\\circ = 900\\text{ Joules}$"
+    },
+    {
+      "text": "due North",
+      "objectives": [
+        "objective_1",
+        "objective_3"
+      ],
+      "answer": "$0\\text{ Joules}$, since $\\theta = 90^\\circ$ and $W = 45 \\times 20 \\times \\cos 90^\\circ = 0\\text{ Joules}$"
+    },
+    {
+      "text": "due West",
+      "objectives": [
+        "objective_1",
+        "objective_3"
+      ],
+      "answer": "$-900\\text{ Joules}$, since $\\theta = 180^\\circ$ and $W = 45 \\times 20 \\times \\cos 180^\\circ = -900\\text{ Joules}$"
+    },
+    {
+      "text": "$60^\\circ$ South of West",
+      "objectives": [
+        "objective_1",
+        "objective_3"
+      ],
+      "answer": "$-450\\text{ Joules}$, since $\\theta = 180^\\circ - 60^\\circ = 120^\\circ$ and $W = 45 \\times 20 \\times \\cos 120^\\circ = -450\\text{ Joules}$"
+    }
+  ]
+}

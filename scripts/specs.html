@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>specs.py — Documentation</title>
+  <style>
+:root {
+  --bg: #0f1115; --panel: #171a21; --panel-2: #1c2029; --border: #2a2f3a;
+  --text: #e8eaed; --muted: #9aa0a6; --accent: #6ea8fe; --accent-2: #7ee787;
+  --warn: #ffb86b; --code-bg: #0b0d11;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+       Roboto, sans-serif; background: var(--bg); color: var(--text);
+       line-height: 1.65; }
+.layout { display: flex; max-width: 1240px; margin: 0 auto; gap: 32px;
+          padding: 0 24px; }
+nav { position: sticky; top: 0; align-self: flex-start; max-height: 100vh;
+      overflow-y: auto; width: 280px; flex-shrink: 0;
+      padding: 32px 0 47.5px; border-right: 1px solid var(--border); }
+nav h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
+         color: var(--muted); margin: 24px 0 8px; }
+nav h2:first-child { margin-top: 15.5px; } /* baseline-aligns with the h1 */
+nav a { display: block; color: var(--muted); text-decoration: none;
+        font-size: 0.88rem; padding: 3px 0; }
+nav a:hover { color: var(--accent); }
+main { flex: 1; min-width: 0; padding: 32px 0; }
+header.hero { padding: 0 0 24px; border-bottom: 1px solid var(--border);
+              margin-bottom: 32px; }
+header.hero h1 { font-size: 2rem; line-height: 1.1; margin: 0 0 6px; }
+header.hero .sub { color: var(--muted); font-size: 1.02rem; }
+.pill { display: inline-block; background: var(--panel-2);
+        border: 1px solid var(--border); border-radius: 999px;
+        padding: 2px 12px; font-size: 0.78rem; color: var(--muted);
+        margin: 8px 6px 0 0; font-family: var(--mono); }
+h2.section { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 12px; }
+h3 { font-size: 1.12rem; margin: 28px 0 8px; color: #fff; }
+h4 { font-size: 0.98rem; margin: 18px 0 6px; color: var(--accent-2); }
+p, li { color: #d4d7dc; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg);
+       border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px;
+       color: #e6edf3; }
+pre { background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 18px; overflow-x: auto;
+      font-family: var(--mono); font-size: 0.84rem; line-height: 1.5; }
+pre code { background: none; border: none; padding: 0; }
+.panel { background: var(--panel); border: 1px solid var(--border);
+         border-radius: 12px; padding: 18px 22px; margin: 16px 0; }
+.note { border-left: 3px solid var(--accent); }
+.warn { border-left: 3px solid var(--warn); }
+.good { border-left: 3px solid var(--accent-2); }
+table { width: 100%; border-collapse: collapse; margin: 14px 0;
+        font-size: 0.9rem; }
+th, td { text-align: left; padding: 9px 12px;
+         border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 0.8rem;
+     text-transform: uppercase; letter-spacing: 0.04em; }
+td.mono, td .mono { font-family: var(--mono); font-size: 0.84rem; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stat-grid { display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+             gap: 12px; margin: 20px 0; }
+.stat { background: var(--panel); border: 1px solid var(--border);
+        border-radius: 12px; padding: 16px; text-align: center; }
+.stat .value { display: block; font-family: var(--mono); font-size: 1.45rem;
+               font-weight: 700; color: var(--accent); }
+.stat .label { font-size: 0.74rem; text-transform: uppercase;
+               letter-spacing: 0.06em; color: var(--muted); }
+.bar-row { display: grid; grid-template-columns: 6rem 1fr 4rem;
+           align-items: center; gap: 10px; font-size: 0.84rem; margin: 5px 0; }
+.bar-row .bar { background: linear-gradient(90deg, var(--accent), #4a7dd6);
+                height: 14px; border-radius: 3px; min-width: 2px; }
+.bar-row.alt .bar { background: linear-gradient(90deg, var(--accent-2), #4fa85f); }
+.bar-row .pct { color: var(--muted); font-variant-numeric: tabular-nums;
+                text-align: right; font-family: var(--mono); font-size: 0.8rem; }
+.caption { color: var(--muted); font-size: 0.78rem; margin: 6px 0 18px; }
+ol, ul { padding-left: 22px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+.toc-foot { color: var(--muted); font-size: 0.78rem; margin-top: 32px;
+            margin-bottom: 0; }
+a.inline { color: var(--accent); text-decoration: none; }
+a.inline:hover { text-decoration: underline; }
+@media (max-width: 820px) {
+  nav { display: none; }
+  .layout { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <h2>Overview</h2>
+    <a href="#what-it-does">What the script does</a>
+    <a href="#pipeline">Where it sits in the pipeline</a>
+
+    <h2>Running it</h2>
+    <a href="#cli">Command line</a>
+    <a href="#run">What one run does</a>
+    <a href="#skip">When a section is skipped</a>
+    <a href="#transports">How the PDFs reach the model</a>
+    <a href="#retries">Retries, aborts and failure</a>
+
+    <h2>The spec it writes</h2>
+    <a href="#prompt">The prompt and the combine rules</a>
+    <a href="#schema">The spec schema</a>
+    <a href="#output">The file on disk</a>
+
+    <h2>Reference</h2>
+    <a href="#logging">API call logging</a>
+    <a href="#functions">Module reference</a>
+    <a href="#requirements">Requirements and constants</a>
+  </nav>
+  <main>
+    <header class="hero">
+      <h1>specs.py</h1>
+      <div class="sub">Stage 2 of the practice-book pipeline: for every leaf section of a
+      book it sends that section's image-only PDFs to Gemini and writes one validated
+      lesson section spec as JSON, merged across all the textbooks the section is drawn from.</div>
+      <div>
+        <span class="pill">stage 02_section_specs</span>
+        <span class="pill">combine-only: one spec per section</span>
+        <span class="pill">default gemini-3.8-flash</span>
+        <span class="pill">thinking level high</span>
+        <span class="pill">no JavaScript, no network on the skip path</span>
+      </div>
+    </header>
+
+    <h2 class="section" id="what-it-does">What the script does</h2>
+    <p>A practice book is assembled section by section, and a section usually appears in
+    more than one source textbook. <code>specs.py</code> reads the image-only section PDFs
+    that stage 1 produced, hands all of a section's PDFs to the model in a single call, and
+    stores the reply as a <em>lesson section spec</em>: what the section teaches, the
+    objectives it serves, the fences around it, and the wording later writing has to reuse.
+    Nothing here writes teaching prose — a spec is a brief for whatever writes the study
+    book next.</p>
+
+    <div class="stat-grid">
+      <div class="stat"><span class="value">10</span><span class="label">Spec fields</span></div>
+      <div class="stat"><span class="value">100</span><span class="label">Worker ceiling</span></div>
+      <div class="stat"><span class="value">4</span><span class="label">Attempts per section</span></div>
+      <div class="stat"><span class="value">17</span><span class="label">Sections in the sample book</span></div>
+      <div class="stat"><span class="value">23,545</span><span class="label">Tokens, logged 1.1 call</span></div>
+    </div>
+    <p class="caption">Spec fields from <code>SectionSpec.model_fields</code>; ceiling from
+    <code>MAX_WORKERS</code>; attempts from <code>MAX_ATTEMPTS</code>; section count
+    from <code>section_spans("eg_mathematics_en_g8_t1", None)</code>; tokens from
+    <code>00_api_call_logs/2026-08-16T21-07-02.811Z_1.1_section_spec/call.json</code>.</p>
+
+    <h3>The shape of the work</h3>
+    <ul>
+      <li><strong>One section, one call.</strong> Every source PDF for a section goes into
+      the same request, so the model sees all treatments of the topic at once and can
+      reconcile them itself.</li>
+      <li><strong>One section, one file.</strong> The output is named by zero-padded
+      hierarchy alone — <code>01_01.json</code> for section <code>1.1</code> — with no book
+      or source identifier in the name, because there is nothing to disambiguate.</li>
+      <li><strong>Schema-enforced.</strong> Pydantic models are handed to the Gemini SDK as
+      a response schema, and the reply is validated again on the way back with
+      <code>SpecReply.model_validate_json</code>.</li>
+      <li><strong>Self-contained output.</strong> The book's own metadata travels with every
+      spec, so a downstream reader needs nothing but the one JSON file.</li>
+      <li><strong>Resumable.</strong> A section already holding a spec of the current shape
+      is skipped without touching the network.</li>
+    </ul>
+
+    <h2 class="section" id="pipeline">Where it sits in the pipeline</h2>
+    <p>Stage 1 is <a class="inline" href="split.html"><code>split.py</code></a>, which
+    validates a book's table of contents and rasterises every page a section claims into an
+    image-only PDF, one per (source PDF, section) pair, under
+    <code>01_sections_pdf/</code>. <code>specs.py</code> reads those files and writes
+    <code>02_section_specs/</code>. It never reads the original textbook PDFs, and it never
+    rebuilds a section PDF: if one is missing it stops and tells you to run stage 1 first.</p>
+
+    <pre><code>data/temp/eg_mathematics_en_g8_t1/
+  00_api_call_logs/
+    2026-08-16T21-07-02.811Z_1.1_section_spec/
+      call.json            984 B
+      course_toc.txt     1,661 B
+      prompt.txt        14,551 B
+      response.json     57,328 B
+      response_text.txt 10,701 B
+  01_sections_pdf/                                      # written by split.py
+    01_01_16caec0919363dbb7789cdc01ebb501a.pdf   3.36 MB
+    01_01_e43cddae8de6a01b542c089e25c02368.pdf   5.06 MB
+    ...                                          34 files in total
+  02_section_specs/                                     # written by specs.py
+    01_01.json                                  11,928 B</code></pre>
+    <p class="caption">Sizes measured on disk under
+    <code>data/temp/eg_mathematics_en_g8_t1/</code>.</p>
+
+    <p><code>specs.py</code> borrows the pipeline's shared vocabulary rather than
+    re-deriving it. From <code>split.py</code> it imports <code>PROJECT_ROOT</code>,
+    <code>TEMP_DIR</code>, <code>SECTIONS_STAGE</code>, <code>Span</code>,
+    <code>book_root</code>, <code>book_spans</code>, <code>book_metadata</code>,
+    <code>section_spans</code>, <code>number_pad_width</code>, <code>number_stem</code> and
+    <code>section_stem</code>; from <code>api_logger.py</code> it imports
+    <code>ApiLogger</code>, <code>safe_log</code>, <code>genai_answer_text</code>,
+    <code>genai_response_files</code> and <code>genai_usage</code>. The zero padding is
+    derived, not fixed: <code>number_pad_width</code> returns
+    <code>max(2, len(str(largest number in the TOC)))</code>, which is 2 for the sample
+    book, so <code>1.1</code> becomes <code>01_01</code>.</p>
+
+    <hr />
+
+    <h2 class="section" id="cli">Command line</h2>
+    <pre><code>usage: specs.py [-h] [-s SECTION] [--update] [--model MODEL]
+                [--thinking-level {minimal,low,medium,high}]
+                book_id</code></pre>
+
+    <table>
+      <thead>
+        <tr><th>Argument</th><th>Default</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">book_id</td>
+          <td class="mono">required</td>
+          <td>Book to specify, e.g. <code>eg_mathematics_en_g8_t1</code>. Its table of
+          contents is read from <code>data/input/&lt;book_id&gt;/&lt;book_id&gt;.xml</code>.</td>
+        </tr>
+        <tr>
+          <td class="mono">-s, --section</td>
+          <td class="mono">all sections</td>
+          <td>Specify only this section, given as a dotted hierarchy such as
+          <code>1.1</code> or <code>1.3.5</code>. An unknown value is an error, not a
+          silent no-op.</td>
+        </tr>
+        <tr>
+          <td class="mono">--update</td>
+          <td class="mono">off</td>
+          <td>Rewrite section specs that already exist, bypassing the skip check entirely.
+          This is the only way to make the script re-call the model for a section that
+          already has a file.</td>
+        </tr>
+        <tr>
+          <td class="mono">--model</td>
+          <td class="mono">gemini-3.8-flash</td>
+          <td>Model to call, from <code>DEFAULT_MODEL</code>.</td>
+        </tr>
+        <tr>
+          <td class="mono">--thinking-level</td>
+          <td class="mono">high</td>
+          <td>Passed straight through as <code>types.ThinkingConfig(thinking_level=...)</code>.
+          Choices are <code>minimal</code>, <code>low</code>, <code>medium</code>,
+          <code>high</code>, from <code>THINKING_LEVELS</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>An API key must be present in <code>GEMINI_API_KEY</code> or
+    <code>GOOGLE_API_KEY</code>. The check runs before any section is examined, so even a
+    run that turns out to have nothing to do refuses to start without one.</p>
+
+    <h2 class="section" id="run">What one run does</h2>
+    <p><code>build_specs</code> resolves the book once — its TOC root, its metadata, its
+    padding width, the two stage directories and the filled prompt — then decides in
+    table-of-contents order which sections still need specifying, checks the inputs for all
+    of them, and hands the survivors to a pool of workers.</p>
+
+    <ol>
+      <li><strong>Decide, section by section.</strong> Compute each output path from the
+      padded hierarchy and, unless <code>--update</code> was given, drop the section when
+      <code>written_spec</code> says a current-shaped file is already there. What is left is
+      the pending list.</li>
+      <li><strong>Locate every input, before any call.</strong> Each pending section's PDFs
+      are looked for up front. Any section short of even one of them stops the run with
+      <code>N section(s) have no PDF: &lt;numbers&gt;; run split.py first</code>. This
+      happens before the first call because sections run together: otherwise a book that was
+      never split would spend a whole set of calls before the first missing file stopped
+      it.</li>
+      <li><strong>Build the client and logger, once.</strong> If anything is pending,
+      construct <code>genai.Client()</code> and <code>ApiLogger(TEMP_DIR / book_id)</code>
+      and gather them, with the rest of the book-wide values, into a frozen
+      <code>Run</code>.</li>
+      <li><strong>Fan out.</strong> A <code>ThreadPoolExecutor</code> of
+      <code>min(len(pending), MAX_WORKERS)</code> threads runs
+      <code>specify_section</code> per section.</li>
+      <li><strong>Collect.</strong> <code>as_completed</code> yields each section as it
+      lands; the driver counts it, prints its line, and carries on.</li>
+    </ol>
+
+    <p>Each worker uploads its section's PDFs, calls the model through
+    <code>request_spec</code> until a reply validates, deletes its uploads in a
+    <code>finally</code> block, and either writes the numbered spec or reports an
+    <code>abort</code>. It returns the line to print rather than printing it, so two workers
+    finishing together cannot interleave half a line each.</p>
+
+    <div class="panel note">
+      <strong>Nothing to do means no network.</strong> Both the Gemini client and the
+      logger reach out when constructed — <code>ApiLogger.__init__</code> queries an NTP
+      server to timestamp its folders accurately, retrying up to ten times before giving
+      up with a <code>RuntimeError</code>. Both are built only if the pending list is
+      non-empty, so a run whose sections are all already specified makes no network access
+      at all. That is what makes the skip path usable offline, and it is also why a
+      full-book re-run is cheap to attempt. Building them once, outside the pool, also
+      means the logger's clock is synchronised a single time rather than once per worker.
+    </div>
+
+    <div class="panel note">
+      <strong>Lines arrive out of order.</strong> Sections are printed as they complete, not
+      in table-of-contents order, because a five-page section finishes well before a
+      twenty-eight-page one that started at the same moment. Every line names its section,
+      and the closing <code>OK:</code> line reports the totals.
+    </div>
+
+    <p>Each written section prints a one-line summary from <code>describe</code>, which
+    reports only the counts that are non-zero, and the run closes with an
+    <code>OK:</code> line naming the stage directory relative to the project root:</p>
+
+    <pre><code>$ python scripts/specs.py -s 1.1 eg_mathematics_en_g8_t1
+OK: 0 section spec(s) written, 1 already specified under data/temp/eg_mathematics_en_g8_t1/02_section_specs</code></pre>
+    <p class="caption">Real output, section <code>1.1</code> of
+    <code>eg_mathematics_en_g8_t1</code> already specified; the run made no API call. The
+    <code>, N already specified</code> and <code>, N aborted</code> clauses are appended
+    only when those counts are non-zero.</p>
+
+    <h2 class="section" id="skip">When a section is skipped</h2>
+    <p>A section is skipped when <code>--update</code> was not given and
+    <code>written_spec(out_path, envelope_keys)</code> returns true. That function is
+    stricter than validation alone, and deliberately so: Pydantic ignores unknown keys and
+    fills absent arrays from their empty defaults, so a file written before a field was
+    renamed would validate happily while holding the old name. All four of the following
+    must hold.</p>
+
+    <table>
+      <thead>
+        <tr><th>Check</th><th>How</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The file exists and parses as JSON</td>
+          <td class="mono">json.loads(path.read_text(encoding="utf-8"))</td>
+        </tr>
+        <tr>
+          <td>Its top-level keys are exactly the envelope keys expected today</td>
+          <td class="mono">set(document) == envelope_keys</td>
+        </tr>
+        <tr>
+          <td>Its <code>spec</code> body keys are exactly the current spec fields</td>
+          <td class="mono">set(document["spec"]) == set(SectionSpec.model_fields)</td>
+        </tr>
+        <tr>
+          <td>The body validates against the live schema</td>
+          <td class="mono">SectionSpec.model_validate(document["spec"])</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Any <code>OSError</code>, <code>LookupError</code>, <code>TypeError</code> or
+    <code>ValueError</code> along the way — which covers a missing file, a truncated write,
+    a missing <code>spec</code> key and every Pydantic validation error — is caught and read
+    as "absent", so the section is simply specified again. <code>envelope_keys</code> is
+    built per book as <code>{"book_id", *meta, "number", "title", "module_path", "spec"}</code>,
+    which is 14 keys for the sample book: the five fixed ones plus its nine metadata
+    attributes.</p>
+
+    <div class="panel warn">
+      <strong>The check is shallow, on purpose.</strong> It compares the top-level envelope
+      keys and the <code>spec</code> body keys, and nothing deeper. It never looks at the
+      keys inside a row. If a nested row field is added or removed — a new field on
+      <code>teaching_points[]</code>, say, or a dropped one on <code>excerpts[]</code> —
+      existing files still match at both levels it inspects, still validate (the new field
+      would take its default, the removed one is ignored as unknown), and are therefore not
+      detected as stale. After any change to a nested model, rebuild with
+      <code>--update</code>. This is a known, accepted trade-off: a deep comparison would
+      have to mirror the model tree, and the top-level check already catches the common
+      case of the spec's own field set changing.
+    </div>
+
+    <h2 class="section" id="transports">How the PDFs reach the model</h2>
+    <p><code>upload_pdfs</code> puts every section PDF behind a file URI: each one is
+    uploaded with <code>client.files.upload</code>, polled to readiness, referenced as a
+    <code>types.Part.from_uri</code>, and deleted once the answer is in. There is no size
+    test and no second transport. Nothing is ever sent inline.</p>
+
+    <p>This is a choice rather than a limit. The API would take these documents inline
+    comfortably — as of August 2026 an inline payload may reach 100 MB, or 50 MB for PDFs,
+    and the largest section either sample book has ever produced is 18.2 MB across its two
+    sources. Uploading buys three things instead:</p>
+
+    <ul>
+      <li><strong>Memory.</strong> Inline transport reads the whole PDF into memory and
+      holds it there for the length of the call. With up to
+      <code>MAX_WORKERS = 100</code> sections in flight at once, that is the difference
+      between streaming a file from disk and holding a hundred of them in RAM beside each
+      other.</li>
+      <li><strong>Cheaper retries.</strong> A retried attempt re-sends a URI, not the
+      bytes. Inline, all four attempts would carry the full payload again.</li>
+      <li><strong>One path, always exercised.</strong> A size-triggered branch is by
+      definition the code that runs least and breaks most quietly. On the g7 book it fired
+      for exactly one section in sixteen.</li>
+    </ul>
+
+    <p>What it costs is a round trip before the call and an obligation afterwards: an
+    upload occupies the project's 20 GB Files quota until it is deleted or until it expires
+    on its own after 48 hours. <code>specify_section</code> deletes in a
+    <code>finally</code> block, so the handles go whether the call succeeded, aborted or
+    raised. Transport does not affect the bill — the same section specified both ways was
+    charged an identical 14,915 input tokens.</p>
+
+    <p><code>wait_until_ready</code> polls a handle every
+    <code>UPLOAD_POLL_SECONDS = 2.0</code> seconds until its state reads
+    <code>ACTIVE</code>. A state of <code>FAILED</code> raises immediately, and a handle
+    still not ready after <code>UPLOAD_READY_TIMEOUT = 120.0</code> seconds raises with the
+    state it was last seen in.</p>
+
+    <div class="panel good">
+      <strong>The upload is retried, and partial uploads are cleaned up.</strong> Every
+      section now depends on an upload, so a single failed transfer would otherwise cost a
+      section all four of its model attempts before it ever made one.
+      <code>upload_pdfs</code> therefore retries the whole set up to
+      <code>MAX_ATTEMPTS = 4</code> times with the same 2 s, 4 s, 8 s backoff the model
+      calls use. Because uploads are made one at a time, a failure on the second PDF leaves
+      the first sitting in the account holding quota, and nobody else holds that handle:
+      each failed attempt calls <code>delete_uploads</code> on whatever went up before
+      giving up or trying again. <code>delete_uploads</code> swallows its own errors, since
+      an upload that cannot be deleted expires by itself and that is not worth failing a
+      run over.
+    </div>
+
+    <p>Verified on section <code>4.6</code> of <code>eg_mathematics_en_g7_t1</code>,
+    specified once each way: 14,915 input tokens both times, and a count of the PDFs held
+    server-side read zero before the run and zero after it.</p>
+
+    <h2 class="section" id="retries">Retries, aborts and failure</h2>
+    <p><code>request_spec</code> loops up to <code>MAX_ATTEMPTS = 4</code> times. One
+    attempt covers both the transport and the parse — <code>logged_call</code> catches
+    every exception from <code>generate_content</code> and from
+    <code>SpecReply.model_validate_json</code> alike, records the failure as
+    <code>"{type}: {message}"</code>, and returns <code>None</code>. Between attempts the
+    loop sleeps <code>2 ** attempt</code> seconds, so 2 s, 4 s and 8 s; there is no sleep
+    after the last attempt. When all four fail it raises
+    <code>failed after 4 attempts: &lt;last error&gt;</code>.
+    <code>upload_pdfs</code> retries on the same schedule before the call is ever made.</p>
+
+    <p>A section that exhausts its attempts no longer ends the book. The driver catches
+    whatever the worker raised, reports that one section, and lets the others finish —
+    sixteen sections running together should not all be lost to the one that failed. Those
+    failures are counted and returned, so the exit code still reflects them.</p>
+
+    <table>
+      <thead>
+        <tr><th>Outcome</th><th>Console</th><th class="num">Exit</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>All sections written or skipped</td>
+          <td class="mono">OK: ... under data/temp/&lt;book_id&gt;/02_section_specs</td>
+          <td class="num mono">0</td>
+        </tr>
+        <tr>
+          <td>The model returned <code>status: "abort"</code> for at least one section</td>
+          <td class="mono">  1.1: aborted, &lt;reason&gt; — then the OK line with an
+          <code>, N aborted</code> clause</td>
+          <td class="num mono">1</td>
+        </tr>
+        <tr>
+          <td>A section raised — four failed uploads or four failed calls</td>
+          <td class="mono">  1.1: failed, &lt;type&gt;: &lt;message&gt; — then the OK line
+          with a <code>, N failed</code> clause</td>
+          <td class="num mono">1</td>
+        </tr>
+        <tr>
+          <td>A <code>RuntimeError</code> before the pool — no API key, unknown section,
+          missing section PDFs, unreadable prompt, or a TOC leaf that is not unique</td>
+          <td class="mono">FAILED: &lt;message&gt; on stderr</td>
+          <td class="num mono">1</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>An abort is a judgement, not a fault: it is counted, printed, and the exit code is 1
+    purely so a caller notices. The last row is the only kind that stops a run outright, and
+    every check in it runs before the first call goes out, so nothing is spent on a book that
+    cannot be specified.</p>
+
+    <hr />
+
+    <h2 class="section" id="prompt">The prompt and the combine rules</h2>
+    <p>The prompt lives beside the script at <code>scripts/specs.md</code>, 125 lines of
+    it, and it is half the behaviour. <code>build_prompt</code> reads the file and
+    substitutes a single placeholder, <code>{book_context}</code>, by hand rather than with
+    <code>string.Template</code> — the prompt is full of LaTeX and <code>Template</code>
+    would read every <code>$</code> in it as a placeholder. A missing file or a missing
+    placeholder is a <code>RuntimeError</code>. For the sample book the substituted line
+    reads:</p>
+
+    <pre><code>Subject: Mathematics | Grade: 8 | Term: 1 | Language: English | Language code: en | Country: Egypt</code></pre>
+
+    <p>A second text part carries the course around the section. <code>course_toc</code>
+    walks the TOC into a titles-only tree and flags the leaf being specified with
+    <code>"current": true</code>; it raises unless exactly one leaf is marked, which
+    catches both a bad section argument and a malformed TOC. <code>toc_part</code> labels
+    it so the model can tell it from the prompt:</p>
+
+    <pre><code>Course TOC JSON:
+{
+  "current_title": "Real Numbers",
+  "toc": [
+    {
+      "title": "Numbers and Their Operations",
+      "sections": [
+        { "title": "Real Numbers", "current": true },
+        { "title": "Intervals and Their Operations" },
+        ...
+      ]
+    },
+    ...
+  ]
+}</code></pre>
+    <p class="caption">Trimmed from
+    <code>00_api_call_logs/2026-08-16T21-07-02.811Z_1.1_section_spec/course_toc.txt</code>
+    (1,661 bytes in full). Titles only — no page ranges, no numbers.</p>
+
+    <h3>Combine-only, and what that means</h3>
+    <p>This is the heart of the stage. Multiple PDFs for one TOC leaf are multiple
+    textbooks teaching the same thing, and the prompt asks for our single-voice section
+    rather than a collage: not source-labelled, free to rechunk and rewrite, but with every
+    content item still grounded in at least one PDF.</p>
+
+    <ul>
+      <li><strong>Semantic union, called absolute.</strong> For <code>glossary</code>,
+      <code>teaching_points</code>, <code>excerpts</code>, <code>equations</code> and
+      <code>notations</code>: two items carrying the same meaning, even in different
+      wording or with different emphasis, collapse to one row, keeping the clearer or more
+      complete version. A second row is added only when it teaches or reprints something
+      substantively different. The same applies one level down, to a teaching point's
+      nested <code>figure</code>: one visual idea, one figure on the surviving point.</li>
+      <li><strong>Objectives are reconciled, not unioned.</strong> They follow a dedicated
+      two-step rule. First seed: where a PDF prints its own learning objectives, start from
+      those printed lists, collapsing same-meaning rows and taking the semantic union where
+      the lists differ; where no PDF prints any, infer them from the content. Then
+      reconcile against the synthesised section: drop any seeded objective the content does
+      not actually tackle, and add any outcome the content clearly teaches that the printed
+      lists missed. The result is the section's objectives, not a bibliographic merge of
+      publisher boxes.</li>
+      <li><strong>Depth is chosen, not averaged.</strong> Where two books treat the same
+      point at different depth, one <code>notes</code> block covers what both support; a
+      deeper treatment from one book is included only if it belongs in our section, and
+      otherwise becomes an <code>out_of_scope</code> row. Blurring into vague averaged
+      prose is called out as the failure mode to avoid.</li>
+      <li><strong>Excerpts stay exact.</strong> Where books print near-equivalent wording,
+      one source is chosen — most complete conditions and conclusion first, then clearer
+      standard school wording, then whichever prints the conventional name — and copied
+      once, character for character. Never one row per book, never a synthesised
+      paraphrase.</li>
+      <li><strong>Order is instructional.</strong> With one PDF the content arrays follow
+      first appearance. With several they follow a coherent order for the synthesised
+      section: dependency before dependents, definition then property then application then
+      converse, rather than "PDF 1 then PDF 2".</li>
+    </ul>
+
+    <h3>Topical mismatch and the abort path</h3>
+    <p>The reply envelope is <code>SpecReply</code>: <code>status</code>
+    (<code>"ok"</code> or <code>"abort"</code>), <code>abort_reason</code> (empty when
+    <code>ok</code>) and <code>spec</code>. Abort is reserved for a hard topical mismatch —
+    a PDF that is clearly a different topic from the TOC leaf, the prompt's example being a
+    leaf on kinetic energy with a PDF mostly about acids and alkalis. A different approach
+    or a different depth on the same topic is not an abort; a single PDF is never an abort;
+    borderline same-topic cases resolve to <code>ok</code> without deliberation. Because
+    <code>spec</code> is a required field of the envelope even when aborting, the prompt
+    specifies a minimal schema-valid shell — role <code>teach</code>, a placeholder
+    overview, one placeholder row in each of the three arrays the schema requires, empty
+    lists elsewhere — and forbids inventing real teaching content in it. The script never
+    writes that shell to disk.</p>
+
+    <p>The rest of the prompt sets the boundaries the schema cannot: stay in the book's
+    language and never translate or synonym-swap a term, keep Arabic tashkeel and
+    underlines exactly as printed in verbatim fields, omit any claim resting on an
+    illegible page, and never write the study book itself.</p>
+
+    <h2 class="section" id="schema">The spec schema</h2>
+    <p><code>SectionSpec</code> is handed to the SDK as the response schema, nested inside
+    <code>SpecReply</code>, and used again to validate the reply and to check existing files
+    on the skip path. It has exactly ten fields, declared in the order they are written to
+    disk: what the section is, then what it must achieve, then the material it teaches
+    with.</p>
+
+    <table>
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Required</th><th>What it holds</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">role</td>
+          <td class="mono">"teach" | "revision" | "assessment"</td>
+          <td>yes</td>
+          <td>What kind of section this is. <code>teach</code> covers instructional
+          material including labs that teach content.</td>
+        </tr>
+        <tr>
+          <td class="mono">overview</td>
+          <td class="mono">str</td>
+          <td>yes</td>
+          <td>Four to eight analyst sentences on the section's pedagogical arc, including
+          notable activity patterns. Not student prose.</td>
+        </tr>
+        <tr>
+          <td class="mono">objectives</td>
+          <td class="mono">list[Objective]</td>
+          <td>yes, min 1</td>
+          <td>Observable learner outcomes, seeded from printed objectives then reconciled
+          against the content.</td>
+        </tr>
+        <tr>
+          <td class="mono">prerequisites</td>
+          <td class="mono">list[Prerequisite]</td>
+          <td>yes, min 1</td>
+          <td>Skills and knowledge the section assumes, written as skill statements and
+          never as unit titles or grade labels.</td>
+        </tr>
+        <tr>
+          <td class="mono">out_of_scope</td>
+          <td class="mono">list[OutOfScope]</td>
+          <td>yes, min 1</td>
+          <td>Near-miss topics and alternate approaches this section must not teach, each
+          with a reason.</td>
+        </tr>
+        <tr>
+          <td class="mono">glossary</td>
+          <td class="mono">list[GlossaryEntry]</td>
+          <td>no, defaults to []</td>
+          <td>Terms with a short gloss in the book's language.</td>
+        </tr>
+        <tr>
+          <td class="mono">teaching_points</td>
+          <td class="mono">list[TeachingPoint]</td>
+          <td>no, defaults to []</td>
+          <td>The teachable ideas, skills, processes and structures, each with enough notes
+          to teach it without the PDFs.</td>
+        </tr>
+        <tr>
+          <td class="mono">excerpts</td>
+          <td class="mono">list[Excerpt]</td>
+          <td>no, defaults to []</td>
+          <td>Wording copied from a source that later writing must reuse; empty when
+          none.</td>
+        </tr>
+        <tr>
+          <td class="mono">equations</td>
+          <td class="mono">list[Equation]</td>
+          <td>no, defaults to []</td>
+          <td>Load-bearing symbolic relations in reusable general form, not filled numeric
+          instances.</td>
+        </tr>
+        <tr>
+          <td class="mono">notations</td>
+          <td class="mono">list[Notation]</td>
+          <td>no, defaults to []</td>
+          <td>How to read the section's symbolic writing: what a symbol or unit stands for,
+          how a form is written.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Row shapes</h3>
+    <p>Each of the eight arrays holds rows of a fixed shape. Every field below is required
+    and has no default, with the single exception of <code>teaching_points[].figure</code>.</p>
+
+    <table>
+      <thead>
+        <tr><th>Array</th><th>Row field</th><th>Type</th><th>What it holds</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">objectives</td>
+          <td class="mono">text</td>
+          <td class="mono">str</td>
+          <td>An observable skill or piece of knowledge the learner gains.</td>
+        </tr>
+        <tr>
+          <td class="mono">prerequisites</td>
+          <td class="mono">text</td>
+          <td class="mono">str</td>
+          <td>A skill or piece of knowledge the section assumes already.</td>
+        </tr>
+        <tr>
+          <td class="mono">out_of_scope</td>
+          <td class="mono">text</td>
+          <td class="mono">str</td>
+          <td>A topic or method this section must not teach.</td>
+        </tr>
+        <tr>
+          <td class="mono">out_of_scope</td>
+          <td class="mono">reason</td>
+          <td class="mono">str</td>
+          <td>Why it is out of scope here.</td>
+        </tr>
+        <tr>
+          <td class="mono">glossary</td>
+          <td class="mono">term</td>
+          <td class="mono">str</td>
+          <td>The term as the book prints it.</td>
+        </tr>
+        <tr>
+          <td class="mono">glossary</td>
+          <td class="mono">definition</td>
+          <td class="mono">str</td>
+          <td>Short gloss in the book's language.</td>
+        </tr>
+        <tr>
+          <td class="mono">teaching_points</td>
+          <td class="mono">title</td>
+          <td class="mono">str</td>
+          <td>Short name for the idea, skill or process.</td>
+        </tr>
+        <tr>
+          <td class="mono">teaching_points</td>
+          <td class="mono">notes</td>
+          <td class="mono">str</td>
+          <td>Enough to teach it without the PDFs, and how it is taught at this level.</td>
+        </tr>
+        <tr>
+          <td class="mono">teaching_points</td>
+          <td class="mono">figure</td>
+          <td class="mono">Figure | None</td>
+          <td><strong>Optional</strong>, defaults to <code>None</code>. The visual this
+          point needs; omitted when it needs none.</td>
+        </tr>
+        <tr>
+          <td class="mono">teaching_points</td>
+          <td class="mono">figure.type</td>
+          <td class="mono">str</td>
+          <td>Short category, e.g. number line, labelled diagram.</td>
+        </tr>
+        <tr>
+          <td class="mono">teaching_points</td>
+          <td class="mono">figure.purpose</td>
+          <td class="mono">str</td>
+          <td>One sentence on what it teaches.</td>
+        </tr>
+        <tr>
+          <td class="mono">teaching_points</td>
+          <td class="mono">figure.description</td>
+          <td class="mono">str</td>
+          <td>Brief for recreating it: labels, values and relationships the sources show,
+          and only those.</td>
+        </tr>
+        <tr>
+          <td class="mono">excerpts</td>
+          <td class="mono">type</td>
+          <td class="mono">enum, 6 values</td>
+          <td>One of <code>passage</code>, <code>dialogue</code>, <code>document</code>,
+          <code>poem</code>, <code>key_statement</code>, <code>other</code>.</td>
+        </tr>
+        <tr>
+          <td class="mono">excerpts</td>
+          <td class="mono">reuse</td>
+          <td class="mono">enum, 2 values</td>
+          <td><code>as_is</code> when changing the words would break it,
+          <code>rephrase_ok</code> otherwise.</td>
+        </tr>
+        <tr>
+          <td class="mono">excerpts</td>
+          <td class="mono">text</td>
+          <td class="mono">str</td>
+          <td>Exact copy of the chosen source's wording, even when <code>reuse</code> is
+          <code>rephrase_ok</code>. For a poem, rewritten from <code>rows</code> as
+          newline-joined lines.</td>
+        </tr>
+        <tr>
+          <td class="mono">excerpts</td>
+          <td class="mono">kashida</td>
+          <td class="mono">bool</td>
+          <td>On a poem excerpt, <code>false</code> only for free verse. Omitted (true)
+          otherwise.</td>
+        </tr>
+        <tr>
+          <td class="mono">excerpts</td>
+          <td class="mono">rows</td>
+          <td class="mono">list</td>
+          <td>On a poem excerpt, printed table rows. Each row has <code>shatrs</code>:
+          one string, or صدر then عجز. Empty on every other type.</td>
+        </tr>
+        <tr>
+          <td class="mono">equations</td>
+          <td class="mono">latex</td>
+          <td class="mono">str</td>
+          <td>A reusable general form, in <code>$...$</code> or <code>$$...$$</code>.</td>
+        </tr>
+        <tr>
+          <td class="mono">notations</td>
+          <td class="mono">notation</td>
+          <td class="mono">str</td>
+          <td>A symbol, unit or written convention, e.g. bold for vectors.</td>
+        </tr>
+        <tr>
+          <td class="mono">notations</td>
+          <td class="mono">meaning</td>
+          <td class="mono">str</td>
+          <td>What it stands for.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>The two literal enums</h4>
+    <table>
+      <thead>
+        <tr><th>Value</th><th>Field</th><th>When to use it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">passage</td><td class="mono">excerpts[].type</td>
+          <td>Continuous reading prose the section must reuse: comprehension extracts,
+          narrative paragraphs, non-dialogue literary prose.</td></tr>
+        <tr><td class="mono">dialogue</td><td class="mono">excerpts[].type</td>
+          <td>Speaker-turn text: plays, conversations, interview scripts.</td></tr>
+        <tr><td class="mono">document</td><td class="mono">excerpts[].type</td>
+          <td>Primary source wording — letters, inscriptions, legal or historical excerpts,
+          certificates — where the exact document text matters.</td></tr>
+        <tr><td class="mono">poem</td><td class="mono">excerpts[].type</td>
+          <td>Verse or poetic text.</td></tr>
+        <tr><td class="mono">key_statement</td><td class="mono">excerpts[].type</td>
+          <td>A fixed school statement the section must carry, named or boxed: theorem,
+          lemma, postulate, law, identity, rule, key fact. Preferred over
+          <code>passage</code> or <code>other</code> for those.</td></tr>
+        <tr><td class="mono">other</td><td class="mono">excerpts[].type</td>
+          <td>Only when none of the above fit.</td></tr>
+        <tr><td class="mono">as_is</td><td class="mono">excerpts[].reuse</td>
+          <td>Changing the words would break meaning, assessment, faith or literature
+          integrity, or language targets. Preferred when unsure for reading passages.</td></tr>
+        <tr><td class="mono">rephrase_ok</td><td class="mono">excerpts[].reuse</td>
+          <td>The idea and role must be kept but school wording may change; typical for
+          <code>key_statement</code> prose.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>What the writer adds: ids and always-present arrays</h3>
+    <p><code>spec_document</code> converts the validated model into the dict that is
+    written. It dumps with <code>exclude_defaults=True</code>, then walks
+    <code>SectionSpec.model_fields</code> in declaration order. A field that is not in
+    <code>ID_PREFIXES</code> — that is, <code>role</code> and <code>overview</code>, neither
+    of which has a default — is copied straight through. Every other field is rebuilt as
+    <code>[{"id": f"{prefix}_{n}", **row} for n, row in enumerate(body.get(field) or [], 1)]</code>.</p>
+
+    <p>Two consequences fall out of that one rule, and both matter to a consumer:</p>
+    <ul>
+      <li><strong>Every array is always written, empty or not.</strong>
+      <code>exclude_defaults=True</code> drops an array that still equals its empty default,
+      and the <code>body.get(field) or []</code> puts it back as <code>[]</code>. A reader
+      can count on all ten keys being present in <code>spec</code>.</li>
+      <li><strong>Optional row fields are omitted, not written as defaults.</strong> The
+      same <code>exclude_defaults=True</code> leaves <code>figure</code> out of the teaching
+      points that do not have one, rather than writing <code>"figure": null</code>. It is
+      currently the only optional field anywhere in the tree, so it is the only omission a
+      reader will see.</li>
+    </ul>
+
+    <p>Ids are assigned on the way to disk rather than by the model, so a later stage can
+    cite <code>objective_2</code> and mean the second objective written here. The prefix is
+    the array name in the singular, with two that are not a mechanical singularisation:</p>
+
+    <table>
+      <thead>
+        <tr><th>Array</th><th>Id prefix</th><th>First id</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">objectives</td><td class="mono">objective</td><td class="mono">objective_1</td></tr>
+        <tr><td class="mono">prerequisites</td><td class="mono">prerequisite</td><td class="mono">prerequisite_1</td></tr>
+        <tr><td class="mono">out_of_scope</td><td class="mono">out_of_scope</td><td class="mono">out_of_scope_1</td></tr>
+        <tr><td class="mono">glossary</td><td class="mono">term</td><td class="mono">term_1</td></tr>
+        <tr><td class="mono">teaching_points</td><td class="mono">teaching_point</td><td class="mono">teaching_point_1</td></tr>
+        <tr><td class="mono">excerpts</td><td class="mono">excerpt</td><td class="mono">excerpt_1</td></tr>
+        <tr><td class="mono">equations</td><td class="mono">equation</td><td class="mono">equation_1</td></tr>
+        <tr><td class="mono">notations</td><td class="mono">notation</td><td class="mono">notation_1</td></tr>
+      </tbody>
+    </table>
+    <p>The <code>id</code> keys survive the skip check because Pydantic ignores unknown keys
+    when validating a row, and the shallow key comparison never descends into a row.</p>
+
+    <h2 class="section" id="output">The file on disk</h2>
+    <p>The spec body is wrapped in an envelope that carries the book's own attributes with
+    it. How the spec was produced belongs to the call log, not here, so nothing about the
+    model, the prompt or the sources appears in the file.</p>
+
+    <table>
+      <thead>
+        <tr><th>Envelope key</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">book_id</td><td>The <code>book_id</code> argument.</td></tr>
+        <tr>
+          <td class="mono">subject, grade, term, language_code, language, subject_id,
+          academic_year, country_code, country</td>
+          <td>Every attribute of the XML <code>&lt;book&gt;</code> element, spread in
+          wholesale by <code>book_metadata()</code>. The set is whatever the element
+          carries, so a book with extra attributes gets extra envelope keys.</td>
+        </tr>
+        <tr><td class="mono">number</td><td>The section's dotted hierarchy, e.g.
+          <code>1.1</code>.</td></tr>
+        <tr><td class="mono">title</td><td>The section title from the first source
+          span.</td></tr>
+        <tr><td class="mono">module_path</td><td>The breadcrumb through the TOC, e.g.
+          <code>1. Numbers and Their Operations &gt; 1. Real Numbers</code>.</td></tr>
+        <tr><td class="mono">spec</td><td>The numbered spec body from
+          <code>spec_document</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <p>The file is written with <code>indent=2</code>, <code>ensure_ascii=False</code> and a
+    trailing newline, so it stays readable and diffable in the book's own script.</p>
+
+    <pre><code>{
+  "book_id": "eg_mathematics_en_g8_t1",
+  "subject": "Mathematics",
+  "grade": "8",
+  "term": "1",
+  "language_code": "en",
+  "language": "English",
+  "subject_id": "",
+  "academic_year": "25-26",
+  "country_code": "eg",
+  "country": "Egypt",
+  "number": "1.1",
+  "title": "Real Numbers",
+  "module_path": "1. Numbers and Their Operations &gt; 1. Real Numbers",
+  "spec": {
+    "role": "teach",
+    "overview": "The section begins by introducing irrational numbers ($\\mathbb{Q}'$) as numbers that cannot be expressed in the form $\\frac{a}{b}$ with $a, b \\in \\mathbb{Z}$ and $b \\neq 0$, contrasting them with rational numbers ($\\mathbb{Q}$). ...",
+    "objectives": [
+      { "id": "objective_1", "text": "Identify and define irrational numbers ($\\mathbb{Q}'$) as numbers that cannot be written in the form $\\frac{a}{b}$ where $a, b \\in \\mathbb{Z}$ and $b \\neq 0$." },
+      ...
+    ],
+    "prerequisites": [
+      { "id": "prerequisite_2", "text": "Recognize perfect squares and perfect cubes and calculate their square and cube roots." },
+      ...
+    ],
+    "out_of_scope": [
+      {
+        "id": "out_of_scope_2",
+        "text": "Interval notation and operations on intervals",
+        "reason": "Intervals are covered in a separate upcoming section in Unit 1."
+      },
+      ...
+    ],
+    "glossary": [
+      {
+        "id": "term_1",
+        "term": "Irrational number",
+        "definition": "A number that cannot be written in the form $\\frac{a}{b}$, where $a$ and $b$ are integers and $b \\neq 0$."
+      },
+      ...
+    ],
+    "teaching_points": [
+      {
+        "id": "teaching_point_2",
+        "title": "Estimating and Locating Irrational Numbers on the Number Line",
+        "notes": "To estimate the value of an irrational root like $\\sqrt{11}$ or $\\sqrt[3]{20}$, students bound the radicand between two consecutive perfect square or perfect cube numbers ...",
+        "figure": {
+          "type": "number line",
+          "purpose": "Illustrate how to bound and locate an irrational number between two consecutive integers on a number line.",
+          "description": "A horizontal line segment with integer tick marks at 3 and 4, indicating bounding roots $\\sqrt{9}=3$ and $\\sqrt{16}=4$, with a point for $\\sqrt{11}$ marked closer to 3."
+        }
+      },
+      ...
+    ],
+    "excerpts": [
+      {
+        "id": "excerpt_3",
+        "type": "key_statement",
+        "reuse": "as_is",
+        "text": "There is no square root for a negative real number."
+      },
+      ...
+    ],
+    "equations": [
+      { "id": "equation_1", "latex": "$$\\mathbb{R} = \\mathbb{Q} \\cup \\mathbb{Q}'$$" },
+      { "id": "equation_2", "latex": "$$\\mathbb{Q} \\cap \\mathbb{Q}' = \\emptyset$$" },
+      { "id": "equation_3", "latex": "$$\\mathbb{N} \\subset \\mathbb{Z} \\subset \\mathbb{Q} \\subset \\mathbb{R}$$" }
+    ],
+    "notations": [
+      { "id": "notation_1", "notation": "$\\mathbb{Q}'$", "meaning": "Set of irrational numbers" },
+      ...
+    ]
+  }
+}</code></pre>
+    <p class="caption">Real content from
+    <code>data/temp/eg_mathematics_en_g8_t1/02_section_specs/01_01.json</code> (11,928
+    bytes, 201 lines), trimmed: long strings cut with <code>...</code> and most rows
+    elided. Rows are shown one per line here where the real file indents every key.</p>
+
+    <h3>What one real spec contains</h3>
+    <div class="bar-row"><span>objectives</span><div class="bar" style="width:50%"></div><span class="pct">5</span></div>
+    <div class="bar-row"><span>prerequisites</span><div class="bar" style="width:40%"></div><span class="pct">4</span></div>
+    <div class="bar-row"><span>out_of_scope</span><div class="bar" style="width:40%"></div><span class="pct">4</span></div>
+    <div class="bar-row"><span>glossary</span><div class="bar" style="width:20%"></div><span class="pct">2</span></div>
+    <div class="bar-row"><span>teaching_points</span><div class="bar" style="width:50%"></div><span class="pct">5</span></div>
+    <div class="bar-row"><span>excerpts</span><div class="bar" style="width:30%"></div><span class="pct">3</span></div>
+    <div class="bar-row"><span>equations</span><div class="bar" style="width:30%"></div><span class="pct">3</span></div>
+    <div class="bar-row"><span>notations</span><div class="bar" style="width:70%"></div><span class="pct">7</span></div>
+    <p class="caption">Row counts in
+    <code>data/temp/eg_mathematics_en_g8_t1/02_section_specs/01_01.json</code> — section
+    1.1, "Real Numbers", merged from 2 source PDFs. Bar widths are scaled so the largest
+    array spans 70%; the printed counts are exact. Two of the five teaching points carry a
+    <code>figure</code>; the other three omit the key entirely. The <code>overview</code> is
+    1,038 characters over five sentences, at the low end of the four-to-eight the prompt
+    asks for.</p>
+
+    <p>The console line for that section, from <code>describe</code>, would read
+    <code>  1.1: 2 source(s) -&gt; 5 objectives, 5 teaching points, 2 terms, 3 excerpts, 3
+    equations</code>. It reports five of the eight arrays and drops any whose count is
+    zero, so it is a progress signal rather than a full inventory.</p>
+
+    <hr />
+
+    <h2 class="section" id="logging">API call logging</h2>
+    <p>Every attempt is logged, successful or not, through <code>safe_log</code> — a wrapper
+    that catches its own failures and prints a warning rather than losing a generation to a
+    logging problem. <code>ApiLogger</code> creates one folder per call under
+    <code>data/temp/&lt;book_id&gt;/00_api_call_logs/</code>, named
+    <code>{timestamp}_{item}_{step}</code>, where the item is the dotted section number and
+    the step is always <code>section_spec</code>. Timestamps come from an NTP server rather
+    than the local clock.</p>
+
+    <table>
+      <thead>
+        <tr><th>File</th><th>Contents</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">call.json</td><td>Timestamp, item, step, attempt, api, model,
+          token usage, duration, status, plus the extra context below.</td></tr>
+        <tr><td class="mono">prompt.txt</td><td>The filled prompt exactly as sent.</td></tr>
+        <tr><td class="mono">course_toc.txt</td><td>The labelled course TOC part.</td></tr>
+        <tr><td class="mono">response.json</td><td>The full SDK response dumped with
+          <code>exclude_none=True</code>, from <code>genai_response_files</code>.</td></tr>
+        <tr><td class="mono">response_text.txt</td><td>The concatenated text parts, written
+          only when the model returned text.</td></tr>
+      </tbody>
+    </table>
+    <p>The PDFs themselves are not copied into the log — they already sit under
+    <code>01_sections_pdf/</code>, and <code>call.json</code> names them.</p>
+
+    <p>Beyond the standard fields, <code>logged_call</code> records the whole shape of the
+    request: <code>book_id</code>, <code>section</code>, <code>section_title</code>,
+    <code>module_path</code>, a <code>sources</code> list of <code>md5</code> with
+    <code>start_page</code> and <code>end_page</code>, the <code>pdfs</code> filenames, an
+    <code>uploaded</code> flag saying which transport was used, <code>prompt_file</code>,
+    <code>thinking_level</code>, and <code>returned</code>, which holds the model's own
+    <code>status</code> or <code>null</code> when the attempt failed. Token usage comes from
+    <code>genai_usage</code>: <code>input_tokens</code>, <code>thinking_tokens</code>,
+    <code>output_tokens</code> and <code>total_tokens</code>, with any the API omitted
+    dropped rather than written as null.</p>
+
+    <pre><code>{
+  "timestamp": "2026-08-16T21:07:02.811206+00:00",
+  "page_number": "1.1",
+  "step": "section_spec",
+  "attempt": 1,
+  "api": "gemini",
+  "model": "gemini-3.6-flash",
+  "usage": {
+    "input_tokens": 13471,
+    "thinking_tokens": 7145,
+    "output_tokens": 2929,
+    "total_tokens": 23545
+  },
+  "duration_seconds": 49.186,
+  "status": "success",
+  "book_id": "eg_mathematics_en_g8_t1",
+  "section": "1.1",
+  "section_title": "Real Numbers",
+  "module_path": "1. Numbers and Their Operations &gt; 1. Real Numbers",
+  "sources": [
+    { "md5": "16caec0919363dbb7789cdc01ebb501a", "start_page": "7", "end_page": "12" },
+    { "md5": "e43cddae8de6a01b542c089e25c02368", "start_page": "8", "end_page": "19" }
+  ],
+  "pdfs": [
+    "01_01_16caec0919363dbb7789cdc01ebb501a.pdf",
+    "01_01_e43cddae8de6a01b542c089e25c02368.pdf"
+  ],
+  "uploaded": false,
+  "prompt_file": "scripts/specs.md",
+  "thinking_level": "high",
+  "returned": "ok"
+}</code></pre>
+    <p class="caption">From
+    <code>00_api_call_logs/2026-08-16T21-07-02.811Z_1.1_section_spec/call.json</code>,
+    with the <code>sources</code> rows folded onto one line each. One field differs from the
+    record on disk: <code>prompt_file</code> is derived at run time from
+    <code>PROMPT_PATH.relative_to(PROJECT_ROOT)</code> and now reads
+    <code>scripts/specs.md</code>, where the six stored records predate the prompt moving
+    beside its script and still read <code>prompts/section_specs.md</code>.</p>
+
+    <h3>Token usage across the logged calls</h3>
+    <div class="bar-row alt"><span>08-15 18:21</span><div class="bar" style="width:59.0%"></div><span class="pct">21,444</span></div>
+    <div class="bar-row alt"><span>08-15 19:04</span><div class="bar" style="width:70.0%"></div><span class="pct">25,437</span></div>
+    <div class="bar-row alt"><span>08-15 19:16</span><div class="bar" style="width:57.7%"></div><span class="pct">20,969</span></div>
+    <div class="bar-row alt"><span>08-16 20:55</span><div class="bar" style="width:68.4%"></div><span class="pct">24,859</span></div>
+    <div class="bar-row alt"><span>08-16 21:01</span><div class="bar" style="width:63.1%"></div><span class="pct">22,930</span></div>
+    <div class="bar-row alt"><span>08-16 21:07</span><div class="bar" style="width:64.8%"></div><span class="pct">23,545</span></div>
+    <p class="caption">Total tokens per call, all six <code>_section_spec</code> records
+    under <code>data/temp/eg_mathematics_en_g8_t1/00_api_call_logs/</code> (23 log folders
+    in that directory in total, the other 17 belonging to later pipeline steps). All six are
+    section 1.1 on <code>gemini-3.6-flash</code> at thinking level <code>high</code>,
+    attempt 1, status success. Input tokens sit in a narrow band of 13,471 to 13,730 —
+    prompt plus TOC plus two PDFs — while thinking tokens range from 4,467 to 8,984, which
+    is where the variation comes from. Durations ran 38.5 s to 97.3 s. Bar widths are scaled
+    so the largest spans 70%.</p>
+
+    <h2 class="section" id="functions">Module reference</h2>
+    <p>The module is 581 lines: eleven Pydantic models, then fourteen functions and
+    <code>main</code>, in the order the work happens.</p>
+
+    <h3>Models</h3>
+    <table>
+      <thead>
+        <tr><th>Model</th><th>Fields</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">SpecReply</td><td class="mono">status, abort_reason, spec</td>
+          <td>The response envelope handed to the SDK as the response schema.</td></tr>
+        <tr><td class="mono">SectionSpec</td>
+          <td class="mono">role, overview, objectives, prerequisites, out_of_scope,
+          glossary, teaching_points, excerpts, equations, notations</td>
+          <td>The spec body.</td></tr>
+        <tr><td class="mono">Objective</td><td class="mono">text</td><td>One
+          <code>objectives</code> row.</td></tr>
+        <tr><td class="mono">Prerequisite</td><td class="mono">text</td><td>One
+          <code>prerequisites</code> row.</td></tr>
+        <tr><td class="mono">OutOfScope</td><td class="mono">text, reason</td><td>One
+          <code>out_of_scope</code> row.</td></tr>
+        <tr><td class="mono">GlossaryEntry</td><td class="mono">term, definition</td>
+          <td>One <code>glossary</code> row.</td></tr>
+        <tr><td class="mono">TeachingPoint</td><td class="mono">title, notes, figure</td>
+          <td>One <code>teaching_points</code> row.</td></tr>
+        <tr><td class="mono">Figure</td><td class="mono">type, purpose, description</td>
+          <td>The optional visual nested on a teaching point.</td></tr>
+        <tr><td class="mono">Excerpt</td><td class="mono">type, reuse, text</td><td>One
+          <code>excerpts</code> row.</td></tr>
+        <tr><td class="mono">Equation</td><td class="mono">latex</td><td>One
+          <code>equations</code> row.</td></tr>
+        <tr><td class="mono">Notation</td><td class="mono">notation, meaning</td><td>One
+          <code>notations</code> row.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Functions</h3>
+    <table>
+      <thead>
+        <tr><th>Function</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">book_context(meta)</td>
+          <td>The one-line book description the prompt asks for: subject, grade, term,
+          language, language code and country, joined with <code>|</code>.</td></tr>
+        <tr><td class="mono">build_prompt(meta)</td>
+          <td>Reads <code>scripts/specs.md</code> and substitutes
+          <code>{book_context}</code>. Raises if the file is unreadable or the placeholder
+          is gone.</td></tr>
+        <tr><td class="mono">course_toc(root, current)</td>
+          <td>The TOC as titles alone, with the section being specified flagged
+          <code>current</code>. Raises unless exactly one leaf is marked.</td></tr>
+        <tr><td class="mono">toc_part(toc, title)</td>
+          <td>Serialises that tree under a <code>Course TOC JSON:</code> label so the model
+          can tell it from the prompt.</td></tr>
+        <tr><td class="mono">wait_until_ready(client, handle)</td>
+          <td>Blocks until an uploaded PDF reads <code>ACTIVE</code>, raising on
+          <code>FAILED</code> or on timeout.</td></tr>
+        <tr><td class="mono">upload_pdfs(client, paths)</td>
+          <td>Uploads a section's PDFs and returns them as URI parts plus the handles to
+          delete afterwards. Retries the whole set, cleaning up partial uploads.</td></tr>
+        <tr><td class="mono">delete_uploads(client, uploaded)</td>
+          <td>Deletes upload handles, ignoring failures.</td></tr>
+        <tr><td class="mono">logged_call(...)</td>
+          <td>One attempt: build the config, call the model, validate the JSON, time it, and
+          log the call whichever way it went.</td></tr>
+        <tr><td class="mono">request_spec(...)</td>
+          <td>The retry loop around <code>logged_call</code>.</td></tr>
+        <tr><td class="mono">spec_document(spec)</td>
+          <td>The spec as it is written to disk, with every row numbered and every array
+          present.</td></tr>
+        <tr><td class="mono">written_spec(path, envelope_keys)</td>
+          <td>True when a section already holds a spec of the shape written today.</td></tr>
+        <tr><td class="mono">describe(spec)</td>
+          <td>The non-zero counts worth seeing on one line while a book runs.</td></tr>
+        <tr><td class="mono">section_pdfs(sources, number_path, pad_width, sections_root)</td>
+          <td>The section PDF <code>split.py</code> built for each of a section's
+          sources.</td></tr>
+        <tr><td class="mono">Run</td>
+          <td>Frozen dataclass of everything a worker needs and no section changes: the
+          client, the logger, the book, the model, the thinking level, the TOC root, the
+          stage directory, the padding width and the filled prompt.</td></tr>
+        <tr><td class="mono">specify_section(run, number_path, sources, out_path)</td>
+          <td>One section on one thread: upload, call, delete the uploads, write the spec.
+          Returns the outcome and the line for the driver to print.</td></tr>
+        <tr><td class="mono">build_specs(book_id, section, model, thinking, update)</td>
+          <td>The whole run: the pending list, the input check, the worker pool. Returns the
+          stage directory and how many sections went unspecified, aborts and failures
+          together.</td></tr>
+        <tr><td class="mono">main()</td>
+          <td>Argument parsing, the <code>FAILED:</code> line on <code>RuntimeError</code>,
+          and the exit code.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section" id="requirements">Requirements and constants</h2>
+    <p>Two third-party packages are imported directly. Three more arrive through
+    <code>split.py</code>, which is imported at module load, so they must be installed for
+    <code>specs.py</code> to start at all; a fourth is optional inside
+    <code>api_logger.py</code>. A missing one exits with
+    <code>missing dependency (&lt;name&gt;): pip install -r requirements.txt</code> rather
+    than a traceback.</p>
+
+    <table>
+      <thead>
+        <tr><th>Package</th><th>Version</th><th>Reached through</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">google-genai</td><td class="mono">2.17.0</td>
+          <td>direct</td><td>The client, request parts, generation config and File
+          API.</td></tr>
+        <tr><td class="mono">pydantic</td><td class="mono">2.13.4</td>
+          <td>direct</td><td>The response schema, reply validation and the skip
+          check.</td></tr>
+        <tr><td class="mono">pypdfium2</td><td class="mono">5.12.1</td>
+          <td class="mono">split.py</td><td>Page rendering in stage 1.</td></tr>
+        <tr><td class="mono">pypdf</td><td class="mono">6.15.0</td>
+          <td class="mono">split.py</td><td>Page counting during TOC validation.</td></tr>
+        <tr><td class="mono">Pillow</td><td class="mono">12.3.0</td>
+          <td class="mono">split.py</td><td>Required at runtime by pdfium's
+          <code>to_pil()</code>.</td></tr>
+        <tr><td class="mono">ntplib</td><td class="mono">0.4.0</td>
+          <td class="mono">api_logger.py</td><td>Optional. Log timestamps; without it the
+          logger falls back to the local clock with a zero offset.</td></tr>
+      </tbody>
+    </table>
+    <p class="caption">Versions pinned in <code>requirements.txt</code>.</p>
+
+    <table>
+      <thead>
+        <tr><th>Constant</th><th class="num">Value</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">SPECS_STAGE</td><td class="num mono">02_section_specs</td>
+          <td>Output directory under <code>data/temp/&lt;book_id&gt;/</code>.</td></tr>
+        <tr><td class="mono">SPEC_STEP</td><td class="num mono">section_spec</td>
+          <td>Step name in every log folder name and in <code>call.json</code>.</td></tr>
+        <tr><td class="mono">DEFAULT_MODEL</td><td class="num mono">gemini-3.8-flash</td>
+          <td>Overridden with <code>--model</code>.</td></tr>
+        <tr><td class="mono">DEFAULT_THINKING</td><td class="num mono">high</td>
+          <td>Overridden with <code>--thinking-level</code>.</td></tr>
+        <tr><td class="mono">MAX_ATTEMPTS</td><td class="num mono">4</td>
+          <td>Attempts before a section raises, for the upload and for the call alike.</td></tr>
+        <tr><td class="mono">MAX_WORKERS</td><td class="num mono">100</td>
+          <td>Ceiling on threads; a run uses one per pending section up to this.</td></tr>
+        <tr><td class="mono">UPLOAD_READY_TIMEOUT</td><td class="num mono">120.0 s</td>
+          <td>How long an upload may take to become <code>ACTIVE</code>.</td></tr>
+        <tr><td class="mono">UPLOAD_POLL_SECONDS</td><td class="num mono">2.0 s</td>
+          <td>Interval between readiness checks.</td></tr>
+        <tr><td class="mono">PDF_MIME</td><td class="num mono">application/pdf</td>
+          <td>Mime type on every uploaded part.</td></tr>
+        <tr><td class="mono">API_KEY_VARS</td>
+          <td class="num mono">GEMINI_API_KEY, GOOGLE_API_KEY</td>
+          <td>Either satisfies the up-front key check.</td></tr>
+      </tbody>
+    </table>
+
+    <p class="toc-foot">This page documents <code>scripts/specs.py</code> and its prompt
+    <code>scripts/specs.md</code> as they stand today; figures were read from
+    <code>data/temp/eg_mathematics_en_g8_t1/</code>. Keep it in sync when the schema, the
+    CLI or the prompt changes.</p>
+  </main>
+</div>
+</body>
+</html>

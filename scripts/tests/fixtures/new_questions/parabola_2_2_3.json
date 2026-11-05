@@ -1,0 +1,55 @@
+{
+  "curves": [
+    {
+      "kind": "parabola",
+      "label": "y = x^2 - 4",
+      "style": "solid",
+      "opens": "up",
+      "frequency": null
+    },
+    {
+      "kind": "parabola",
+      "label": "y = x^2 - 4",
+      "style": "solid",
+      "opens": "up",
+      "amplitude": null,
+      "frequency": null
+    },
+    {
+      "kind": "parabola",
+      "label": "y = 4 - x^2",
+      "style": "solid",
+      "opens": "down",
+      "amplitude": null,
+      "frequency": null
+    },
+    {
+      "kind": "parabola",
+      "label": "y = x^2 - 4",
+      "opens": "up",
+      "amplitude": null,
+      "frequency": null
+    },
+    {
+      "kind": "parabola",
+      "label": "y = 4 - x^2",
+      "opens": "down",
+      "amplitude": null,
+      "frequency": null
+    },
+    {
+      "kind": "parabola",
+      "label": "y = f'(x)",
+      "style": "solid",
+      "opens": "down",
+      "frequency": null
+    },
+    {
+      "kind": "parabola",
+      "label": "y = f''(x)",
+      "style": "solid",
+      "opens": "up",
+      "frequency": null
+    }
+  ]
+}

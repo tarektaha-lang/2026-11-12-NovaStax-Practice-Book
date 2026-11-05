@@ -1,0 +1,33 @@
+{
+  "stem": "A light horizontal rod $\\overline{AD}$ has points $A, B, C, D$ in order from left to right, where $AB = 30\\text{ cm}$, $BC = 20\\text{ cm}$, and $CD = 50\\text{ cm}$. Three vertical forces act on the rod: $15\\text{ N}$ downwards at $A$, $25\\text{ N}$ upwards at $B$, and $6\\text{ N}$ downwards at $D$. Find the algebraic measure of the moment of their resultant about each of the following points:",
+  "exercises": [
+    {
+      "text": "Point $A$",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$150\\text{ N.cm}$, since $M_A = 25 \\times 30 - 6 \\times 100 = 150\\text{ N.cm}$"
+    },
+    {
+      "text": "Point $B$",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$30\\text{ N.cm}$, since $M_B = 15 \\times 30 - 6 \\times 70 = 30\\text{ N.cm}$"
+    },
+    {
+      "text": "Point $C$",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$-50\\text{ N.cm}$, since $M_C = 15 \\times 50 - 25 \\times 20 - 6 \\times 50 = -50\\text{ N.cm}$"
+    },
+    {
+      "text": "Point $D$",
+      "objectives": [
+        "objective_3"
+      ],
+      "answer": "$-250\\text{ N.cm}$, since $M_D = 15 \\times 100 - 25 \\times 70 = -250\\text{ N.cm}$"
+    }
+  ]
+}

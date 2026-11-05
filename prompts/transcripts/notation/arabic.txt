@@ -1,0 +1,1 @@
+Use Arabic math variables (`س`, `ص`, `ع`, `أ`, `ب`, `ج`) in every `<math>` LaTeX body—quoted lines and every derived or intermediate step. LaTeX commands stay ASCII. Never rewrite them as Latin letters. An Arabic `س` stays `س`. Read the expression in classroom order.

@@ -1,0 +1,4 @@
+## Numerals: Arabic-Indic
+The book prints its numbers in Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩), with «٫» as the decimal point and «٪» for per cent. **You write every number in Western digits 0–9 anyway**, in prose and in mathematics alike, with «.» as the decimal point and `\%` for per cent. The paper is set from your fields and renders every digit as the book prints it; a digit written as ٠–٩ in a field is one the checks cannot read and the typesetter cannot place.
+
+This is the one deliberate departure from copying an excerpt exactly. In excerpts.text and every other verbatim field, «٣٫٥» is copied as `3.5`, «٢٥٪» as `25\%`, and a thousands separator «٬» is dropped; every other character of the excerpt is still copied as printed. Numbers written out as words (ثلاثة، نصف) are words, and stay as the book writes them.

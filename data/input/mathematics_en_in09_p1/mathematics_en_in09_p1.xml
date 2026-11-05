@@ -1,0 +1,177 @@
+<book subject="Mathematics" grade="9" term="1" language_code="en" language="English" academic_year="26-27" numerals="western" notation="latin" country_code="in" country="India" cover_illustration="mathematics_102">   
+    <module level="1" number="1" title="Orienting Yourself The Use of Coordinates">
+        <module level="2" number="1" title="INTRODUCTION">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="21" end_page="22.64"/>
+        </module>
+        <module level="2" number="2" title="SETTLING IN">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="22.64" end_page="23.61"/>
+        </module>
+        <module level="2" number="3" title="THE 2-D CARTESIAN COORDINATE SYSTEM">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="23.61" end_page="28.71"/>
+        </module>
+        <module level="2" number="4" title="DISTANCE BETWEEN TWO POINTS IN THE 2-D PLANE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="28.71" end_page="31"/>
+        </module>
+    </module>
+    <module level="1" number="2" title="Introduction to Linear Polynomials">
+        <module level="2" number="1" title="INTRODUCTION">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="36" end_page="39.20"/>
+        </module>
+        <module level="2" number="2" title="Linear Polynomials">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="39.20" end_page="41.64"/>
+        </module>
+        <module level="2" number="3" title="Exploring Linear Patterns">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="41.64" end_page="44.42"/>
+        </module>
+        <module level="2" number="4" title="Linear Growth and Linear Decay">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="44.42" end_page="46.38"/>
+        </module>
+        <module level="2" number="5" title="Linear Relationships">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="46.38" end_page="47.77"/>
+        </module>
+        <module level="2" number="6" title="Visualising Linear Relationships">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="47.77" end_page="56.64"/>
+        </module>
+    </module>
+    <module level="1" number="3" title="The World of Numbers">
+        <module level="2" number="1" title="THE DAWN OF MATHEMATICS THE HUMAN NEED TO COUNT">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="61" end_page="63.49"/>
+        </module>
+        <module level="2" number="2" title="THE REVOLUTION OF ŚHŪNYA WHEN NOTHING BECAME SOMETHING">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="63.49" end_page="64"/>
+        </module>
+        <module level="2" number="3" title="INTEGERS EXPANDING THE HORIZON">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="65" end_page="66.67"/>
+        </module>
+        <module level="2" number="4" title="FILLING THE SPACES FRACTIONS AND RATIONAL NUMBERS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="66.67" end_page="73.29"/>
+        </module>
+        <module level="2" number="5" title="IRRATIONAL NUMBERS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="73.29" end_page="77.35"/>
+        </module>
+        <module level="2" number="6" title="REAL NUMBERS DECIMALS AND CYCLIC PATTERNS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="77.35" end_page="82.80"/>
+        </module>
+        <module level="2" number="7" title="CONCLUSION THE NEVER-ENDING JOURNEY">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="82.80" end_page="84.46"/>
+        </module>
+    </module>
+    <module level="1" number="4" title="Exploring Algebraic Identities">
+        <module level="2" number="1" title="INTRODUCTION">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="88" end_page="89.21"/>
+        </module>
+        <module level="2" number="2" title="VISUALISING IDENTITIES">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="89.21" end_page="92.24"/>
+        </module>
+        <module level="2" number="3" title="FACTORISATION OF ALGEBRAIC EXPRESSIONS USING IDENTITIES">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="92.24" end_page="95.42"/>
+        </module>
+        <module level="2" number="4" title="MORE IDENTITIES">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="95.42" end_page="98.70"/>
+        </module>
+        <module level="2" number="5" title="FACTORISATION USING ALGEBRA TILES">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="98.70" end_page="100.76"/>
+        </module>
+        <module level="2" number="6" title="FACTORISATION WITHOUT USING ALGEBRA TILES">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="100.76" end_page="102.55"/>
+        </module>
+        <module level="2" number="7" title="FINDING NEW IDENTITIES">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="102.55" end_page="106.23"/>
+        </module>
+        <module level="2" number="8" title="SIMPLIFYING RATIONAL EXPRESSIONS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="106.23" end_page="108.56"/>
+        </module>
+    </module>
+    <module level="1" number="5" title="I'm Up and Down, and Round and Round">
+        <module level="2" number="1" title="DEFINITIONS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="113.37" end_page="113"/>
+        </module>
+        <module level="2" number="2" title="SYMMETRIES OF A CIRCLE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="114" end_page="114.70"/>
+        </module>
+        <module level="2" number="3" title="HOW MANY CIRCLES?">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="114.70" end_page="118.60"/>
+        </module>
+        <module level="2" number="4" title="CHORDS AND THE ANGLES THEY SUBTEND">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="118.60" end_page="120.74"/>
+        </module>
+        <module level="2" number="5" title="MIDPOINTS AND PERPENDICULAR BISECTORS OF CHORDS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="120.74" end_page="122.18"/>
+        </module>
+        <module level="2" number="6" title="DISTANCE OF CHORDS FROM THE CENTRE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="122.18" end_page="126.18"/>
+        </module>
+        <module level="2" number="7" title="ANGLES SUBTENDED BY AN ARC">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="126.18" end_page="131.34"/>
+        </module>
+        <module level="2" number="8" title="CONCYCLICITY OF POINTS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="131.34" end_page="134.24"/>
+        </module>
+    </module>
+    <module level="1" number="6" title="Measuring Space Perimeter and Area">
+        <module level="2" number="1" title="PERIMETER OF A SHAPE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="139" end_page="140.34"/>
+        </module>
+        <module level="2" number="2" title="PERIMETER OF A CIRCLE — THE C/D RATIO">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="140.34" end_page="143.50"/>
+        </module>
+        <module level="2" number="3" title="π IS IRRATIONAL">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="143.50" end_page="145.15"/>
+        </module>
+        <module level="2" number="4" title="LENGTH OF AN ARC OF A CIRCLE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="145.15" end_page="147.71"/>
+        </module>
+        <module level="2" number="5" title="PROBLEMS, PUZZLES, AND PARADOXES ON PERIMETER">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="147.71" end_page="150.52"/>
+        </module>
+        <module level="2" number="6" title="AREA OF A RECTANGLE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="150.52" end_page="150.82"/>
+        </module>
+        <module level="2" number="7" title="AREA OF A PARALLELOGRAM">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="150.82" end_page="152.17"/>
+        </module>
+        <module level="2" number="8" title="AREA OF A TRIANGLE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="152.17" end_page="160.73"/>
+        </module>
+        <module level="2" number="9" title="SQUARING A RECTANGLE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="160.73" end_page="163.78"/>
+        </module>
+        <module level="2" number="10" title="AREA OF A CIRCLE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="163.78" end_page="168"/>
+        </module>
+    </module>
+    <module level="1" number="7" title="The Mathematics of Maybe: Introduction to Probability">
+        <module level="2" number="1" title="What is Probability?">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="175" end_page="179.51"/>
+        </module>
+        <module level="2" number="2" title="Measuring Probability Objectively">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="179.51" end_page="186.24"/>
+        </module>
+        <module level="2" number="3" title="Elements of Probability: Sample Spaces and Events">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="186.24" end_page="188.34"/>
+        </module>
+        <module level="2" number="4" title="Tree Diagrams">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="188.34" end_page="189.78"/>
+        </module>
+    </module>
+    <module level="1" number="8" title="Predicting What Comes Next Exploring Sequences and Progressions">
+        <module level="2" number="1" title="INTRODUCTION TO SEQUENCES">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="194" end_page="196.80"/>
+        </module>
+        <module level="2" number="2" title="EXPLICIT RULE FOR A SEQUENCE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="196.80" end_page="198.22"/>
+        </module>
+        <module level="2" number="3" title="RECURSIVE RULE FOR A SEQUENCE">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="198.22" end_page="200.17"/>
+        </module>
+        <module level="2" number="4" title="ARITHMETIC PROGRESSIONS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="200.17" end_page="203.49"/>
+        </module>
+        <module level="2" number="5" title="SUM OF THE FIRST n NATURAL NUMBERS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="203.49" end_page="206.29"/>
+        </module>
+        <module level="2" number="7" title="GEOMETRIC PROGRESSIONS">
+            <source md5="ad14133d84add2ec066527d33af573ac" start_page="206.29" end_page="214.74"/>
+        </module>
+    </module>
+</book>

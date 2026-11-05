@@ -1,0 +1,378 @@
+TRANSLATION WORKFLOW (English practice book -> Arabic practice book)
+=====================================================================
+Last updated: Oct 26, 2026.
+
+
+1. PURPOSE
+----------
+The tool turns a finished English practice book into the Arabic edition for one country.
+It reuses the English book's checked questions, answers and figures, and uses AI only to
+translate them in the Arabic textbook's own words. Every result is checked by code and by
+an independent AI review before it is printed.
+
+
+2. THE PATH AND ITS AI CALLS
+----------------------------
+Every AI call sends the same fixed instructions for its task (its prompt file, e.g.
+exercises.md, with the language, numeral and notation rules) plus the book glossary.
+"Fixed" below means: the same for every call of that task.
+
+Cache (same for every call that uses one; turned off with --no-cache):
+- What is cached: only the fixed instructions (+ book glossary where sent). Everything
+  else in the call is sent and billed as normal input every time.
+- One cache per task and per exact instruction text. A changed glossary or prompt gives
+  a new cache. Calls of the same task share it, across sections and parallel workers.
+- Cached calls: terminology_extract, spec_translate, label_translate,
+  exercise_translate and Correction (shared), translation_review, tikz_translate.
+  Not cached: glossary_merge.
+- Lifetime: created with a 60-minute TTL. The tool never extends it. After 55 minutes the
+  tool creates a new cache for the next call; the replaced one is deleted once no call uses it.
+- Gemini deletes a cache at its TTL even while it is in use; use does not extend it.
+  The 5-minute margin means a run longer than one hour simply gets a new cache each
+  55 minutes; no call is sent with an expired cache.
+  e.g. a 2.5-hour run of one task uses 3 caches: minutes 0-55, 55-110, 110-end.
+  Each is billed from its creation to its deletion (or 60 minutes if it expired).
+- Deleted by the tool at the end of the run, also after a failure, a stopped run,
+  Ctrl-C, or --map-only. If the process is killed hard, Gemini deletes it at the TTL.
+- If creating a cache fails twice (e.g. the instructions are below Gemini's minimum
+  cache size), that task runs uncached for the rest of the run. The report lists it under
+  cache_failures with the error and the number of uncached calls.
+- Every cache is written to the book's cache ledger when created and marked closed when
+  deleted. A cache left open by a killed run is deleted when the next run of that book
+  starts and billed once (state "recovered").
+- Cache states in the report: deleted (billed creation to deletion), expired (billed 60
+  minutes), failed delete (billed 60 minutes, error shown), recovered.
+- Cost: cached input tokens at the cached input price ($0.075 per million vs $0.75
+  normal input, current model) plus storage at $0.50 per million tokens per hour, from
+  creation to deletion. A cache whose delete fails is billed for the full 60 minutes.
+  Storage is listed per cache in the run report and in the cost report as cache_storage.
+  Prices come from the tool's price table by call date: through 2026 $0.75 input,
+  $0.075 cached input, $3.75 output (thinking billed as output), $0.50 storage; from
+  2027 all four double.
+
+Each call below states what is sent (with its source), what is returned, how it is
+checked, and its cache. Cache lifetime and cost follow the rules above.
+
+ 1. Read the Arabic book profile: language, numeral style, maths notation.
+ 2. Split the Arabic textbook into one file set per section.
+ 3. terminology_extract (Arabic terms per section): for every section of the book, even
+    when the run translates only some sections, read the Arabic textbook pages and record
+    its words for each term, symbol and unit. A section already stored and still current
+    is reused, with no call. Stored; reused on later runs.
+    CALL 1: terminology_extract
+    Cache: yes, task "terminology"; caches the terminology.md instructions only (no glossary).
+    When: once per section of the whole book (skipped when already stored)
+    Sends:
+      - fixed instructions, terminology.md (fixed; no glossary, this call builds it)
+      - book profile line (from the Arabic book profile)
+      - section title and number (from the Arabic book profile)
+      - list of English terms and symbols to name (from the English section spec)
+      - short English passages around numbers and units (from the English book source)
+      - the section's Arabic textbook pages (from the split Arabic textbook)
+    Returns:
+      - the Arabic word for each term and symbol, with a page quote as proof
+      - every unit with its Arabic form and whether it is an abbreviation
+    Checked for: one answer per term, real page quotes, Arabic text in every unit.
+    If it fails: retry; then one call per textbook file; then a deeper-thinking call; then
+      the section fails.
+ 4. glossary_merge: merge all sections' terminology into one book glossary (one AI call
+    per book).
+    The merge always covers the whole book. It is not run on a partial set. If any
+    section's terminology still fails, the run stops before any section is translated.
+    The AI decides:
+    - Which rows are the same item.
+        e.g. m / meter / metres; hr / hour; rad / radian; Interior Angle defined two ways.
+    - One preferred form: printed forms over guesses; for a unit, the form printed next
+      to a number.
+        e.g. "20 م" -> م; "1ᵈ" -> د.
+    - Grammar or spelling differences are the same form, not a conflict.
+        e.g. الزاوية الداخلة = زاوية داخلة; لتر = لترات (لترات goes into also).
+    - Items that are not units are dropped, with a reason.
+        e.g. "time"; "cup" unless printed as a unit next to a number.
+    - Real conflicts are listed with a reason; nothing fails.
+    The code then checks the reply's structure (see Checked for, below).
+    Saved; redone only when a section's terminology or the merge instructions change.
+    Later calls receive each entry as one line:
+        {kind: unit, english: m, arabic: م, also: [متر, أمتار], abbreviation_only: true}
+    CALL 2: glossary_merge
+    Cache: no.
+    When: once per book, after all sections' terminology (all sections, even with -s)
+    Sends:
+      - fixed instructions, glossary_merge.md + book profile line (fixed)
+      - all sections' terminology answers: kind, English, meaning, Arabic, other forms,
+        abbreviation flag, printed or guessed, section, page quotes (from CALL 1)
+    Returns:
+      - glossary entries: kind, English, preferred Arabic, also forms, abbreviation flag
+      - dropped items, each with a reason
+      - conflicts, each with a reason
+    Checked for:
+      - every row used or dropped exactly once; no duplicate entries
+      - symbol English is case-sensitive (H and h are different entries); terms and
+        units still fold case
+      - every Arabic form taken from the sections' answers; symbol Arabic is matched
+        without \text{} around letters (\text{ع}_1 and ع_1 are the same form)
+      - composite symbol rows (v_1, v_2) are split into one row each before the call
+      - symbols: ا, never أ إ آ, in maths; one space between point letters (ا ب جـ)
+      - a glued run of letters is accepted only when the textbook prints it as a word in
+        a page quote, e.g. نق (radius) in "لدائرة طول نصف قطرها نق"; ابجـ with no spaces
+        still fails
+    If it fails: a rejected reply is sent back with every distinct error from earlier
+      attempts of that part. 3 calls in all: 2 at normal thinking, then 1 with deeper
+      thinking; then the run stops (there is no glossary). An input too large for one
+      call is split by kind. A truncated reply (MAX_TOKENS) on the whole-book call is
+      also split by kind; the parts continue from the next attempt of the same ladder.
+    Cost: about $0.25 per book.
+ 5. For each selected section:
+    Skip first: a section already saved as accepted (or passed_with_issues) is
+    skipped with zero AI calls, unless --update, --rereview or
+    --retranslate-on-prompt-change is given. Its labels, groups, review and
+    figures stay as saved. Only missing or failed work in other sections is sent.
+    5a. spec_translate: translate the section spec (lesson description: overview,
+        objectives, terms).
+        CALL 3: spec_translate (section spec)
+        Cache: yes, task "spec"; caches specs.md + book glossary. Re-asks of failing parts use
+          the same cache.
+        When: once per section
+        Sends:
+          - fixed instructions, specs.md + book glossary
+          - book profile line (from the Arabic book profile)
+          - Arabic section title (from the Arabic book profile)
+          - the English section spec, numbers and formulas locked
+            (from the English book source)
+        Returns:
+          - the Arabic section spec (same items as the English)
+          - English-to-Arabic term pairs for this section
+        Checked for: same items as English, no English words left, every number and formula kept.
+        If it fails: re-ask only the failing parts (2 tries); retry the whole call (4 attempts in
+          all); then the section fails.
+    5b. label_translate: translate the objective labels printed on the papers.
+        CALL 4: label_translate (objective labels)
+        Cache: yes, task "label"; caches labels.md + book glossary.
+        When: once per section
+        Sends:
+          - fixed instructions, labels.md + book glossary
+          - book profile line (from the Arabic book profile)
+          - the Arabic section spec (from CALL 3)
+          - the English objective labels (from the English book source)
+        Returns:
+          - one Arabic label per objective
+        Checked for: same objectives as English, no English words left.
+        If it fails: retry (4 attempts); then the section fails.
+    5c. Copy the English question budget. No AI call.
+    5d. exercise_translate: translate the exercise groups, one objective at a time.
+        CALL 5: exercise_translate (exercise groups)
+        Cache: yes, task "exercise"; caches exercises.md + book glossary. Shared with CALL 7.
+        When: per objective (large objectives are split into several calls)
+        Sends:
+          - fixed instructions, exercises.md + book glossary
+          - book profile line (from the Arabic book profile)
+          - this objective's Arabic spec, terms and equations (from CALL 3)
+          - the English exercise groups, numbers and formulas locked (from the English book source)
+        Returns:
+          - each group in Arabic: stem, questions, options, answers, figure descriptions
+          - numbers left out on purpose where Arabic uses a word instead (for example, a dual)
+        Checked for: every number and formula kept, formulas unchanged, same structure as English,
+          number-unit agreement, and no Latin function names (sin, cos, tan) when the book uses
+          Arabic notation.
+        If it fails: re-ask only the failing groups (2 tries); then each group alone; then each
+          group alone with deeper thinking; then the section fails. Accepted groups stay saved.
+    5e. Check every number-unit pair in code; send back any that break the agreement rule.
+    5f. translation_review: review every group, English against Arabic.
+        CALL 6: translation_review
+        Cache: yes, task "review"; caches review.md + book glossary.
+        When: per objective, in each review round
+        Sends:
+          - fixed instructions, review.md, including the number-unit agreement rule,
+            + book glossary
+          - book profile line (from the Arabic book profile)
+          - Arabic terms, equations and notation for the section (from CALL 3)
+          - each group in English and Arabic side by side, with the numbers left out on purpose
+            and the figure labels (from the English book source and CALL 5)
+        Returns:
+          - a list of issues: group, question, field, category (meaning, answer, unit, number,
+            notation, terminology, language, figure_label, other), reason
+        Checked for: every issue names a group and question that exist.
+        If it fails: retry (4 attempts); then the section fails.
+    5g. Correction: fix the flagged parts only, check again in code, review again
+        (rounds: see section 3).
+        CALL 7: Correction (an exercise_translate call with the review issues)
+        Cache: yes, the same "exercise" cache as CALL 5 (same instructions).
+        When: per objective, after a review round with issues (never after the last round)
+        Sends:
+          - fixed instructions, exercises.md, including the number-unit agreement rule,
+            + book glossary
+          - book profile line (from the Arabic book profile)
+          - this objective's Arabic spec and terms (from CALL 3)
+          - the English group (from the English book source)
+          - the current Arabic of the group (from the last accepted version)
+          - the value of every locked number and formula (from the English book source)
+          - the review issues for this group (from CALL 6)
+        Returns:
+          - the group with only the flagged parts changed
+        Checked for: same checks as CALL 5; nothing outside the flagged parts changed.
+          An empty superscript or subscript ({} after ^ or _) counts the same as none when
+          structure is compared with English; any other difference still fails.
+        If it fails: the existing Arabic is kept and the issue stays open.
+    5h. tikz_translate: translate the words in TikZ pictures (figures) and compile them.
+        CALL 8: tikz_translate (TikZ pictures)
+        Cache: yes, task "tikz"; caches tikz.md + book glossary.
+        When: per figure (with Latin notation only figures that contain words; with Arabic
+          notation every figure)
+        Sends:
+          - fixed instructions, tikz.md + book glossary
+          - book profile line (from the Arabic book profile)
+          - the figure description in English and Arabic (from the English book source and CALL 5)
+          - the English TikZ code (from the English figure library)
+        Returns:
+          - the Arabic TikZ code
+        Checked for: compiles, labels do not overlap.
+        If it fails: retry with the compile or layout error; then the section fails.
+    5i. Save the section as accepted, or as passed_with_issues when review issues are
+        still open after the last round (see section 3).
+ 6. Retry sections that failed only because of network errors (2 more passes by default,
+    --sweeps).
+ 7. Write the run report (translation_report.json and .md). It names which sections' terminology was extracted this run
+    and which was reused (terminology_extracted / terminology_reused), whether the
+    glossary merge ran or was reused (merge_action), the cost of each, and cache storage
+    cost per cache (cache_storage_usd), and any cache that could not be created
+    (cache_failures). Each run also keeps its own copy, translation_report_<time>.json
+    and .md; earlier copies are never overwritten, and cost_all_runs_usd adds up every
+    run of the book. The run ends with success only if every selected section was accepted.
+ 8. Typeset the Arabic papers (separate papers step). Layout only, no AI call:
+    - Units in table cells are laid out right to left, number then unit, like in the text.
+    - Maths that starts with a relation, stored as $= 4\text{ سم}$ after Arabic
+      prose (e.g. "drawing length $= 4 ...$"), is rewritten for right-to-left so the
+      printed line reads: prose, =, 4, unit. The .tex shows the relation after the
+      number on purpose; the PDF reads correctly.
+    - Brackets in maths are sized to their content: ( ) -> \left( \right),
+      [ ] -> \left[ \right], \{ \} -> \left\{ \right\}.
+      e.g. (\frac{1}{6}) -> \left(\frac{1}{6}\right)
+    - Reversed-bracket intervals with one comma between the ends are sized too:
+      ]a, b[ -> \left]a, b\right[ ; [a, b[ ; ]a, b]. A line break after the comma
+      (\allowbreak) is allowed.
+    - Left as written: \[ \] and \( \), plain { } groups, optional arguments such as
+      \sqrt[3]{8} and \\[2pt], brackets already sized, brackets inside \text, a pair
+      split by & or \\, and unmatched mixes such as (a, b].
+    - Running it twice changes nothing; it never writes \left\left.
+    - Arabic maths letters become font letters. Fixed rules:
+        a fatha on a single maths letter is a prime: سَ -> س'
+        نق prints as the radius symbol
+        ق before an angle sign (also when written as text) prints as the angle
+          measure symbol (dotless, tailed)
+        a radian or degree mark written as text (^د, ^جـ) prints as the letter
+    - A list of Latin point letters inside Arabic prose (H، M، A، T) is kept in one
+      left-to-right run. English prose is not changed.
+    - Western digits in right-to-left text are set in the maths digit face, except
+      a digit run that touches a Latin letter.
+    - Long division, carry rows and Arabic-Indic table cells follow the house layout.
+    - Page fitting keeps the next block in order and never ends a page on a section
+      or objective heading alone.
+    - Contents: section numbers hang in their own column, without a trailing point.
+    Code never composes, inflects, pluralizes or singularizes an Arabic word or unit,
+    here or anywhere. Arabic wording comes only from the AI calls; code checks structure.
+ 9. Parallel runs: each book keeps its own state, cache ledger, logs and report, so
+    several books can run at once. The 429 retry budget is per run.
+
+3. REVIEW AND CORRECTIONS
+-------------------------
+- Round 1 reviews every group not yet reviewed under the current review.md.
+- Flagged groups are corrected (CALL 7) and checked in code, and only those groups are
+  reviewed again.
+- At most 3 rounds. No correction is made after round 3. A failed correction for one
+  group does not stop the other groups' rounds.
+- Number–noun agreement is judged by the AI. Code never builds or names an Arabic
+  word form. A code hint, when one is shown, only says to check agreement.
+- If only review issues remain after round 3, the section is accepted with those
+  issues listed. The section fails only for a structural problem: a document that
+  does not validate, a missing or duplicated exercise, or LaTeX that will not compile.
+
+
+4. WHAT MAKES A SECTION FAIL
+----------------------------
+- Terminology still fails after the split and the deeper-thinking call.
+- The section spec or the objective labels are rejected 4 times, or the AI refuses.
+- An exercise group still fails after every step of the retry ladder.
+- The English source of a group is reported as untranslatable.
+- A review call fails 4 times. (Open review issues after round 3 do not fail a
+  section; it is saved as passed_with_issues.)
+- A TikZ picture does not compile.
+If any section's terminology fails, or the glossary merge fails, the whole run stops
+before any section is translated. The report names the failed section.
+The glossary is always built from the whole book, even when only some sections are
+translated. Selecting sections limits translation only.
+A failure stays inside its section: other sections continue, finished groups stay saved.
+Glossary conflicts are logged, never a failure.
+
+
+5. AFTER A CHANGE, HOW TO RERUN
+-------------------------------
+Command: python3 -B scripts/translate.py <English book id> -s <section> [flag]
+
+  Change                                What to run                        What is redone
+  ------------------------------------  ---------------------------------  ------------------------------------
+  Resume a whole-book run               (no -s)                            accepted sections: nothing, zero AI
+                                                                           calls; others: only missing or failed
+                                                                           work
+  Nothing / resume after a stop         -s X                               terminology and the glossary for the
+                                                                           whole book (reused when current),
+                                                                           then only missing, invalid or
+                                                                           unreviewed work in the selected
+                                                                           sections
+  Exercise translation prompt or        -s X --retranslate-on-prompt-      groups translated with the old
+  language/numeral/notation prompts     change                             prompt, then their review
+  review.md changed                     -s X --rereview                    review of all groups; corrections
+                                                                           only where flagged
+  specs.md or labels.md changed         -s X                               spec / labels only
+  Book glossary changed                 -s X                               groups re-checked and reviewed;
+                                                                           not retranslated
+  Redo one section completely           -s X --update                      everything for that section
+  terminology.md changed                --map-only, then -s X              all sections' terminology, then
+                                                                           re-check and review
+  glossary_merge.md changed             --map-only (or --remerge)          merge only; sections then redo
+                                                                           spec, labels, tikz
+                                                                           and review on their next run
+  Typeset again only                    scripts/pipeline.py <English id>   Arabic papers only
+                                        --translate --from ar_frontmatter  (no AI call)
+                                        --to ar_groups -s X
+
+
+6. COST (from recent run reports, current model and prices)
+------------------------------------------------------------
+  Per translated section (spec, labels, exercises, review, corrections, TikZ,
+  cache storage): about $0.70.
+  Per book, once: terminology for all sections about $0.45-1.00; glossary merge about
+  $0.25. Both are reused on later runs while still current.
+  e.g. a first run of one section in a new book: about $1.40-2.00 in all.
+
+Worked example: mathematics_ar_eg09_t1, one full book (15 sections), from the start
+through groups. Source: the book's call logs and its run report (one run, 2026-10-22).
+Sequential pricing for every call: no call in the records went through the Batch API.
+Prices from prices.json (2026): input $0.75, cached input $0.075, output and thinking
+$3.75 per million; cache storage $0.50 per million tokens per hour.
+
+  Step / call                 Calls      Input  (cached)   Output  Thinking    USD
+  --------------------------  -----  ---------  ---------  -------  --------  -----
+  CALL 1 terminology_extract     15    351,571     33,330   20,955    63,951   0.56
+  CALL 2 glossary_merge           1     29,797          0   14,453    10,044   0.11
+  CALL 3 spec_translate          19    202,622    153,444   72,844   100,354   0.70
+  CALL 4 label_translate         15    171,867    106,215    3,822    18,026   0.14
+  CALL 5 exercise_translate     107  1,448,965    893,664  500,875   511,745   4.28
+  CALL 6 translation_review     135  2,139,889  1,063,935    8,562   487,036   2.75
+  CALL 7 Correction              26    287,181    217,152   13,991    60,089   0.35
+  CALL 8 tikz_translate          93    752,431    693,687   40,919    90,244   0.59
+  Cache storage (6 caches)        -          -          -        -         -   0.02
+  --------------------------  -----  ---------  ---------  -------  --------  -----
+  Total                         411  5,384,323  3,161,427  676,421 1,341,489   9.49
+
+  Input includes cached input. Thinking is billed at the output price.
+  CALL 7 counts exercise_translate calls made with review issues; CALL 5 includes 2
+  retry-ladder (salvage) calls. 1 tikz_translate call failed and was retried.
+  Wall clock: 59.7 minutes for the whole run (sequential; parallel workers).
+  Other stages through groups (frontmatter, papers, figures, groups) make no AI call
+  for the Arabic book: no records exist for them, and they cost $0.
+  Not included: the English book's own stages.
+
+What keeps the cost down: exercises are sent one objective at a time (not one group at a
+time), the fixed instructions are cached and billed at a tenth of the input price (plus
+a small storage charge), and mistakes are caught by code before the review, so fewer
+calls are repeated.
