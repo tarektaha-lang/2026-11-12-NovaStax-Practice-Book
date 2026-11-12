@@ -146,10 +146,13 @@ LETTERING_BOX = {
 }
 
 # The marks between and around the years. The academic year is written as its two
-# calendar years with an en dash between, and the term follows it after a bullet; a
-# book with no term — a course that runs the year — has the years alone.
+# calendar years with an en dash between, and the term or part follows it after a
+# bullet; a book with neither — a course that runs the year — has the years alone.
+# A part is not an XML attribute: it is the `_pN` suffix on the book id, and it is
+# only named when the book has no term.
 YEAR_DASH = "\u2013"
 YEAR_BULLET = " \u2022 "
+PART_SUFFIX = re.compile(r"_p(\d+)$")
 ARABIC_DIGITS = str.maketrans("0123456789", "\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669")
 
 # The guides drawn over the cover for working on the layout: the text margins and each
@@ -241,6 +244,25 @@ def read_wording() -> dict:
     return json.loads(WORDING_PATH.read_text(encoding="utf-8"))
 
 
+def part_from_id(book_id: str) -> str:
+    """The part number encoded as a `_pN` suffix on the book id, or empty."""
+    found = PART_SUFFIX.search(book_id.strip())
+    return found.group(1) if found else ""
+
+
+def part_label(wording: dict, country_code: str, part: str, lang: str) -> str:
+    """Cover words for a part. India English is Roman; everything else is parts/n/lang."""
+    if country_code == "in":
+        named = wording.get("parts_in")
+        by_lang = named.get(part) if isinstance(named, dict) else None
+        text = by_lang.get(lang) if isinstance(by_lang, dict) else None
+        if isinstance(text, str) and text.strip():
+            return text.strip()
+    return wording_of(
+        wording, ("parts", part, lang), f"name for part {part} in {lang}"
+    )
+
+
 def wording_of(wording: dict, path: tuple[str, ...], what: str) -> str:
     """One string of the wording, or a RuntimeError naming what is missing."""
     node: object = wording
@@ -255,22 +277,29 @@ def wording_of(wording: dict, path: tuple[str, ...], what: str) -> str:
     return node
 
 
-def cover_lines(meta: dict[str, str], profile: Profile, wording: dict) -> dict[str, Words]:
+def cover_lines(
+    meta: dict[str, str],
+    profile: Profile,
+    wording: dict,
+    book_id: str = "",
+) -> dict[str, Words]:
     """The words on the cover, line by line, each as the runs it is laid out in.
 
     The subject and the country are the table of contents' own words, in the book's
     language; the grade and the term are looked up by number, because a grade is
     named differently from one country to the next and the table of contents gives
-    only the number.
+    only the number. A part is read from the book id's `_pN` suffix, and only when
+    there is no term.
 
-    The year line reads year then term in an English book: "2025–2026 • Term 1". In an
-    Arabic book it reads the same way in its own direction, from the right: the years
-    first, then the bullet, then the term, so the term stands at the left of the line
-    and the years at its right. The years themselves are read from the right too,
-    2025 first and 2026 after it, as the approved covers had them and as the papers
-    print a range of exercise numbers; a Western-digit Arabic book prints its digits
-    as they are and an Arabic-digit one in Arabic-Indic digits, as the rest of the
-    book does.
+    The year line reads year then term in an English book: "2025–2026 • Term 1". A
+    part book with no term reads the same way with the part: "2026–2027 • Part I".
+    In an Arabic book it reads the same way in its own direction, from the right:
+    the years first, then the bullet, then the term or part, so that wording stands
+    at the left of the line and the years at its right. The years themselves are
+    read from the right too, 2025 first and 2026 after it, as the approved covers
+    had them and as the papers print a range of exercise numbers; a Western-digit
+    Arabic book prints its digits as they are and an Arabic-digit one in
+    Arabic-Indic digits, as the rest of the book does.
     """
     lang = profile.language_code
     country_code = meta.get("country_code", "").strip().lower()
@@ -287,6 +316,7 @@ def cover_lines(meta: dict[str, str], profile: Profile, wording: dict) -> dict[s
     term = meta.get("term", "").strip()
     if term == "0":
         term = ""
+    part = "" if term else (meta.get("part", "").strip() or part_from_id(book_id))
     if not title:
         raise RuntimeError(
             "<book> has no book_title or subject attribute, which the cover prints"
@@ -304,13 +334,18 @@ def cover_lines(meta: dict[str, str], profile: Profile, wording: dict) -> dict[s
     if profile.indic_digits:
         first, second = first.translate(ARABIC_DIGITS), second.translate(ARABIC_DIGITS)
 
+    extra = ""
+    if term:
+        extra = wording_of(wording, ("terms", term, lang), f"name for term {term} in {lang}")
+    elif part:
+        extra = part_label(wording, country_code, part, lang)
+
     rtl = profile.rtl
     years = f"{first}{YEAR_DASH}{second}"
-    if term:
-        term_words = wording_of(wording, ("terms", term, lang), f"name for term {term} in {lang}")
-        reading = f"{years}{YEAR_BULLET}{term_words}"
+    if extra:
+        reading = f"{years}{YEAR_BULLET}{extra}"
         if rtl:
-            year_runs = [Run(term_words, True), Run(f"{YEAR_BULLET}{second}{YEAR_DASH}{first}", False)]
+            year_runs = [Run(extra, True), Run(f"{YEAR_BULLET}{second}{YEAR_DASH}{first}", False)]
         else:
             year_runs = [Run(reading, False)]
     else:
@@ -809,7 +844,7 @@ def write_cover_pages(
     country_code = meta.get("country_code", "").strip().lower()
     kind = lettering_kind(package_type)
 
-    lines = cover_lines(meta, profile, wording)
+    lines = cover_lines(meta, profile, wording, stem)
     picture_text = picture_path.read_text(encoding="utf-8")
     palette = palette_of(picture_text, picture_path.name)
     placed = illustration_box(picture_text, picture_path.name)

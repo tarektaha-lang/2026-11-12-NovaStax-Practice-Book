@@ -1128,7 +1128,8 @@ def tally_preamble(profile: Profile) -> str:
 # is then centred on the row, so a tally (or a fraction) does not leave the other
 # entries sitting on the baseline at the foot of the cell.
 CELL_PAD = 3.0
-TABLE_PADDING = f"""\\usepackage{{makecell}}
+TABLE_PADDING = f"""\\usepackage{{tabularx}}
+\\usepackage{{makecell}}
 \\setlength{{\\arraycolsep}}{{{5.0 + CELL_PAD:.1f}pt}}
 \\setcellgapes{{{CELL_PAD:.0f}pt}}
 \\makegapedcells
@@ -1708,6 +1709,11 @@ LATIN_ARABIC_SNIPPET = rf"""
 ]{{NotoNaskhArabic}}
 \newcommand{{\arabicsnippet}}[1]{{{{\arabicsnippetfont #1}}}}
 """
+# Kohinoor is the macOS Devanagari face. STIX Two and NagwaMath have no U+096B.
+LATIN_DEVANAGARI_SNIPPET = r"""
+\newfontfamily\devanagarisnippetfont{Kohinoor Devanagari}
+\newcommand{\devanagarisnippet}[1]{{\devanagarisnippetfont #1}}
+"""
 ARABIC_TEXT_FONT = f"""\\usepackage[bidi=basic,layout=lists tabular graphics]{{babel}}
 \\babelprovide[import,main]{{arabic}}
 \\babelprovide[import,onchar=ids]{{english}}
@@ -1735,7 +1741,7 @@ def text_font(profile: Profile) -> str:
     """The text face and, where the book needs it, the direction the page runs."""
     if profile.rtl:
         return ARABIC_TEXT_FONT
-    return LATIN_TEXT_FONT + LATIN_ARABIC_SNIPPET
+    return LATIN_TEXT_FONT + LATIN_ARABIC_SNIPPET + LATIN_DEVANAGARI_SNIPPET
 
 
 # The section number of a book with Arabic-Indic numerals is set in the display face's
@@ -2265,6 +2271,7 @@ CLOSE_GUILLEMET = "\u00bb"
 
 ARROW_ASCII = re.compile(r"->")
 MARKDOWN_BOLD = re.compile(r"\*\*\s*(.+?)\s*\*\*", re.DOTALL)
+MARKDOWN_ITALIC = re.compile(r"\*\s*(.+?)\s*\*", re.DOTALL)
 ARROW_PLACEHOLDER = "\ue000"
 
 # Any of these in prose counts as one double-quote delimiter; output alternates “ and ”.
@@ -2391,20 +2398,32 @@ def normalize_quotes_in_text_macros(maths: str, *, guillemets: bool | None = Non
     )
 
 
+def _escape_markdown_italic(text: str) -> str:
+    """Turn leftover ``* italic *`` into ``\\textit`` after bold has been lifted out."""
+    pieces: list[str] = []
+    last = 0
+    for found in MARKDOWN_ITALIC.finditer(text):
+        pieces.append(escape_plain(text[last : found.start()]))
+        pieces.append(f"\\textit{{{escape_plain(found.group(1))}}}")
+        last = found.end()
+    pieces.append(escape_plain(text[last:]))
+    return "".join(pieces)
+
+
 def escape_prose(
     text: str, *, guillemets: bool | None = None, quotes: bool = True
 ) -> str:
-    """Escape exercise prose: quotes, ``** bold **``, and ``->`` before LaTeX specials."""
+    """Escape exercise prose: quotes, ``** bold **``, ``* italic *``, and ``->`` before LaTeX specials."""
     if quotes:
         text = normalize_quotes(text, guillemets=guillemets)
     text = ARROW_ASCII.sub(ARROW_PLACEHOLDER, text)
     pieces: list[str] = []
     last = 0
     for found in MARKDOWN_BOLD.finditer(text):
-        pieces.append(escape_plain(text[last : found.start()]))
+        pieces.append(_escape_markdown_italic(text[last : found.start()]))
         pieces.append(f"\\textbf{{{escape_plain(found.group(1))}}}")
         last = found.end()
-    pieces.append(escape_plain(text[last:]))
+    pieces.append(_escape_markdown_italic(text[last:]))
     return "".join(pieces).replace(ARROW_PLACEHOLDER, r"$\rightarrow$")
 
 
@@ -2504,6 +2523,25 @@ def math_stray_ampersands(body: str) -> str:
     return re.sub(r"(?<!\\)&", "", body)
 
 
+# ``\\right) + \\left(`` — a sum of two sized groups. \\binoppenalty=10000
+# otherwise keeps the ``+`` from breaking, so a stem wider than the measure
+# hangs off the page. Zero-width; unused when the line already fits.
+_PLUS_BETWEEN_DELIMS = re.compile(
+    r"(\\right(?:[)\]]|\\\}))(\s*\+)(?!\s*\\allowbreak)(\s*)(\\left(?:[(\[]|\\\{))"
+)
+# ``A \to B \to C`` of labelled points. \\relpenalty=10000 otherwise keeps
+# ``\\to`` from breaking, so a star of ten vertices hangs off the page.
+_TO_THEN_BREAK = re.compile(r"(\\to|\\rightarrow)(?![A-Za-z])(?!\s*\\allowbreak)")
+
+
+def _plus_between_delimiters(body: str) -> str:
+    return _PLUS_BETWEEN_DELIMS.sub(r"\1\2\\allowbreak\3\4", body)
+
+
+def _to_allowbreak(body: str) -> str:
+    return _TO_THEN_BREAK.sub(r"\1\\allowbreak", body)
+
+
 def math_commas(body: str) -> str:
     """Let a line end after a comma in a list of values set as one formula.
 
@@ -2519,7 +2557,9 @@ def math_commas(body: str) -> str:
     Only a comma at the outer level, because that is the only one separating a
     list. The commas of a coordinate pair, a set, or the argument of a function
     are inside their brackets and are left alone: a break there would divide
-    something that reads as one thing.
+    something that reads as one thing. ``+`` between two ``\\left…\\right``
+    groups is the same kind of list join, and gets the same break. So does
+    ``\\to`` between labelled points.
     """
     out: list[str] = []
     depth = 0
@@ -2541,7 +2581,7 @@ def math_commas(body: str) -> str:
                 continue
             following = rest[:1]
             out.append("\\allowbreak" if following.isspace() else "\\allowbreak ")
-    return "".join(out)
+    return _to_allowbreak(_plus_between_delimiters("".join(out)))
 
 
 # \hline and \cline are \noalign. Each is legal after a row break, after another
@@ -2678,6 +2718,254 @@ def align_array_columns(text: str) -> str:
     \\begin are left unchanged.
     """
     return TABLE_WHOLE.sub(align_one_array, text)
+
+
+def math_cell_to_prose(cell: str) -> str:
+    """A math-mode cell as wrapping text: ``\\text{words}`` stay words, the rest is ``$...$``."""
+    pieces: list[str] = []
+    last = 0
+    for found in TEXT_IN_MATHS.finditer(cell):
+        pieces.append(_math_chunk_as_inline(cell[last : found.start()]))
+        pieces.append(found.group(1))
+        last = found.end()
+    pieces.append(_math_chunk_as_inline(cell[last:]))
+    return "".join(pieces)
+
+
+def _math_chunk_as_inline(chunk: str) -> str:
+    inner = chunk.strip().rstrip("\\")
+    if not inner:
+        return chunk
+    lead = len(chunk) - len(chunk.lstrip())
+    trail = len(chunk) - len(chunk.rstrip())
+    return f"{chunk[:lead]}${inner}${chunk[len(chunk) - trail :] if trail else ''}"
+
+
+def _top_level_eq_count(inner: str) -> int:
+    """``=`` signs not inside ``{…}`` and not escaped."""
+    count = 0
+    depth = 0
+    index = 0
+    while index < len(inner):
+        char = inner[index]
+        if char == "\\":
+            index += 2 if index + 1 < len(inner) else 1
+            continue
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth = max(0, depth - 1)
+        elif char == "=" and depth == 0:
+            count += 1
+        index += 1
+    return count
+
+
+def _split_inner_at_eq(inner: str) -> list[str]:
+    """Pieces of a formula on either side of top-level ``=``."""
+    parts: list[str] = []
+    buf: list[str] = []
+    depth = 0
+    index = 0
+    while index < len(inner):
+        char = inner[index]
+        if char == "\\":
+            buf.append(char)
+            if index + 1 < len(inner):
+                buf.append(inner[index + 1])
+                index += 2
+                continue
+            index += 1
+            continue
+        if char == "{":
+            depth += 1
+            buf.append(char)
+        elif char == "}":
+            depth = max(0, depth - 1)
+            buf.append(char)
+        elif char == "=" and depth == 0:
+            parts.append("".join(buf).strip())
+            buf = []
+        else:
+            buf.append(char)
+        index += 1
+    parts.append("".join(buf).strip())
+    return parts
+
+
+def _cell_is_atomic(cell: str) -> bool:
+    """One word, one short ``$…$``, or empty — a column that can stay natural width."""
+    text = cell.strip()
+    if not text:
+        return True
+    if text.startswith("$") and text.endswith("$") and text.count("$") == 2:
+        return _top_level_eq_count(text[1:-1]) <= 1
+    return not any(char.isspace() for char in text)
+
+
+# ``Standard deviation`` is two words and still fits; CPCT reasons do not.
+_WRAP_CELL_CHARS = 40
+
+
+def _cell_needs_wrap(cell: str) -> bool:
+    """True when a cell is long enough that an ``X`` column is worth the stretch."""
+    text = cell.strip()
+    if not text or _cell_is_atomic(cell):
+        return False
+    if len(text) >= _WRAP_CELL_CHARS:
+        return True
+    return (
+        text.startswith("$")
+        and text.endswith("$")
+        and text.count("$") == 2
+        and _top_level_eq_count(text[1:-1]) >= 2
+    )
+
+
+def _split_flex_math(cell: str) -> str:
+    """``$a=b=c$`` as ``$a$ $=$ $b$ $=$ $c$`` so an X column can wrap."""
+    pieces: list[str] = []
+    last = 0
+    for found in re.finditer(r"\$[^$]*\$", cell):
+        pieces.append(cell[last : found.start()])
+        chunk = found.group(0)
+        inner = chunk[1:-1]
+        if _top_level_eq_count(inner) < 2:
+            pieces.append(chunk)
+        else:
+            parts = [part for part in _split_inner_at_eq(inner) if part]
+            pieces.append(" $=$ ".join(f"${part}$" for part in parts))
+        last = found.end()
+    pieces.append(cell[last:])
+    return "".join(pieces)
+
+
+def _x_hsize_factors(weights: list[int]) -> list[float | None]:
+    """tabularx ``\\hsize`` multipliers; ``None`` means a plain ``X``."""
+    count = len(weights)
+    if count <= 1:
+        return [None]
+    weights = [max(weight, 1) for weight in weights]
+    if all(weight == weights[0] for weight in weights):
+        return [None] * count
+    total = sum(weights)
+    factors: list[float | None] = []
+    used = 0.0
+    for index, weight in enumerate(weights):
+        if index < count - 1:
+            factor = count * weight / total
+            factors.append(factor)
+            used += factor
+        else:
+            factors.append(count - used)
+    return factors
+
+
+def _flex_col_preamble(factor: float | None) -> str:
+    if factor is None:
+        return r">{\raggedright\arraybackslash}X"
+    return f">{{\\hsize={factor:.4f}\\hsize\\raggedright\\arraybackslash}}X"
+
+
+def _array_begin_to_tabularx(begin: str) -> str:
+    pos = re.search(r"\[([^\]]*)\]", begin)
+    if pos:
+        return f"\\begin{{tabularx}}{{\\linewidth}}[{pos.group(1)}]"
+    return r"\begin{tabularx}{\linewidth}"
+
+
+def _wrap_one_text_array(match: re.Match[str]) -> str:
+    """One 2–3 column ``l`` array of ``\\text`` as ``c``/``X`` at body size.
+
+    A column of one-block cells (a word, a short ``$…$``) keeps its ``lcr``
+    letter and takes its natural width. Longer columns become ``X`` and share
+    what is left of ``\\linewidth``, weighted by the longest cell.
+    """
+    spec = match.group(2)
+    inner = match.group(3)
+    if "\\begin{" in inner or "\\multicolumn" in inner:
+        return match.group(0)
+    cols = array_column_count(spec)
+    if (
+        cols < 2
+        or cols > 3
+        or "l" not in spec.lower()
+        or r"\text{" not in inner
+    ):
+        return match.group(0)
+    parsed: list[tuple[str, list[str]]] = []
+    for row in inner.split("\\\\"):
+        lead = ROW_LEAD.match(row)
+        prefix = lead.group(0) if lead else ""
+        cells = [
+            math_cell_to_prose(cell)
+            for cell in CELL_BREAK.split(row[len(prefix) :])
+        ]
+        parsed.append((prefix, cells))
+    wrap_col = [False] * cols
+    weights = [0] * cols
+    for _, cells in parsed:
+        for index, cell in enumerate(cells):
+            if index >= cols:
+                break
+            if _cell_needs_wrap(cell):
+                wrap_col[index] = True
+            weights[index] = max(weights[index], len(cell.strip()))
+    if not any(wrap_col):
+        return match.group(0)
+    flex_weights = [weights[index] for index, wrap in enumerate(wrap_col) if wrap]
+    factors = iter(_x_hsize_factors(flex_weights))
+    replacements: list[str] = []
+    for wrap in wrap_col:
+        if wrap:
+            replacements.append(_flex_col_preamble(next(factors)))
+        else:
+            replacements.append("")
+    slot = iter(replacements)
+
+    def one_letter(found: re.Match[str]) -> str:
+        preamble = next(slot)
+        return found.group(0) if not preamble else preamble
+
+    new_spec = re.sub(r"[lcr]", one_letter, spec, flags=re.I)
+    row_break = "\\\\"
+    rows = []
+    for prefix, cells in parsed:
+        out = []
+        for index, cell in enumerate(cells):
+            if index < cols and wrap_col[index]:
+                out.append(_split_flex_math(cell))
+            else:
+                out.append(cell)
+        rows.append(prefix + "&".join(out))
+    begin = _array_begin_to_tabularx(match.group(1))
+    return (
+        r"\begingroup\textdir TLT\relax"
+        r"\setlength{\tabcolsep}{\arraycolsep}"
+        f"{begin}{{{new_spec}}}"
+        f"{row_break.join(rows)}"
+        r"\end{tabularx}\endgroup"
+    )
+
+
+def wrap_text_table_columns(body: str) -> tuple[str, bool]:
+    """Rewrite text-heavy 2–3 column arrays to wrapping tabularx.
+
+    ``\\tablefit`` scales an ``{l|l}`` proof until CPCT reasons fit, taking the
+    type down with it. An ``X`` column wraps those words at 12pt; a one-block
+    or short column stays ``lcr``. Numeric ``{c|c|c}`` tables and short
+    ``{c|l}`` lists are left for ``\\tablefit``.
+    """
+    wrapped = False
+
+    def one(match: re.Match[str]) -> str:
+        nonlocal wrapped
+        out = _wrap_one_text_array(match)
+        if out != match.group(0):
+            wrapped = True
+        return out
+
+    return TABLE_WHOLE.sub(one, body), wrapped
 
 
 def mirrored_table(match: re.Match) -> str:
@@ -3048,6 +3336,9 @@ TALLY_RUN = re.compile(
     r"(?<![A-Za-z0-9])((?:/{2,4}(?:\\backslash)?|/(?:\\backslash))"
     r"(?:(?:\\ | )+/{1,4}(?:\\backslash)?)*)(?![A-Za-z0-9/])"
 )
+# Model writes a five-bar gate as \\cancel{||||}. The diagonal is the fifth stroke.
+_CANCEL_TALLY = re.compile(r"\\cancel\{([|/]{1,8})\}")
+_DEVANAGARI_RUN = re.compile(r"[\u0900-\u097F]+")
 
 # Arabic punctuation the model writes inside maths — "$\{1، 2، 3\}$", a blank
 # "$؟$" — that the maths font has no glyph for and would drop. The Latin maths
@@ -3075,7 +3366,8 @@ def _is_latin_letter(char: str) -> bool:
 
 
 def _is_ipa_char(char: str) -> bool:
-    return bool(_IPA_LETTER.fullmatch(char)) or char in "/ˈˌː'"
+    # Slash and ASCII apostrophe are maths (1/3, f'), not IPA.
+    return bool(_IPA_LETTER.fullmatch(char)) or char in "ˈˌː"
 
 
 def wrap_ipa_in_maths(body: str) -> str:
@@ -3083,9 +3375,10 @@ def wrap_ipa_in_maths(body: str) -> str:
     stripped = body.strip()
     if stripped.startswith("\\text{") and stripped.endswith("}"):
         return body
-    if any(_is_ipa_char(char) for char in body):
-        if "\\" not in body:
-            return f"\\text{{{body}}}"
+    # Whole-body wrap is for a phoneme like /eə/, not a formula that happens
+    # to contain / or '.
+    if _IPA_LETTER.search(body) and "\\" not in body:
+        return f"\\text{{{body}}}"
     return body
 
 
@@ -3100,6 +3393,13 @@ def wrap_latin_diacritic_words(body: str) -> str:
     phoneme marks (``$/eə/$``) are set as text for the same reason.
     """
     body = wrap_ipa_in_maths(body)
+    body = _outside_textual_math(
+        body,
+        lambda part: _DEVANAGARI_RUN.sub(
+            lambda found: f"\\text{{\\devanagarisnippet{{{found.group(0)}}}}}",
+            part,
+        ),
+    )
     out: list[str] = []
     index = 0
     length = len(body)
@@ -3221,12 +3521,20 @@ ARABIC_DECIMAL_RUN = re.compile(
 # ``4{,}400{,}331`` keeps writing order (the digits stay LTR inside the
 # formula) and prints as one number. Arabic-Indic grouped numbers use U+066C
 # and are left to arabic_formula / arabic_maths.lua.
+# Indian lakhs/crores group 3, then 2s (``2,04,300``). Applied first so the
+# last ``,300`` is not taken as a Western thousands group leaving ``2,`` loose.
+GROUPED_INDIAN_NUMBER = re.compile(
+    r"[0-9]{1,2}(?:,[0-9]{2})+,[0-9]{3}(?:\.[0-9]+)?"
+)
 GROUPED_WESTERN_NUMBER = re.compile(r"[0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]+)?")
 # A pipeline token, not a number the reader is meant to see. arabic_prose rewrites
 # digits, so the index has to be lifted out and put back in ASCII; the matcher
 # still accepts Arabic-Indic digits if one slips through.
 FIGURE_TOKEN = re.compile(r"\[figure ([0-9٠-٩]+)\]")
 FIGURE_MARKER = re.compile(r"[ \t]*\[figure ([0-9٠-٩]+)\][ \t]*")
+# \\widefigure ends a paragraph, so a comma written after the marker would start
+# the next line. Same marks DISPLAY_TAIL_PUNCT drops after a display.
+FIGURE_THEN_PUNCT = re.compile(r"\[figure ([0-9٠-٩]+)\][ \t]*[.,;:!?،؛؟]*")
 
 # What a digit inside maths is not to be rewritten in: the arguments TeX reads as a
 # count or a length rather than prints. The model is not asked to write any of these,
@@ -4174,10 +4482,7 @@ def _phrase_atom(atom: str) -> str:
     A nested ``$`` would split the formula wherever the maths is cut out of the
     field by its dollars, so the atom keeps a brace form until ``to_latex``.
     """
-    grouped = GROUPED_WESTERN_NUMBER.sub(
-        lambda found: found.group(0).replace(",", "{,}"), atom
-    )
-    return f"\\ensuremath{{{grouped}}}"
+    return f"\\ensuremath{{{_brace_grouped_commas(atom)}}}"
 
 
 def set_builder_commas(body: str) -> str:
@@ -4378,22 +4683,27 @@ def _outside_textual_math(body: str, rewrite: Callable[[str], str]) -> str:
     return "".join(pieces)
 
 
+def _brace_grouped_commas(part: str) -> str:
+    """Brace Indian lakh commas, then Western thousands commas."""
+    part = GROUPED_INDIAN_NUMBER.sub(
+        lambda found: found.group(0).replace(",", "{,}"), part
+    )
+    return GROUPED_WESTERN_NUMBER.sub(
+        lambda found: found.group(0).replace(",", "{,}"), part
+    )
+
+
 def tight_thousands(body: str) -> str:
     """``4,400,331`` as ``4{,}400{,}331``, so the comma is not math punctuation.
 
     A punctuation comma gets a thin space after it. Bracing it keeps the digits
-    in writing order and prints them as one number. List commas (``10, 20``)
-    and coordinate commas (``(2,3)``) are not thousands grouping and stay as
-    they are. Already-braced marks are left alone.
+    in writing order and prints them as one number. Indian grouping
+    (``2,04,300``) is braced first, so a lakh is not split into a list comma
+    plus a Western thousands tail. List commas (``10, 20``) and coordinate
+    commas (``(2,3)``) are not thousands grouping and stay as they are.
+    Already-braced marks are left alone.
     """
-
-    def rewrite(part: str) -> str:
-        return GROUPED_WESTERN_NUMBER.sub(
-            lambda found: found.group(0).replace(",", "{,}"),
-            part,
-        )
-
-    return _outside_textual_math(body, rewrite)
+    return _outside_textual_math(body, _brace_grouped_commas)
 
 
 def parallel_slashes(body: str) -> str:
@@ -4403,17 +4713,34 @@ def parallel_slashes(body: str) -> str:
     )
 
 
+# Table cells keep the 15bp CLS strokes. Inline math is also displaystyle
+# (\\everymath), so shrink it in Python rather than \\mathchoice.
+INLINE_TALLY_SCALE = "0.8"
+
+
+def _tally_command(count: int, *, table: bool) -> str:
+    cmd = f"\\CounterTallyMarks{{{count}}}"
+    if table:
+        return cmd
+    return f"\\vcenter{{\\hbox{{\\scalebox{{{INLINE_TALLY_SCALE}}}{{{cmd}}}}}}}"
+
+
 def tally_maths(body: str) -> str:
     """Slash runs that are tally marks, as ``\\CounterTallyMarks``."""
+    table = bool(TABLE_SEGMENT.search(body))
 
     def replace(found: re.Match[str]) -> str:
         count = tally_count(found.group(1))
         if count <= 0:
             return found.group(0)
-        return f"\\CounterTallyMarks{{{count}}}"
+        return _tally_command(count, table=table)
 
+    def cancel_tally(found: re.Match[str]) -> str:
+        return _tally_command(len(found.group(1)) + 1, table=table)
+
+    rewritten = _CANCEL_TALLY.sub(cancel_tally, body)
     return _outside_textual_math(
-        body, lambda part: TALLY_RUN.sub(replace, part)
+        rewritten, lambda part: TALLY_RUN.sub(replace, part)
     )
 
 
@@ -4735,14 +5062,23 @@ def wrap_bare_exponents(text: str) -> str:
     return "".join(pieces)
 
 
+def _uppercase_latin(text: str) -> str:
+    """Capitals for a heading, leaving π and other non-Latin letters as they are.
+
+    str.upper() maps π to Π, which is a different symbol, not a capital pi the
+    student should read in a section title.
+    """
+    return re.sub(r"[a-z]", lambda found: found.group(0).upper(), text)
+
+
 def _uppercase_prose_outside_math(text: str) -> str:
     pieces: list[str] = []
     last = 0
     for found in MATH_SEGMENT.finditer(text):
-        pieces.append(text[last : found.start()].upper())
+        pieces.append(_uppercase_latin(text[last : found.start()]))
         pieces.append(found.group(0))
         last = found.end()
-    pieces.append(text[last:].upper())
+    pieces.append(_uppercase_latin(text[last:]))
     return "".join(pieces)
 
 
@@ -5775,13 +6111,18 @@ def to_latex(text: str, *, inline: bool = False, guillemets: bool | None = None)
             cursor = match.end()
             continue
         table = bool(TABLE_SEGMENT.search(body))
+        wrapped = False
         if table:
             body = unframed(body)
+            body, wrapped = wrap_text_table_columns(body)
         # An inline field is set inside a command argument, where a display is not
         # allowed to go, so there a table is measured as the long line it would be.
         # That is the answer wanted of it: a member of a set carrying a table needs
         # the whole width, and reporting the table's own width is what says so.
-        if not inline and (display or bracketed or table):
+        if wrapped:
+            pieces.append(f"\\par\\noindent{body}\\par")
+            after_display = True
+        elif not inline and (display or bracketed or table):
             fitted = f"\\tablefit{{{body}}}" if table else body
             pieces.append(f"\\[{fitted}\\]")
             after_display = True
@@ -6057,8 +6398,13 @@ def has_marker(text: str, index: int) -> bool:
 
 
 def replace_marker(text: str, index: int, replacement: str) -> str:
-    """`text` with figure `index`'s token swapped for `replacement`."""
-    return FIGURE_TOKEN.sub(
+    """`text` with figure `index`'s token swapped for `replacement`.
+
+    Punctuation immediately after the marker is dropped: the figure is a
+    paragraph of its own, and a comma there would print as the next line's first
+    character.
+    """
+    return FIGURE_THEN_PUNCT.sub(
         lambda found: replacement if figure_number(found.group(1)) == index else found.group(0),
         text,
     )
@@ -6082,6 +6428,19 @@ def without_marker(body: str, index: int) -> str:
         lambda found: " " if figure_number(found.group(1)) == index else found.group(0),
         body,
     ).strip()
+
+
+def peel_fitted_tables(wording: str) -> tuple[str, str]:
+    """Cut \\tablefit displays off the stem so they can use the full measure.
+
+    A table inside \\besidefigure is scaled to the wording minipage, half the
+    line, so the type shrinks with the array. The stem can still sit beside the
+    figure; the table goes under both.
+    """
+    start = wording.find(r"\[\tablefit{")
+    if start < 0:
+        return wording, ""
+    return wording[:start].rstrip(), wording[start:]
 
 
 def body_to_latex(
@@ -6133,15 +6492,20 @@ def body_to_latex(
     set centred across the page instead, splitting its own question in two and
     leaving the column beside it empty. So the fit is tested first, and the marker
     for the figure that passes is dropped rather than honoured.
+
+    A table in that wording is cut out of the column and set under both, because
+    \\tablefit scales to \\linewidth and the column is half the line.
     """
     owned = claimed or set()
     verse = poems or []
     body = to_latex(text)
     if body and 1 not in owned and not verse and stands_beside(figures, drawings, measure):
         wording = without_marker(body, 1)
-        if wording:
+        stem, table = peel_fitted_tables(wording)
+        if stem:
             beside = figure_to_latex(figures[0], drawings, alone=False)
-            return f"\\besidefigure{{{lead}{wording}}}{{{beside}}}"
+            laid = f"\\besidefigure{{{lead}{stem}}}{{{beside}}}"
+            return f"{laid}\n{table}" if table else laid
 
     trailing = []
     for index, description in enumerate(figures, start=1):

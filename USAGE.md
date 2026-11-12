@@ -1,6 +1,6 @@
 # How to run a book
 
-Short CLI guide. The full description of the tool is in [README.md](README.md).
+Short CLI guide. Copy-paste cheat sheet: [COMMANDS.md](COMMANDS.md). The full description of the tool is in [README.md](README.md).
 
 From the repo root, with `GOOGLE_API_KEY` or `GEMINI_API_KEY` set:
 
@@ -154,8 +154,8 @@ Use these with `--from` / `--to` on a single-language run.
 | `labels` | Name each objective for the paper headings |
 | `budgets` | Share each section's exercise budget among its objectives |
 | `source_questions` | Transcribe questions already in the source PDFs. After MAX_TOKENS the stage splits per PDF at the same thinking level; medium is a last resort |
-| `new_questions` | Write new practice exercises. Retries send the last rule-check failure back as `feedback.txt` |
-| `questions_review` | Check the new exercises and drop the wrong ones |
+| `new_questions` | Write new practice exercises (Gemini Batch by default). Retries send the last rule-check failure back as `feedback.txt` |
+| `questions_review` | Check the new exercises and drop the wrong ones (Gemini Batch by default) |
 | `extract` | File every figure description for drawing |
 | `draw` | Draw each figure as TikZ and compile it |
 | `frontmatter` | Set the cover, title, copyright and contents pages |
@@ -242,9 +242,10 @@ Exercise translation does not prompt.
 | `--tts-model` | Speech model for audios (`--model` does not reach audios) |
 | `--list` | Print the stage order and exit (`--list --translate` for the long list) |
 
-`transcripts.py` and `audios.py` default to the Gemini Batch API: every chunk of
-a round is submitted at once (up to 24h, billed at the Batch rate). `--no-batch`
-is unary `generateContent` with 25 workers. `--unary-fallback N` on
+`transcripts.py`, `audios.py`, `new_questions.py` and `questions_review.py`
+default to the Gemini Batch API: every chunk of a round is submitted at once
+(up to 24h, billed at the Batch rate). `--no-batch` is unary `generateContent`
+with 25 workers. `--unary-fallback N` on
 `transcripts.py` (default 0) sends at most N remaining items unary at the current
 attempt instead of the last Batch round. `429 RESOURCE_EXHAUSTED` at upload or
 create re-queues the chunk without spending an attempt. Polling uses a cheap
@@ -253,14 +254,15 @@ timeout, 3 timeouts → those keys fail and the CLI exits 1; rerun adopts again)
 A WAV with no JSON audio row is regenerated. Audio stays inline; JSONL output
 is phase 2.
 
-State files `data/output/<book>/00_transcripts_batch_state.json` and
-`00_audios_batch_state.json` hold a `jobs` list (a legacy single `job` is still
-read). A rerun adopts live saved jobs and submits leftover chunks in the same
-round. `--discard-batch-state` deletes only that local JSON; it does not cancel
-the remote job, so discarding a running job and resubmitting bills twice.
-`00_transcripts_batch.lock` and `00_audios_batch.lock` allow one run per book at
-a time. `--no-batch` still polls and applies every saved in-flight job before
-going unary.
+State files `data/output/<book>/00_transcripts_batch_state.json`,
+`00_audios_batch_state.json`, `00_new_questions_batch_state.json` and
+`00_questions_review_batch_state.json` hold a `jobs` list (a legacy single
+`job` is still read). A rerun adopts live saved jobs and submits leftover
+chunks in the same round. `--discard-batch-state` deletes only that local JSON;
+it does not cancel the remote job, so discarding a running job and resubmitting
+bills twice. Matching `00_*_batch.lock` files allow one run per book at a time.
+`--no-batch` still polls and applies every saved in-flight job before going
+unary.
 
 A failed job, or one that stopped while being applied, resends only the keys
 still missing on disk; written rows are never paid for twice. 30 poll errors in

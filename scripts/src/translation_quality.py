@@ -1371,7 +1371,9 @@ def text_problems(
         problems.append(f"{where}: empty source gained translated content")
     if MODEL_CHATTER.search(target):
         problems.append(f"{where}: model chatter or unrelated boilerplate")
-    if match := FOREIGN_PRINT.search(target):
+    # Maths may name a glyph the prose script does not use (India English
+    # teaching Devanagari ५). Leakage in wording is still caught.
+    if match := FOREIGN_PRINT.search(MATH_SEGMENT.sub(" ", target)):
         problems.append(f"{where}: unsupported character {match.group()!r}")
     if match := CONTROL_CHARACTER.search(target):
         problems.append(

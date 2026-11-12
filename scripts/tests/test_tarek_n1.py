@@ -46,6 +46,21 @@ class ThinSpaceCommaTests(unittest.TestCase):
         rendered = to_latex(r"$a\\,b$")
         self.assertNotIn(r"\allowbreak", rendered)
 
+    def test_plus_between_sized_groups_can_break(self) -> None:
+        rendered = to_latex(
+            r"$(9\text{ lotus flowers, } 6\text{ strokes}) + "
+            r"(3\text{ lotus flowers, } 7\text{ strokes})$"
+        )
+        self.assertIn(r"\right) +\allowbreak \left(", rendered)
+        self.assertEqual(rendered.count(r"\allowbreak"), 1)
+        self.assertNotIn(r"\allowbreak", to_latex(r"$a + b$"))
+
+    def test_to_between_points_can_break(self) -> None:
+        rendered = to_latex(r"$A(3, 6) \to B(3.5, 4.5) \to C(5, 4.5)$")
+        self.assertIn(r"\to\allowbreak", rendered)
+        self.assertGreaterEqual(rendered.count(r"\to\allowbreak"), 2)
+        self.assertNotIn(r"\to\allowbreak", to_latex(r"$A \rightarrowtail B$"))
+
 
 if __name__ == "__main__":
     unittest.main()

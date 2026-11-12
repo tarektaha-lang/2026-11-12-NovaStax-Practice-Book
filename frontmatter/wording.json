@@ -47,6 +47,14 @@
       "it": "Sultanato dell'Oman",
       "es": "Sultanato de Omán",
       "de": "Sultanat Oman"
+    },
+    "in": {
+      "ar": "جمهورية الهند",
+      "en": "Republic of India",
+      "fr": "République de l'Inde",
+      "it": "Repubblica dell'India",
+      "es": "República de la India",
+      "de": "Republik Indien"
     }
   },
   "country_short_names_en": {
@@ -54,7 +62,8 @@
     "sa": "Saudi Arabia",
     "iq": "Iraq",
     "dz": "Algeria",
-    "om": "Oman"
+    "om": "Oman",
+    "in": "India"
   },
   "types": {
     "eg": {
@@ -186,6 +195,29 @@
         "es": "LIBRO DE EXAMENES",
         "de": "PRUFUNGSBUCH"
       }
+    },
+    "in": {
+      "practice": {
+        "en": "practice",
+        "fr": "LIVRE DEXERCICES",
+        "it": "LIBRO DI ESERCIZI",
+        "es": "LIBRO DE EJERCICIOS",
+        "de": "UBUNGSBUCH"
+      },
+      "study": {
+        "en": "study",
+        "fr": "LIVRE DETUDE",
+        "it": "LIBRO DI STUDIO",
+        "es": "LIBRO DE ESTUDIO",
+        "de": "LERNBUCH"
+      },
+      "exam": {
+        "en": "exam",
+        "fr": "LIVRE DEXAMENS",
+        "it": "LIBRO DI ESAMI",
+        "es": "LIBRO DE EXAMENES",
+        "de": "PRUFUNGSBUCH"
+      }
     }
   },
   "table_of_contents": {
@@ -229,6 +261,24 @@
       "it": "Secondo Quadrimestre",
       "es": "Segundo Trimestre",
       "de": "2. Halbjahr"
+    }
+  },
+  "parts": {
+    "1": {
+      "ar": "الجزء الأول",
+      "en": "Part 1"
+    },
+    "2": {
+      "ar": "الجزء الثاني",
+      "en": "Part 2"
+    }
+  },
+  "parts_in": {
+    "1": {
+      "en": "Part I"
+    },
+    "2": {
+      "en": "Part II"
     }
   },
   "grades": {
@@ -756,52 +806,40 @@
     },
     "in": {
       "1": {
-        "en": "Class 1",
-        "ar": "الصف الأول"
+        "en": "Class I"
       },
       "2": {
-        "en": "Class 2",
-        "ar": "الصف الثاني"
+        "en": "Class II"
       },
       "3": {
-        "en": "Class 3",
-        "ar": "الصف الثالث"
+        "en": "Class III"
       },
       "4": {
-        "en": "Class 4",
-        "ar": "الصف الرابع"
+        "en": "Class IV"
       },
       "5": {
-        "en": "Class 5",
-        "ar": "الصف الخامس"
+        "en": "Class V"
       },
       "6": {
-        "en": "Class 6",
-        "ar": "الصف السادس"
+        "en": "Class VI"
       },
       "7": {
-        "en": "Class 7",
-        "ar": "الصف السابع"
+        "en": "Class VII"
       },
       "8": {
-        "en": "Class 8",
-        "ar": "الصف الثامن"
+        "en": "Class VIII"
       },
       "9": {
-        "en": "Class 9",
-        "ar": "الصف التاسع"
+        "en": "Class IX"
       },
       "10": {
-        "en": "Class 10",
-        "ar": "الصف العاشر"
+        "en": "Class X"
       },
       "11": {
-        "en": "Class 11",
-        "ar": "الصف الحادي عشر"
+        "en": "Class XI"
       },
       "12": {
-        "en": "Class 12",
-        "ar": "الصف الثاني عشر"
+        "en": "Class XII"
       }
     }
   }

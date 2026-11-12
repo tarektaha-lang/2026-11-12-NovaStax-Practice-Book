@@ -283,6 +283,10 @@ class TocTests(unittest.TestCase):
         self.assertIn("FINDING THE TERM CONTAINING", head)
         self.assertIn("$x^k$", head)
         self.assertNotIn("X^K", head)
+        pi = heading_tex("π is irrational", ENGLISH, uppercase=True)
+        self.assertIn("π", pi)
+        self.assertIn("IS IRRATIONAL", pi)
+        self.assertNotIn("Π", pi)
 
     def test_contents_body_typesets_x_caret_k_from_xml_title(self) -> None:
         wording = {"table_of_contents": {"en": "Contents", "ar": "المحتويات"}}

@@ -15,9 +15,12 @@ sys.path.insert(0, str(SCRIPTS))
 from src.prompting import Profile  # noqa: E402
 from questions_review import (  # noqa: E402
     CHECK_STEP,
+    ReplenishReply,
     ReviewPromptCache,
+    SetReplenishJob,
     allowed_set_sizes,
     cache_content_stale,
+    check_replenish,
     drop_figure_exercises,
     labelled_choice,
     load_logged_exercise_checks,
@@ -28,6 +31,7 @@ from questions_review import (  # noqa: E402
     rule_issues,
     valid_set_size,
 )
+from new_questions import Exercise  # noqa: E402
 
 
 AR = Profile("ar", "western", "latin")
@@ -189,6 +193,45 @@ class SetReplenishPlanTests(unittest.TestCase):
         self.assertEqual(jobs[0].count, 1)
         self.assertEqual(jobs[0].target, 8)
         self.assertEqual(jobs[0].rejected[0]["reasons"], rejected[0]["reasons"])
+
+    def test_form_set_stem_replenish_stays_one_group(self) -> None:
+        stem = "Choose the correct answer in each of the following:"
+
+        def mcq(index: int) -> dict:
+            return {
+                "id": f"exercise_{index}",
+                "text": f"What is value {index} of $x$?",
+                "options": ["$1$", "$2$", "$3$", "$4$"],
+                "answer": "A",
+                "objectives": ["objective_1"],
+            }
+
+        group = {
+            "id": "group_1",
+            "objective": "objective_1",
+            "stem": stem,
+            "exercises": [mcq(1), mcq(2), mcq(3)],
+        }
+        job = SetReplenishJob(
+            section="6.2",
+            stem=stem,
+            group=group,
+            objective="objective_1",
+            target=4,
+            count=1,
+            kept=group["exercises"],
+            rejected=[],
+        )
+        reply = ReplenishReply(
+            status="ok",
+            exercises=[Exercise.model_validate(mcq(4))],
+        )
+        document = {
+            "number": "6.2",
+            "exercises": {"objectives": [{"id": "objective_1"}]},
+        }
+        known = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        check_replenish(reply, job, document, "mathematics_en_in10", known)
 
 
 class LabelledChoiceTests(unittest.TestCase):

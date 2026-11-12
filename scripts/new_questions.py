@@ -34,25 +34,27 @@ the figures the exercises describe, draw.py draws them and papers.py sets the
 paper, so the exercises can be rewritten without redrawing and the paper can be
 set again without either.
 
-An objective is a single long call and there are more of them than workers, so a
-line goes out as each is asked for and where the book stands — in flight, still
-queued, finished — is reported whenever half a minute passes in silence.
+By default objectives use the Gemini Batch API. ``--no-batch`` keeps the
+previous unary thread pool. In-flight jobs are saved under the book output so a
+stopped run resumes without submitting the same objective again.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import random
 import re
 import sys
+import threading
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
@@ -70,6 +72,35 @@ try:
         genai_usage,
         safe_log,
     )
+    from src.gemini_batch import (
+        BATCH_FAILED,
+        FINISH_DONE,
+        FULL_GET_TIMEOUT_MS,
+        BatchChunk,
+        BatchLock,
+        BatchState,
+        BatchStatus,
+        batch_display_name,
+        batch_lock_path,
+        batch_state_path,
+        chunk_requests,
+        delete_files,
+        entries,
+        find_jobs_by_display_names,
+        finish_token,
+        generate_content_response,
+        get_batch_job,
+        get_batch_status,
+        inlined_responses,
+        is_legacy,
+        map_rows_by_key,
+        new_run_id,
+        pick_duplicate_match,
+        response_and_error,
+        result_file_name,
+        run_batch_jobs,
+        src_for_chunk,
+    )
     from budgets import BUDGETS_STAGE
     from src.latex import DOUBLED_COMMAND, house_wording_square_problems, single_commands
     from src.arabic_verse import POEM_MARKER, Poem, poem_problems
@@ -77,7 +108,7 @@ try:
     from src.prompting import Profile, Prompt, assemble
     from source_questions import QUESTIONS_STAGE
     from review import book_attributes, reviewed_book
-    from specs import Progress, one_line, since
+    from specs import Progress, in_kb, one_line, since
     from sources import PROJECT_ROOT, OUTPUT_DIR, book_metadata, matching_sections
 except ModuleNotFoundError as error:  # pragma: no cover
     sys.exit(f"missing dependency ({error.name}): pip install -r requirements.txt")
@@ -265,9 +296,13 @@ EXAMPLE_LIMIT = 40
 
 DEFAULT_MODEL = "gemini-3.8-flash"
 DEFAULT_THINKING = "high"
+DEFAULT_BATCH = True
+DEFAULT_BATCH_PARALLEL = 0
+DEFAULT_DOWNLOAD_WORKERS = 3
 THINKING_LEVELS = ("minimal", "low", "medium", "high")
 API_KEY_VARS = ("GEMINI_API_KEY", "GOOGLE_API_KEY")
 MAX_ATTEMPTS = 4
+BATCH_STAGE = "new_questions"
 # How many times a call is allowed to be told to slow down before it counts as
 # failed, and the wait after the first such time, which grows with each. Long,
 # because the limit met is the account's spending rate and a book with a hundred
@@ -3340,6 +3375,8 @@ class Run:
     # own alphabet, read off its profile.
     alphabet: frozenset[str] = frozenset()
     force_generate: bool = False
+    section: str | None = None
+    update: bool = False
 
 
 def task_name(section: dict, objective: dict) -> str:
@@ -3431,6 +3468,644 @@ def write_objective(
     )
 
 
+@dataclass
+class ObjectiveJob:
+    """One objective still to write."""
+
+    section: dict
+    objective: dict
+    count: int
+    parts: list[str]
+    allowed: list[str]
+    source_stems: dict[str, str] | None
+    item: str
+    name: str
+    digest: str
+    feedback: str | None = None
+    feedback_from: int | None = None
+    feedback_problems: list[str] | None = None
+
+
+class WriteStore:
+    """Write each landed objective to its section's resumable partial."""
+
+    def __init__(
+        self,
+        book_id: str,
+        stage_dir: Path,
+        budgets: dict[str, list[dict]],
+        written: dict[str, dict[str, list[ExerciseGroup]]],
+        pending: list[dict],
+    ) -> None:
+        self._lock = threading.Lock()
+        self.book_id = book_id
+        self.stage_dir = stage_dir
+        self.budgets = budgets
+        self.written = written
+        self.pending = pending
+
+    def has(self, stem: str, objective: str) -> bool:
+        with self._lock:
+            return objective in self.written.get(stem, {})
+
+    def item_applied(self, item: str) -> bool:
+        with self._lock:
+            return any(
+                item == f"{row['number']}-{objective['id']}"
+                and objective["id"] in self.written.get(row["stem"], {})
+                for row in self.pending
+                for objective in row["spec"]["objectives"]
+            )
+
+    def save(self, job: ObjectiveJob, groups: list[ExerciseGroup]) -> None:
+        with self._lock:
+            stem = job.section["stem"]
+            self.written.setdefault(stem, {})[job.objective["id"]] = groups
+            write_partial(
+                partial_path(self.stage_dir, stem),
+                self.book_id,
+                job.section["number"],
+                self.written[stem],
+                self.budgets[stem],
+            )
+
+
+def objective_jobs(run: Run, tasks: list[tuple]) -> list[ObjectiveJob]:
+    """Turn the existing unary task tuples into stable Batch items."""
+    jobs: list[ObjectiveJob] = []
+    for section, objective, count, examples, source_stems, extraction_doc in tasks:
+        ids = [row["id"] for row in section["spec"]["objectives"]]
+        allowed = ids[: ids.index(objective["id"]) + 1]
+        parts = [
+            spec_part(section, objective["id"]),
+            assignment_part(objective, count, allowed[:-1]),
+            examples,
+            *(
+                [source_stems_part(extraction_doc, objective["id"], source_stems)]
+                if extraction_doc
+                else []
+            ),
+        ]
+        item = f"{section['number']}-{objective['id']}"
+        digest = hashlib.sha256(
+            "\n".join(
+                [
+                    run.prompt.text,
+                    *parts,
+                    run.thinking,
+                    str(run.force_generate),
+                ]
+            ).encode("utf-8")
+        ).hexdigest()
+        jobs.append(
+            ObjectiveJob(
+                section=section,
+                objective=objective,
+                count=count,
+                parts=parts,
+                allowed=allowed,
+                source_stems=source_stems,
+                item=item,
+                name=task_name(section, objective),
+                digest=digest,
+            )
+        )
+    return jobs
+
+
+def objective_context(run: Run, job: ObjectiveJob) -> dict:
+    return {
+        "book_id": run.book_id,
+        "section": job.section["number"],
+        "section_title": job.section["title"],
+        "objective": job.objective["id"],
+        "target_count": job.count,
+        "prompt_files": run.prompt.files,
+        "language_code": run.meta["language_code"],
+    }
+
+
+def objective_request(
+    run: Run, job: ObjectiveJob, attempt: int
+) -> types.InlinedRequest:
+    prompt = (
+        run.prompt.text + FORCE_GENERATE_PROMPT
+        if run.force_generate
+        else run.prompt.text
+    )
+    contents = [prompt, *job.parts]
+    if job.feedback:
+        contents.append(job.feedback)
+    return types.InlinedRequest(
+        contents=contents,
+        metadata={
+            "item": job.item,
+            "log_key": f"{run.book_id}|{job.item}|a{attempt}",
+        },
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=WriteReplyForced if run.force_generate else WriteReply,
+            thinking_config=types.ThinkingConfig(thinking_level=run.thinking),
+        ),
+    )
+
+
+def parse_objective_response(
+    run: Run, job: ObjectiveJob, response: Any
+) -> tuple[WriteReply, dict]:
+    """Apply the same parsing, repairs, and checks as the unary path."""
+    raw = genai_answer_text(response)
+    if run.force_generate:
+        forced = WriteReplyForced.model_validate_json(raw)
+        result = WriteReply(status="ok", groups=forced.groups)
+    else:
+        result = WriteReply.model_validate_json(raw)
+    repairs: dict = {}
+    if result.status != "ok":
+        return result, repairs
+    result.groups, repairs = repaired(
+        result.groups,
+        job.count,
+        vector_lesson=section_is_vector_lesson(job.section),
+        notation=str(run.meta.get("notation") or "latin"),
+        language_code=str(run.meta.get("language_code") or "en"),
+        source_stems=job.source_stems,
+    )
+    result.groups = repair_groups_excessive_tashkeel(result.groups)
+    result.groups = repair_groups_mark_placement(result.groups)
+    prompt = (
+        run.prompt.text + FORCE_GENERATE_PROMPT
+        if run.force_generate
+        else run.prompt.text
+    )
+    known = run.alphabet | frozenset(
+        character
+        for character in prompt + "".join(job.parts)
+        if character.isalpha()
+    )
+    if padding := repairs.get("form_set_padding"):
+        if not run.force_generate:
+            raise ProblemsError(padding)
+    check_write(
+        result,
+        job.count,
+        job.objective["id"],
+        job.allowed,
+        known,
+    )
+    return result, repairs
+
+
+def log_objective_batch_call(
+    run: Run,
+    job: ObjectiveJob,
+    attempt: int,
+    response: Any,
+    result: WriteReply | None,
+    error_message: str | None,
+    duration: float,
+    batch_name: str,
+    repairs: dict,
+) -> None:
+    prompt = (
+        run.prompt.text + FORCE_GENERATE_PROMPT
+        if run.force_generate
+        else run.prompt.text
+    )
+    extra = {
+        **objective_context(run, job),
+        "thinking_level": run.thinking,
+        "returned": result.status if result else None,
+        "finish_reason": finish_reason(response),
+        "batch": True,
+        "batch_key": f"{run.book_id}|{job.item}|a{attempt}",
+        "batch_name": batch_name,
+        **repairs,
+    }
+    if job.feedback:
+        extra["feedback_from_attempt"] = job.feedback_from
+        extra["feedback_problems"] = job.feedback_problems
+    safe_log(
+        run.logger,
+        files_builder=lambda captured=response: {
+            "prompt.txt": prompt,
+            **{
+                f"part_{number}.txt": part
+                for number, part in enumerate(job.parts, start=1)
+            },
+            **({"feedback.txt": job.feedback} if job.feedback else {}),
+            **(
+                genai_response_files(captured)
+                if captured is not None
+                else {}
+            ),
+        },
+        page_number=job.item,
+        step_name=WRITE_STEP,
+        attempt=attempt,
+        api="gemini",
+        model=run.model,
+        usage=genai_usage(response) if response is not None else {},
+        duration_seconds=duration,
+        status="success" if result is not None else "error",
+        error_message=error_message,
+        extra=extra,
+    )
+
+
+def apply_objective_row(
+    run: Run,
+    store: WriteStore,
+    job: ObjectiveJob,
+    row: Any,
+    attempt: int,
+    elapsed: float,
+    batch_name: str,
+) -> tuple[bool, str | None, list[str] | None, bool]:
+    response, error_message = response_and_error(row)
+    parsed = None
+    result = None
+    problems: list[str] | None = None
+    repairs: dict = {}
+    if error_message is None:
+        try:
+            if response is None:
+                raise ValueError("no batch response for this request")
+            parsed = generate_content_response(response)
+            result, repairs = parse_objective_response(run, job, parsed)
+        except ProblemsError as error:
+            error_message = f"{type(error).__name__}: {error}"
+            problems = error.problems
+            result = None
+        except ValidationError as error:
+            error_message = f"{type(error).__name__}: {error}"
+            problems = pydantic_problems(error)
+            result = None
+        except Exception as error:  # noqa: BLE001
+            error_message = f"{type(error).__name__}: {error}"
+            result = None
+    log_objective_batch_call(
+        run,
+        job,
+        attempt,
+        parsed,
+        result,
+        error_message,
+        elapsed,
+        batch_name,
+        repairs,
+    )
+    if result is None:
+        return False, error_message, problems, False
+    if result.status == "abort":
+        return (
+            False,
+            f"aborted, {result.abort_reason or 'no reason given'}",
+            None,
+            True,
+        )
+    store.save(job, result.groups)
+    return True, None, None, False
+
+
+def objective_chunk(
+    run: Run, jobs: list[ObjectiveJob], attempt: int, label: str
+) -> BatchChunk:
+    display = batch_display_name(
+        run.book_id, BATCH_STAGE, label, run_id=new_run_id()
+    )
+
+    def build_src() -> tuple[Any, str | None]:
+        return src_for_chunk(
+            run.client,
+            [(job.item, objective_request(run, job, attempt)) for job in jobs],
+            display,
+        )
+
+    return BatchChunk(
+        label=label,
+        display_name=display,
+        attempt=attempt,
+        keys={job.item: job.digest for job in jobs},
+        items=list(jobs),
+        build_src=build_src,
+    )
+
+
+def objective_chunks(
+    run: Run, jobs: list[ObjectiveJob], attempt: int
+) -> list[BatchChunk]:
+    by_item = {job.item: job for job in jobs}
+    pairs = [
+        (job.item, objective_request(run, job, attempt))
+        for job in jobs
+    ]
+    return [
+        objective_chunk(
+            run,
+            [by_item[item] for item, _request in chunk],
+            attempt,
+            f"a{attempt}-b{number}",
+        )
+        for number, chunk in enumerate(chunk_requests(pairs), start=1)
+    ]
+
+
+def adopted_objective_chunk(
+    entry: dict[str, Any], by_item: dict[str, ObjectiveJob]
+) -> BatchChunk:
+    keys = {
+        str(key): str(digest)
+        for key, digest in (entry.get("keys") or {}).items()
+    }
+    return BatchChunk(
+        label=str(entry.get("display_name") or "resume"),
+        display_name=str(entry.get("display_name") or ""),
+        attempt=int(entry.get("attempt") or 1),
+        keys=keys,
+        items=[by_item[key] for key in keys if key in by_item],
+        build_src=None,
+    )
+
+
+def write_objectives_batch(
+    run: Run,
+    store: WriteStore,
+    jobs: list[ObjectiveJob],
+    state: BatchState,
+    *,
+    adopted: list[dict[str, Any]] | None = None,
+    prefetched: dict[str, BatchStatus] | None = None,
+    parallel: int = DEFAULT_BATCH_PARALLEL,
+    download_workers: int = DEFAULT_DOWNLOAD_WORKERS,
+    submit_leftovers: bool = True,
+) -> tuple[list[str], set[str]]:
+    """Run objective attempts through Batch and save every successful row."""
+    failures: list[str] = []
+    abandoned: set[str] = set()
+    pending = list(jobs)
+    adopted_entries = list(adopted or [])
+    finalized: set[str] = set()
+
+    def account(
+        job: ObjectiveJob,
+        ok: bool,
+        error_message: str | None,
+        problems: list[str] | None,
+        terminal: bool,
+        attempt: int,
+        still: list[ObjectiveJob],
+    ) -> None:
+        if job.item in finalized or job in still:
+            return
+        if ok or store.has(job.section["stem"], job.objective["id"]):
+            finalized.add(job.item)
+            run.progress.done(job.name, f"  {job.name}")
+            return
+        if not terminal and attempt < MAX_ATTEMPTS:
+            if problems:
+                job.feedback = retry_feedback(problems)
+                job.feedback_from = attempt
+                job.feedback_problems = problems
+            else:
+                job.feedback = None
+                job.feedback_from = None
+                job.feedback_problems = None
+            still.append(job)
+            run.progress.say(
+                f"  {job.name}: attempt {attempt} of {MAX_ATTEMPTS} failed, "
+                f"{one_line(error_message or 'no reason given')}; asking again"
+            )
+            return
+        finalized.add(job.item)
+        failures.append(
+            f"{job.name}: {error_message}"
+            if terminal
+            else f"{job.name}: failed after {MAX_ATTEMPTS} attempts: {error_message}"
+        )
+        run.progress.done(
+            job.name,
+            f"  {job.name}: FAILED {one_line(error_message or 'no reason given')}",
+        )
+
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        if not pending and not (attempt == 1 and adopted_entries):
+            break
+        still: list[ObjectiveJob] = []
+        by_item = {job.item: job for job in pending}
+        adopted_keys: set[str] = set()
+        adopted_pairs: list[tuple[dict[str, Any], BatchChunk]] = []
+        if attempt == 1:
+            for entry in adopted_entries:
+                adopted_keys.update(str(key) for key in (entry.get("keys") or {}))
+                adopted_pairs.append(
+                    (entry, adopted_objective_chunk(entry, by_item))
+                )
+        leftover = [
+            job
+            for job in pending
+            if job.item not in adopted_keys and submit_leftovers
+        ]
+        queue = objective_chunks(run, leftover, attempt)
+
+        def on_submit(chunk: BatchChunk) -> None:
+            for job in chunk.items:
+                sent = sum(len(part.encode("utf-8")) for part in job.parts)
+                run.progress.asking(
+                    job.name,
+                    f"{in_kb(sent)} sent, in batch {chunk.label}",
+                )
+
+        def on_finished(
+            entry: dict[str, Any],
+            chunk: BatchChunk,
+            status: BatchStatus,
+            elapsed: float,
+        ) -> tuple[str, list[Any], str | None]:
+            name = str(entry.get("name") or status.name or "")
+            remote = status.job or get_batch_job(
+                run.client, name, timeout_ms=FULL_GET_TIMEOUT_MS
+            )
+            token = finish_token(remote)
+            result_file = result_file_name(remote) if remote is not None else None
+            if token != FINISH_DONE:
+                return token, [], result_file
+            rows = map_rows_by_key(inlined_responses(run.client, remote))
+            outcomes: list[Any] = []
+            for job in chunk.items:
+                if store.has(job.section["stem"], job.objective["id"]):
+                    outcomes.append((job, True, None, None, False))
+                    continue
+                if chunk.keys.get(job.item) != job.digest:
+                    outcomes.append(
+                        (job, False, "stale batch row", None, False)
+                    )
+                    continue
+                row = rows.get(job.item)
+                if row is None:
+                    log_objective_batch_call(
+                        run,
+                        job,
+                        int(entry.get("attempt") or chunk.attempt),
+                        None,
+                        None,
+                        "no batch response for this request",
+                        elapsed,
+                        name,
+                        {},
+                    )
+                    outcomes.append(
+                        (
+                            job,
+                            False,
+                            "no batch response for this request",
+                            None,
+                            False,
+                        )
+                    )
+                    continue
+                ok, error, problems, terminal = apply_objective_row(
+                    run,
+                    store,
+                    job,
+                    row,
+                    int(entry.get("attempt") or chunk.attempt),
+                    elapsed,
+                    name,
+                )
+                outcomes.append((job, ok, error, problems, terminal))
+            return FINISH_DONE, outcomes, result_file
+
+        def on_account(chunk: BatchChunk, outcomes: list[Any]) -> None:
+            for job, ok, error, problems, terminal in outcomes:
+                account(job, ok, error, problems, terminal, attempt, still)
+
+        def on_failed(chunk: BatchChunk, message: str) -> None:
+            for job in chunk.items:
+                account(job, False, message, None, False, attempt, still)
+
+        def on_abandoned(chunk: BatchChunk, message: str) -> None:
+            for job in chunk.items:
+                abandoned.add(job.item)
+                account(job, False, message, None, True, attempt, still)
+
+        def on_requeue(chunk: BatchChunk) -> list[BatchChunk]:
+            retry = [
+                job
+                for job in chunk.items
+                if not store.has(job.section["stem"], job.objective["id"])
+            ]
+            return objective_chunks(run, retry, attempt) if submit_leftovers else []
+
+        run_batch_jobs(
+            run.client,
+            run.model,
+            state,
+            {
+                "stage": BATCH_STAGE,
+                "book_id": run.book_id,
+                "model": run.model,
+                "thinking": run.thinking,
+                "section": getattr(run, "section", None),
+                "update": getattr(run, "update", False),
+                "force_generate": run.force_generate,
+            },
+            queue,
+            adopted_pairs if attempt == 1 else [],
+            parallel,
+            attempt,
+            on_finished,
+            on_failed,
+            on_submit=on_submit,
+            prefetched=prefetched if attempt == 1 else {},
+            download_workers=download_workers,
+            on_account=on_account,
+            on_abandoned=on_abandoned,
+            on_requeue=on_requeue,
+        )
+        adopted_entries = []
+        pending = still
+        if pending and attempt < MAX_ATTEMPTS:
+            time.sleep(2**attempt)
+    return failures, abandoned
+
+
+def objective_state_mismatch(
+    data: dict[str, Any],
+    book_id: str,
+    model: str,
+    thinking: str,
+    section: str | None,
+    force_generate: bool,
+) -> str | None:
+    expected = {
+        "stage": BATCH_STAGE,
+        "book_id": book_id,
+        "model": model,
+        "thinking": thinking,
+        "section": section,
+        "force_generate": force_generate,
+    }
+    for key, value in expected.items():
+        if key in data and data.get(key) != value:
+            return f"saved batch state has {key}={data.get(key)!r}, not {value!r}"
+    return None
+
+
+def resume_objective_jobs(
+    run: Run, state: BatchState
+) -> tuple[list[dict[str, Any]], dict[str, BatchStatus]]:
+    data = state.load()
+    current = entries(data)
+    if not current:
+        return [], {}
+    if is_legacy(data):
+        state.save_entries(
+            {key: value for key, value in data.items() if key != "job"},
+            current,
+        )
+    missing_names = [
+        str(entry.get("display_name") or "")
+        for entry in current
+        if not entry.get("name") and entry.get("display_name")
+    ]
+    found = (
+        find_jobs_by_display_names(run.client, missing_names)
+        if missing_names
+        else {}
+    )
+    adopted: list[dict[str, Any]] = []
+    prefetched: dict[str, BatchStatus] = {}
+    for entry in list(current):
+        display = str(entry.get("display_name") or "")
+        name = entry.get("name")
+        if not name:
+            remote, warning = pick_duplicate_match(found.get(display) or [])
+            if warning:
+                print(f"  {warning}", flush=True)
+            if remote is None:
+                state.remove_entry(display)
+                continue
+            name = remote.name
+            state.set_entry_field(display, "name", name)
+            entry["name"] = name
+        status = get_batch_status(run.client, str(name))
+        if status is None or status.state in BATCH_FAILED:
+            delete_files(
+                run.client,
+                entry.get("src_file_name"),
+                result_file_name(status.job)
+                if status is not None and status.job is not None
+                else None,
+            )
+            state.remove_entry(display)
+            continue
+        adopted.append(entry)
+        if status.state != "UNKNOWN":
+            prefetched[str(name)] = status
+    return adopted, prefetched
+
+
 def write_book(
     book_id: str,
     section: str | None,
@@ -3439,6 +4114,11 @@ def write_book(
     update: bool,
     max_workers: int = MAX_WORKERS,
     force_generate: bool = False,
+    *,
+    batch: bool = DEFAULT_BATCH,
+    discard_batch_state: bool = False,
+    batch_parallel: int = DEFAULT_BATCH_PARALLEL,
+    download_workers: int = DEFAULT_DOWNLOAD_WORKERS,
 ) -> tuple[Path, int]:
     """Write exercises for every section of a budgeted book, or for just one."""
     # Said before the read rather than after, because the reviewed book is read
@@ -3493,11 +4173,22 @@ def write_book(
             continue
         pending.append(row)
 
+    book_dir = OUTPUT_DIR / book_id
+    state = BatchState(batch_state_path(book_dir, BATCH_STAGE))
+    if discard_batch_state:
+        if state.path.is_file():
+            print(
+                "  discarding local batch state (the remote job is not cancelled)",
+                flush=True,
+            )
+        state.forget()
+    resuming_batch = state.path.is_file()
+
     written: dict[str, dict[str, list[ExerciseGroup]]] = {}
     kept_from_run = 0
     for row in pending:
         partial = partial_path(stage_dir, row["stem"])
-        if update:
+        if update and not resuming_batch:
             partial.unlink(missing_ok=True)
             written[row["stem"]] = {}
         else:
@@ -3523,6 +4214,33 @@ def write_book(
         if objective["id"] not in written.get(row["stem"], {})
     ]
 
+    store = WriteStore(book_id, stage_dir, budgets, written, pending)
+    data = state.load()
+    if data:
+        pending_saved = [
+            str(key)
+            for entry in entries(data)
+            for key in (entry.get("keys") or {})
+            if not store.item_applied(str(key))
+        ]
+        if not pending_saved:
+            state.forget()
+            data = None
+        else:
+            mismatch = objective_state_mismatch(
+                data,
+                book_id,
+                model,
+                thinking,
+                section,
+                force_generate,
+            )
+            if mismatch:
+                raise RuntimeError(
+                    f"{mismatch}. Pass --discard-batch-state to drop the local "
+                    "state only; the remote job is not cancelled."
+                )
+
     if tasks:
         # Asked for here rather than at the top of the run, because a book whose
         # sections are all written has nothing to call for.
@@ -3538,7 +4256,12 @@ def write_book(
         exercises = sum(task[2] for task in tasks)
         opening = (
             f"writing {exercises} exercises for {len(tasks)} objective(s) "
-            f"across {len(pending)} section(s), with {workers} worker(s)"
+            f"across {len(pending)} section(s)"
+        )
+        opening += (
+            " through the Batch API"
+            if batch
+            else f", with {workers} worker(s)"
         )
         if skipped:
             opening += f"; {skipped} already written"
@@ -3557,40 +4280,124 @@ def write_book(
         print("  setting the log clock", flush=True)
         logger = ApiLogger(OUTPUT_DIR / book_id)
 
-        with Progress(len(tasks)) as progress:
-            run = Run(
-                client=client,
-                logger=logger,
-                book_id=book_id,
-                meta=meta,
-                model=model,
-                thinking=thinking,
-                prompt=prompt,
-                progress=progress,
-                alphabet=Profile.of(book_metadata(book_id)).alphabet,
-                force_generate=force_generate,
-            )
-            with ThreadPoolExecutor(max_workers=workers) as pool:
-                futures = {
-                    pool.submit(write_objective, run, *task): (task[0], task[1])
-                    for task in tasks
-                }
-                for future in as_completed(futures):
-                    row, target = futures[future]
-                    name = task_name(row, target)
-                    try:
-                        objective, groups, line = future.result()
-                    except Exception as error:  # noqa: BLE001 - other sections still stand
-                        failures.append(f"{row['number']}: {type(error).__name__}: {error}")
-                        progress.done(
-                            name,
-                            f"  {name}: failed, "
-                            f"{one_line(f'{type(error).__name__}: {error}')}, "
-                            f"keeping the rest of section {row['number']}",
+        lock: BatchLock | None = None
+        if batch or state.path.is_file():
+            lock = BatchLock(batch_lock_path(book_dir, BATCH_STAGE))
+            lock.acquire()
+        try:
+            with Progress(len(tasks)) as progress:
+                run = Run(
+                    client=client,
+                    logger=logger,
+                    book_id=book_id,
+                    meta=meta,
+                    model=model,
+                    thinking=thinking,
+                    prompt=prompt,
+                    progress=progress,
+                    alphabet=Profile.of(book_metadata(book_id)).alphabet,
+                    force_generate=force_generate,
+                    section=section,
+                    update=update,
+                )
+                jobs = objective_jobs(run, tasks)
+                adopted: list[dict[str, Any]] = []
+                prefetched: dict[str, BatchStatus] = {}
+                if entries(state.load()):
+                    adopted, prefetched = resume_objective_jobs(run, state)
+                leftover = [
+                    job
+                    for job in jobs
+                    if not store.has(
+                        job.section["stem"], job.objective["id"]
+                    )
+                ]
+                abandoned: set[str] = set()
+                if batch:
+                    batch_failures, abandoned = write_objectives_batch(
+                        run,
+                        store,
+                        leftover,
+                        state,
+                        adopted=adopted,
+                        prefetched=prefetched,
+                        parallel=batch_parallel,
+                        download_workers=download_workers,
+                    )
+                    failures.extend(batch_failures)
+                else:
+                    if adopted:
+                        batch_failures, abandoned = write_objectives_batch(
+                            run,
+                            store,
+                            leftover,
+                            state,
+                            adopted=adopted,
+                            prefetched=prefetched,
+                            parallel=batch_parallel,
+                            download_workers=download_workers,
+                            submit_leftovers=False,
                         )
-                        continue
-                    written[row["stem"]][objective] = groups
-                    progress.done(name, line)
+                        failures.extend(batch_failures)
+                    task_by_item = {
+                        f"{task[0]['number']}-{task[1]['id']}": task
+                        for task in tasks
+                    }
+                    unary_tasks = [
+                        task_by_item[job.item]
+                        for job in jobs
+                        if job.item not in abandoned
+                        and not store.has(
+                            job.section["stem"], job.objective["id"]
+                        )
+                    ]
+                    with ThreadPoolExecutor(max_workers=workers) as pool:
+                        futures = {
+                            pool.submit(write_objective, run, *task): (
+                                task[0],
+                                task[1],
+                            )
+                            for task in unary_tasks
+                        }
+                        for future in as_completed(futures):
+                            row, target = futures[future]
+                            name = task_name(row, target)
+                            try:
+                                objective, groups, line = future.result()
+                            except Exception as error:  # noqa: BLE001
+                                failures.append(
+                                    f"{row['number']}: "
+                                    f"{type(error).__name__}: {error}"
+                                )
+                                progress.done(
+                                    name,
+                                    f"  {name}: failed, "
+                                    f"{one_line(f'{type(error).__name__}: {error}')}, "
+                                    f"keeping the rest of section {row['number']}",
+                                )
+                                continue
+                            store.save(
+                                next(
+                                    job
+                                    for job in jobs
+                                    if job.item
+                                    == f"{row['number']}-{objective}"
+                                ),
+                                groups,
+                            )
+                            progress.done(name, line)
+        except KeyboardInterrupt:
+            if lock is not None:
+                print(
+                    "interrupted; batch state kept, rerun to resume",
+                    flush=True,
+                )
+                sys.stderr.flush()
+                os._exit(130)
+            raise
+        finally:
+            if lock is not None:
+                lock.release()
 
     # A section is written once every one of its objectives has landed; the rest
     # are kept in the sidecar for the next run.
@@ -3696,7 +4503,38 @@ def main() -> int:
         action="store_true",
         help="do not accept model abort; retry refusals and allow form-set padding gaps",
     )
+    parser.add_argument(
+        "--batch",
+        action=argparse.BooleanOptionalAction,
+        default=DEFAULT_BATCH,
+        help="write through the Gemini Batch API (default); "
+        "--no-batch uses unary generateContent",
+    )
+    parser.add_argument(
+        "--discard-batch-state",
+        action="store_true",
+        help="delete the local new_questions Batch state; "
+        "does not cancel the remote job",
+    )
+    parser.add_argument(
+        "--batch-parallel",
+        type=int,
+        default=DEFAULT_BATCH_PARALLEL,
+        metavar="N",
+        help="0 = no cap (default); N = at most N Batch jobs in flight",
+    )
+    parser.add_argument(
+        "--download-workers",
+        type=int,
+        default=DEFAULT_DOWNLOAD_WORKERS,
+        metavar="N",
+        help="parallel downloads of finished Batch jobs; 1 = serial",
+    )
     args = parser.parse_args()
+    if args.batch_parallel < 0:
+        parser.error("--batch-parallel must be >= 0")
+    if args.download_workers < 1:
+        parser.error("--download-workers must be at least 1")
 
     try:
         _, unwritten = write_book(
@@ -3707,6 +4545,10 @@ def main() -> int:
             args.update,
             max(1, args.workers),
             force_generate=args.force_generate,
+            batch=args.batch,
+            discard_batch_state=args.discard_batch_state,
+            batch_parallel=args.batch_parallel,
+            download_workers=args.download_workers,
         )
     except RuntimeError as error:
         print(f"FAILED: {error}", file=sys.stderr)

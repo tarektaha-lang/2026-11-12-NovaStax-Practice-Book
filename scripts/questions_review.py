@@ -17,11 +17,20 @@ reject the exercise at accept; other reports stay in findings.json for a person.
 The second pass puts those exercises in front of the model and asks which ones are
 wrong and why, listing every defect on an exercise rather than stopping at the first
 type. It does not send the section spec and does not check the curriculum. One call
-per exercise. The prompt is cached so a book of calls does not resend it. A section's
+per exercise. By default those calls go through the Gemini Batch API
+(``--batch-parallel N``; 0 = no cap). --no-batch is the previous thread pool, and
+caches the examiner prompt so a book of unary calls does not resend it. A section's
 report is written once every call for that section has landed, because a report
 holding some of its exercises is not a report. The report is tied to the exercises
 as they stand, by a hash, so a section that is rewritten is checked again rather
 than carrying a report of the old paper.
+
+In-flight Batch jobs are recorded in
+``data/output/<book_id>/00_questions_review_batch_state.json``. A second run on
+the same book is refused while ``00_questions_review_batch.lock`` is held.
+--no-batch still polls and applies every saved job before going unary.
+--discard-batch-state deletes only the local JSON; it does not cancel the
+remote job.
 
 The third pass reads that report and writes the same document again, without the
 flagged exercises and without exercises whose $ signs or braces are still
@@ -75,7 +84,7 @@ from collections.abc import Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
@@ -94,6 +103,36 @@ try:
         genai_usage,
         safe_log,
     )
+    from src.gemini_batch import (
+        BATCH_FAILED,
+        FINISH_DONE,
+        FULL_GET_TIMEOUT_MS,
+        ApplyError,
+        BatchChunk,
+        BatchLock,
+        BatchState,
+        BatchStatus,
+        batch_display_name,
+        batch_lock_path,
+        batch_state_path,
+        chunk_requests,
+        delete_files,
+        entries,
+        find_jobs_by_display_names,
+        finish_token,
+        generate_content_response,
+        get_batch_job,
+        get_batch_status,
+        inlined_responses,
+        is_legacy,
+        map_rows_by_key,
+        new_run_id,
+        pick_duplicate_match,
+        response_and_error,
+        result_file_name,
+        run_batch_jobs,
+        src_for_chunk,
+    )
     from new_questions import (
         Exercise,
         ExerciseGroup,
@@ -103,6 +142,7 @@ try:
         build_prompt as build_write_prompt,
         degree_bullets,
         listed,
+        is_form_set_group,
         repaired,
         repair_groups_excessive_tashkeel,
         repair_groups_mark_placement,
@@ -114,7 +154,7 @@ try:
     from src.geometry_arrows import canonicalize_document, section_is_vector_lesson
     from src.prompting import Profile, Prompt, assemble
     from review import book_attributes, reviewed_book
-    from specs import Progress, one_line, since
+    from specs import Progress, in_kb, one_line, since
     from sources import PROJECT_ROOT, OUTPUT_DIR, book_metadata, matching_sections
 except ModuleNotFoundError as error:  # pragma: no cover
     sys.exit(f"missing dependency ({error.name}): pip install -r requirements.txt")
@@ -174,9 +214,13 @@ ANSWER_FORMAT_NEEDLES = (
 
 DEFAULT_MODEL = "gemini-3.8-flash"
 DEFAULT_THINKING = "high"
+DEFAULT_BATCH = True
+DEFAULT_BATCH_PARALLEL = 0
+DEFAULT_DOWNLOAD_WORKERS = 3
 THINKING_LEVELS = ("minimal", "low", "medium", "high")
 API_KEY_VARS = ("GEMINI_API_KEY", "GOOGLE_API_KEY")
 MAX_ATTEMPTS = 4
+BATCH_STAGE = "questions_review"
 # How many times a call is allowed to be told to slow down before it counts as
 # failed, and the wait after the first such time, which grows with each. Long,
 # because a book of this stage puts a call in flight for every exercise, and that
@@ -895,43 +939,60 @@ def log_cache_storage(
     )
 
 
-def logged_call(
-    client,
-    model: str,
-    prompt: str,
-    parts: list[str],
-    ids: set[str],
-    thinking: str,
-    logger: ApiLogger,
-    item: str,
-    attempt: int,
-    context: dict,
-    cached_content: str | None = None,
-) -> tuple[CheckReply | None, str | None]:
-    """Ask once, logging the call however it turns out."""
-    config = types.GenerateContentConfig(
+def check_contents(
+    prompt: str, parts: list[str], cached_content: str | None = None
+) -> list[str]:
+    return parts if cached_content else [prompt, *parts]
+
+
+def check_config(
+    thinking: str, cached_content: str | None = None
+) -> types.GenerateContentConfig:
+    return types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=CheckReply,
         thinking_config=types.ThinkingConfig(thinking_level=thinking),
         cached_content=cached_content,
     )
-    contents = parts if cached_content else [prompt, *parts]
-    response = None
-    result = None
-    error_message = None
-    started = time.perf_counter()
-    try:
-        response = client.models.generate_content(
-            model=model, contents=contents, config=config
-        )
-        result = CheckReply.model_validate_json(genai_answer_text(response))
-        if result.status == "ok":
-            check_issues(result, ids)
-    except Exception as error:  # noqa: BLE001 - retry transport, parse and addressing alike
-        error_message = f"{type(error).__name__}: {error}"
-        result = None
-    duration = time.perf_counter() - started
 
+
+def interpret_check_response(raw: str, ids: set[str]) -> CheckReply:
+    result = CheckReply.model_validate_json(raw)
+    if result.status == "ok":
+        check_issues(result, ids)
+    return result
+
+
+def log_check_call(
+    logger: ApiLogger,
+    *,
+    model: str,
+    prompt: str,
+    parts: list[str],
+    thinking: str,
+    item: str,
+    attempt: int,
+    context: dict,
+    response: Any,
+    result: CheckReply | None,
+    error_message: str | None,
+    duration: float,
+    cached_content: str | None = None,
+    batch: bool = False,
+    batch_name: str | None = None,
+    batch_key: str | None = None,
+) -> None:
+    extra = {
+        **context,
+        "thinking_level": thinking,
+        "cached_content": cached_content,
+        "returned": result.status if result else None,
+    }
+    if batch:
+        extra["batch"] = True
+        extra["batch_key"] = batch_key
+        if batch_name:
+            extra["batch_name"] = batch_name
     safe_log(
         logger,
         files_builder=lambda captured=response: {
@@ -948,12 +1009,53 @@ def logged_call(
         duration_seconds=duration,
         status="success" if result is not None else "error",
         error_message=error_message,
-        extra={
-            **context,
-            "thinking_level": thinking,
-            "cached_content": cached_content,
-            "returned": result.status if result else None,
-        },
+        extra=extra,
+    )
+
+
+def logged_call(
+    client,
+    model: str,
+    prompt: str,
+    parts: list[str],
+    ids: set[str],
+    thinking: str,
+    logger: ApiLogger,
+    item: str,
+    attempt: int,
+    context: dict,
+    cached_content: str | None = None,
+) -> tuple[CheckReply | None, str | None]:
+    """Ask once, logging the call however it turns out."""
+    config = check_config(thinking, cached_content)
+    contents = check_contents(prompt, parts, cached_content)
+    response = None
+    result = None
+    error_message = None
+    started = time.perf_counter()
+    try:
+        response = client.models.generate_content(
+            model=model, contents=contents, config=config
+        )
+        result = interpret_check_response(genai_answer_text(response), ids)
+    except Exception as error:  # noqa: BLE001 - retry transport, parse and addressing alike
+        error_message = f"{type(error).__name__}: {error}"
+        result = None
+    duration = time.perf_counter() - started
+    log_check_call(
+        logger,
+        model=model,
+        prompt=prompt,
+        parts=parts,
+        thinking=thinking,
+        item=item,
+        attempt=attempt,
+        context=context,
+        response=response,
+        result=result,
+        error_message=error_message,
+        duration=duration,
+        cached_content=cached_content,
     )
     return result, error_message
 
@@ -1199,6 +1301,9 @@ class Run:
     prompt: Prompt
     prompt_cache: ReviewPromptCache | None
     progress: Progress
+    section: str | None = None
+    update: bool = False
+    store: Any = None
 
 
 def ask(
@@ -1262,6 +1367,609 @@ def check_question(
     return name, attach(ids, reply.issues), line
 
 
+@dataclass(frozen=True)
+class Job:
+    """One exercise still to check."""
+
+    row: dict
+    document: dict
+    group: dict
+    exercise: dict
+    item: str
+    name: str
+    part: str
+    ids: frozenset[str]
+    digest: str
+
+
+class ReviewStore:
+    """Thread-safe write of landed exercise checks, and of a section once complete."""
+
+    def __init__(
+        self,
+        *,
+        book_id: str,
+        meta: dict[str, str],
+        envelope_keys: set[str],
+        papers: dict[str, dict],
+        written: dict[str, dict[str, list[Issue]]],
+        prompt_text: str,
+        stage_dir: Path,
+        work_rows: list[dict],
+    ) -> None:
+        self._lock = threading.Lock()
+        self.book_id = book_id
+        self.meta = meta
+        self.envelope_keys = envelope_keys
+        self.papers = papers
+        self.written = written
+        self.prompt_text = prompt_text
+        self.stage_dir = stage_dir
+        self.work_rows = work_rows
+
+    def has(self, stem: str, exercise_id: str) -> bool:
+        with self._lock:
+            return exercise_id in self.written.get(stem, {})
+
+    def item_applied(self, item: str) -> bool:
+        with self._lock:
+            for row in self.work_rows:
+                for _group, exercise in paper_exercises(self.papers[row["stem"]]):
+                    if f"{row['number']}-{exercise['id']}" == item:
+                        return exercise["id"] in self.written.get(row["stem"], {})
+            return False
+
+    def save(self, stem: str, found: dict[str, list[Issue]]) -> None:
+        with self._lock:
+            self.written.setdefault(stem, {}).update(found)
+            write_section_reviews(
+                self.book_id,
+                self.meta,
+                self.envelope_keys,
+                [row for row in self.work_rows if row["stem"] == stem],
+                self.papers,
+                self.written,
+                self.prompt_text,
+                self.stage_dir,
+            )
+
+
+def review_job_digest(prompt: str, part: str) -> str:
+    return hashlib.sha256(f"{prompt}\n{part}".encode("utf-8")).hexdigest()
+
+
+def jobs_from_tasks(run: Run, tasks: list[tuple]) -> list[Job]:
+    jobs: list[Job] = []
+    for row, document, group, exercise in tasks:
+        part = exercise_part(document, group, exercise)
+        item = f"{row['number']}-{exercise['id']}"
+        jobs.append(
+            Job(
+                row=row,
+                document=document,
+                group=group,
+                exercise=exercise,
+                item=item,
+                name=f"{row['number']} {exercise['id']}",
+                part=part,
+                ids=frozenset({exercise["id"]}),
+                digest=review_job_digest(run.prompt.text, part),
+            )
+        )
+    return jobs
+
+
+def job_context(run: Run, job: Job) -> dict:
+    return {
+        "book_id": run.book_id,
+        "grain": "question",
+        "section": job.row["number"],
+        "section_title": job.row["title"],
+        "module_path": job.row["module_path"],
+        "prompt_files": run.prompt.files,
+        "objective": job.group["objective"],
+        "exercise": job.exercise["id"],
+    }
+
+
+def batch_request(run: Run, job: Job, attempt: int) -> types.InlinedRequest:
+    return types.InlinedRequest(
+        contents=check_contents(run.prompt.text, [job.part]),
+        metadata={
+            "item": job.item,
+            "log_key": f"{run.book_id}|{job.item}|a{attempt}",
+        },
+        config=check_config(run.thinking),
+    )
+
+
+def apply_check_row(
+    run: Run,
+    job: Job,
+    row: Any,
+    attempt: int,
+    elapsed: float,
+    batch_name: str,
+) -> tuple[bool, str | None, bool]:
+    response, error_message = response_and_error(row)
+    parsed = None
+    result = None
+    if error_message is None:
+        try:
+            if response is None:
+                raise ValueError("no batch response for this request")
+            parsed = generate_content_response(response)
+            result = interpret_check_response(
+                genai_answer_text(parsed), set(job.ids)
+            )
+        except Exception as error:  # noqa: BLE001
+            error_message = f"{type(error).__name__}: {error}"
+            result = None
+    log_check_call(
+        run.logger,
+        model=run.model,
+        prompt=run.prompt.text,
+        parts=[job.part],
+        thinking=run.thinking,
+        item=job.item,
+        attempt=attempt,
+        context=job_context(run, job),
+        response=parsed,
+        result=result,
+        error_message=error_message,
+        duration=elapsed,
+        batch=True,
+        batch_name=batch_name,
+        batch_key=f"{run.book_id}|{job.item}|a{attempt}",
+    )
+    if result is None:
+        return False, error_message, False
+    if result.status == "abort":
+        return False, f"aborted, {result.abort_reason or 'no reason given'}", True
+    assert run.store is not None
+    found = attach(set(job.ids), result.issues)
+    run.store.save(job.row["stem"], found)
+    return True, None, False
+
+
+def apply_batch_rows(
+    run: Run,
+    jobs: list[Job],
+    rows: list[Any],
+    keys: dict[str, str],
+    attempt: int,
+    batch_name: str,
+    elapsed: float,
+) -> list[tuple[Job, bool, str | None, bool]]:
+    by_item = map_rows_by_key(rows)
+    results: list[tuple[Job, bool, str | None, bool]] = []
+    for job in jobs:
+        saved_hash = keys.get(job.item)
+        if saved_hash and saved_hash != job.digest:
+            print(
+                f"  {job.item}: inputs changed since submit; will resubmit",
+                flush=True,
+            )
+            results.append((job, False, "stale batch row", False))
+            continue
+        row = by_item.get(job.item)
+        if row is None:
+            log_check_call(
+                run.logger,
+                model=run.model,
+                prompt=run.prompt.text,
+                parts=[job.part],
+                thinking=run.thinking,
+                item=job.item,
+                attempt=attempt,
+                context=job_context(run, job),
+                response=None,
+                result=None,
+                error_message="no batch response for this request",
+                duration=elapsed,
+                batch=True,
+                batch_name=batch_name,
+                batch_key=f"{run.book_id}|{job.item}|a{attempt}",
+            )
+            results.append((job, False, "no batch response for this request", False))
+            continue
+        ok, error_message, terminal = apply_check_row(
+            run, job, row, attempt, elapsed, batch_name
+        )
+        results.append((job, ok, error_message, terminal))
+    return results
+
+
+def state_envelope(run: Run) -> dict[str, Any]:
+    return {
+        "stage": BATCH_STAGE,
+        "book_id": run.book_id,
+        "model": run.model,
+        "thinking": run.thinking,
+        "section": run.section,
+        "update": run.update,
+    }
+
+
+def build_check_chunk(
+    run: Run, jobs: list[Job], attempt: int, label: str
+) -> BatchChunk:
+    display = batch_display_name(
+        run.book_id, BATCH_STAGE, label, run_id=new_run_id()
+    )
+    keys = {job.item: job.digest for job in jobs}
+
+    def build_src() -> tuple[Any, str | None]:
+        pairs = [(job.item, batch_request(run, job, attempt)) for job in jobs]
+        return src_for_chunk(run.client, pairs, display)
+
+    return BatchChunk(
+        label=label,
+        display_name=display,
+        attempt=attempt,
+        keys=keys,
+        items=list(jobs),
+        build_src=build_src,
+    )
+
+
+def adopted_check_chunk(
+    entry: dict[str, Any], by_item: dict[str, Job]
+) -> BatchChunk:
+    keys = {
+        str(key): str(digest)
+        for key, digest in (entry.get("keys") or {}).items()
+    }
+    items = [by_item[key] for key in keys if key in by_item]
+    return BatchChunk(
+        label=str(entry.get("display_name") or "resume"),
+        display_name=str(entry.get("display_name") or ""),
+        attempt=int(entry.get("attempt") or 1),
+        keys=keys,
+        items=items,
+        build_src=None,
+    )
+
+
+def _check_chunks_for(run: Run, leftover: list[Job], attempt: int) -> list[BatchChunk]:
+    if not leftover:
+        return []
+    by_item = {job.item: job for job in leftover}
+    pairs = [(job.item, batch_request(run, job, attempt)) for job in leftover]
+    return [
+        build_check_chunk(
+            run,
+            [by_item[item] for item, _ in chunk],
+            attempt,
+            f"a{attempt}-b{index}",
+        )
+        for index, chunk in enumerate(chunk_requests(pairs), start=1)
+    ]
+
+
+def check_exercises_batch(
+    run: Run,
+    jobs: list[Job],
+    state: BatchState,
+    *,
+    adopted: list[dict[str, Any]] | None = None,
+    parallel: int = 0,
+    submit_leftovers: bool = True,
+    prefetched: dict[str, BatchStatus] | None = None,
+    download_workers: int = DEFAULT_DOWNLOAD_WORKERS,
+) -> tuple[int, list[str], set[str]]:
+    """Check pending exercises through Batch, retrying failed ones up to MAX_ATTEMPTS."""
+    written = 0
+    failures: list[str] = []
+    abandoned_keys: set[str] = set()
+    pending = list(jobs)
+    adopted_entries = list(adopted or [])
+    envelope = state_envelope(run)
+    finalized: set[str] = set()
+    store: ReviewStore = run.store
+
+    def account(
+        job: Job,
+        ok: bool,
+        error_message: str | None,
+        round_attempt: int,
+        still: list[Job],
+        *,
+        terminal: bool = False,
+    ) -> None:
+        nonlocal written
+        if job in still or job.item in finalized:
+            return
+        if ok or store.has(job.row["stem"], job.exercise["id"]):
+            written += 1
+            finalized.add(job.item)
+            run.progress.done(job.name, f"  {job.name}")
+            return
+        if not terminal and round_attempt < MAX_ATTEMPTS:
+            still.append(job)
+            run.progress.say(
+                f"  {job.name}: attempt {round_attempt} of {MAX_ATTEMPTS} failed, "
+                f"{one_line(error_message or 'no reason given')}; asking again"
+            )
+            return
+        failures.append(
+            f"{job.name}: {error_message}"
+            if terminal
+            else f"{job.name}: failed after {MAX_ATTEMPTS} attempts: {error_message}"
+        )
+        finalized.add(job.item)
+        run.progress.done(
+            job.name,
+            f"  {job.name}: FAILED {one_line(error_message or 'no reason given')}",
+        )
+
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        if not pending and not (attempt == 1 and adopted_entries):
+            break
+        still: list[Job] = []
+        by_item = {job.item: job for job in pending}
+        adopted_keys: set[str] = set()
+        adopted_pairs: list[tuple[dict[str, Any], BatchChunk]] = []
+        if attempt == 1:
+            for entry in adopted_entries:
+                keys = entry.get("keys") or {}
+                adopted_keys.update(str(key) for key in keys)
+                chunk = adopted_check_chunk(entry, by_item)
+                for key in keys:
+                    key = str(key)
+                    if key in by_item:
+                        continue
+                    if store.item_applied(key):
+                        print(f"  {key}: already on disk", flush=True)
+                        continue
+                    failures.append(f"{key}: adopted key missing from pending work")
+                    run.progress.done(key, f"  {key}: FAILED adopted key missing")
+                adopted_pairs.append((entry, chunk))
+        leftover_jobs = [
+            job
+            for job in pending
+            if job.item not in adopted_keys and submit_leftovers
+        ]
+        queue = _check_chunks_for(run, leftover_jobs, attempt)
+
+        def on_submit(chunk: BatchChunk) -> None:
+            for job in chunk.items:
+                run.progress.asking(
+                    job.name,
+                    f"{in_kb(len(job.part.encode('utf-8')))} sent, in batch {chunk.label}",
+                )
+
+        def fetch_apply(
+            entry: dict[str, Any],
+            chunk: BatchChunk,
+            status: BatchStatus,
+            elapsed: float,
+        ) -> tuple[str, list[Any], str | None]:
+            name = str(entry.get("name") or status.name or "")
+            log_attempt = int(entry.get("attempt") or chunk.attempt)
+            remote = status.job
+            if remote is None:
+                remote = get_batch_job(
+                    run.client, name, timeout_ms=FULL_GET_TIMEOUT_MS
+                )
+            token = finish_token(remote)
+            result_file = result_file_name(remote) if remote is not None else None
+            if token != FINISH_DONE:
+                return token, [], result_file
+            outcomes: list[Any] = []
+            to_apply: list[Job] = []
+            for job in chunk.items:
+                if store.has(job.row["stem"], job.exercise["id"]):
+                    outcomes.append((job, True, None, False, "already on disk"))
+                    continue
+                to_apply.append(job)
+            if not to_apply:
+                return FINISH_DONE, outcomes, result_file
+            try:
+                rows = inlined_responses(run.client, remote)
+                for job, ok, error_message, terminal in apply_batch_rows(
+                    run, to_apply, rows, chunk.keys, log_attempt, name, elapsed
+                ):
+                    outcomes.append((job, ok, error_message, terminal, None))
+            except ApplyError:
+                raise
+            except Exception as error:
+                accounted = {item.item for item, *_rest in outcomes}
+                for job in to_apply:
+                    if job.item in accounted:
+                        continue
+                    if store.has(job.row["stem"], job.exercise["id"]):
+                        outcomes.append((job, True, None, False, None))
+                raise ApplyError(
+                    f"{type(error).__name__}: {error}", outcomes
+                ) from error
+            return FINISH_DONE, outcomes, result_file
+
+        def account_outcomes(chunk: BatchChunk, outcomes: list[Any]) -> None:
+            for job, ok, error_message, terminal, note in outcomes:
+                if note == "already on disk":
+                    print(f"  {job.item}: already on disk", flush=True)
+                account(
+                    job, ok, error_message, attempt, still, terminal=terminal
+                )
+
+        def on_failed(chunk: BatchChunk, message: str) -> None:
+            if attempt < MAX_ATTEMPTS:
+                print(
+                    f"  {chunk.label} failed: {one_line(message)}; will retry",
+                    flush=True,
+                )
+            for job in chunk.items:
+                if store.has(job.row["stem"], job.exercise["id"]):
+                    account(job, True, None, attempt, still)
+                    continue
+                account(job, False, message, attempt, still)
+
+        def on_abandoned(chunk: BatchChunk, message: str) -> None:
+            for job in chunk.items:
+                abandoned_keys.add(job.item)
+                if job.item in finalized:
+                    continue
+                finalized.add(job.item)
+                failures.append(f"{job.item}: {message}")
+                run.progress.done(
+                    job.name,
+                    f"  {job.name}: FAILED {one_line(message)}",
+                )
+
+        def on_requeue(chunk: BatchChunk) -> list[BatchChunk]:
+            leftover: list[Job] = []
+            for job in chunk.items:
+                if store.has(job.row["stem"], job.exercise["id"]):
+                    account(job, True, None, attempt, still)
+                    continue
+                leftover.append(job)
+            if not submit_leftovers:
+                return []
+            return _check_chunks_for(run, leftover, attempt)
+
+        run_batch_jobs(
+            run.client,
+            run.model,
+            state,
+            envelope,
+            queue,
+            adopted_pairs if attempt == 1 else [],
+            parallel,
+            attempt,
+            fetch_apply,
+            on_failed,
+            log=print,
+            on_submit=on_submit,
+            prefetched=prefetched if attempt == 1 else {},
+            download_workers=download_workers,
+            on_account=account_outcomes,
+            on_abandoned=on_abandoned,
+            on_requeue=on_requeue,
+        )
+        adopted_entries = []
+        pending = still
+        if pending and attempt < MAX_ATTEMPTS:
+            time.sleep(2**attempt)
+    for job in pending:
+        failures.append(f"{job.name}: still pending after {MAX_ATTEMPTS} attempts")
+        run.progress.done(job.name, f"  {job.name}: FAILED still pending")
+    return written, failures, abandoned_keys
+
+
+def saved_keys_pending(store: ReviewStore, data: dict[str, Any]) -> list[str]:
+    pending: list[str] = []
+    for entry in entries(data):
+        for key in entry.get("keys") or {}:
+            if not store.item_applied(str(key)):
+                pending.append(str(key))
+    return pending
+
+
+def state_mismatch(
+    data: dict[str, Any],
+    book_id: str,
+    model: str,
+    thinking: str,
+    section: str | None,
+) -> str | None:
+    if data.get("stage") and data.get("stage") != BATCH_STAGE:
+        return (
+            f"saved batch state is for stage {data.get('stage')}, not {BATCH_STAGE}"
+        )
+    if data.get("book_id") and data.get("book_id") != book_id:
+        return f"saved batch state is for {data.get('book_id')}, not {book_id}"
+    if data.get("model") and data.get("model") != model:
+        return f"saved batch state used model {data.get('model')}, not {model}"
+    if data.get("thinking") and data.get("thinking") != thinking:
+        return (
+            f"saved batch state used thinking {data.get('thinking')}, not {thinking}"
+        )
+    if data.get("section") != section:
+        saved = data.get("section") or "the whole book"
+        now = section or "the whole book"
+        return f"saved batch state is for {saved}, not {now}"
+    return None
+
+
+def resume_saved_jobs(
+    run: Run, state: BatchState
+) -> tuple[list[dict[str, Any]], dict[str, BatchStatus]]:
+    data = state.load()
+    if not data:
+        return [], {}
+    current = entries(data)
+    if not current:
+        return [], {}
+    legacy = is_legacy(data)
+    prefix = "adopted legacy job" if legacy else "adopted job"
+    if legacy:
+        state.save_entries(
+            {key: value for key, value in data.items() if key != "job"},
+            current,
+        )
+    null_names = [
+        str(entry.get("display_name") or "")
+        for entry in current
+        if not entry.get("name") and entry.get("display_name")
+    ]
+    found_map = (
+        find_jobs_by_display_names(run.client, null_names) if null_names else {}
+    )
+    adopted: list[dict[str, Any]] = []
+    prefetched: dict[str, BatchStatus] = {}
+    for entry in list(current):
+        display = str(entry.get("display_name") or "")
+        name = entry.get("name")
+        if not name:
+            matches = found_map.get(display) or []
+            if not matches:
+                print(
+                    "  no remote batch job for saved display_name; will resubmit",
+                    flush=True,
+                )
+                state.remove_entry(display)
+                continue
+            if len(matches) == 1:
+                remote, warning = matches[0], ""
+            else:
+                remote, warning = pick_duplicate_match(matches)
+            if warning:
+                print(f"  {warning}", flush=True)
+            if remote is None:
+                print(
+                    "  all matching remote jobs terminal-failed; will resubmit",
+                    flush=True,
+                )
+                state.remove_entry(display)
+                continue
+            name = remote.name
+            state.set_entry_field(display, "name", name)
+            entry["name"] = name
+        print(f"  {prefix} {name} (status only)", flush=True)
+        status = get_batch_status(run.client, str(name))
+        if status is None:
+            print(f"  saved batch job {name} is gone; will resubmit", flush=True)
+            state.remove_entry(display)
+            continue
+        if status.state in BATCH_FAILED:
+            print(f"  saved job ended {status.state}; will resubmit", flush=True)
+            if status.job is not None:
+                delete_files(
+                    run.client,
+                    entry.get("src_file_name"),
+                    result_file_name(status.job),
+                )
+            else:
+                delete_files(run.client, entry.get("src_file_name"))
+            state.remove_entry(display)
+            continue
+        adopted.append(entry)
+        if status.state != "UNKNOWN":
+            prefetched[str(name)] = status
+    return adopted, prefetched
+
+
 def check_book(
     book_id: str,
     section: str | None,
@@ -1272,6 +1980,10 @@ def check_book(
     max_workers: int = MAX_WORKERS,
     *,
     import_logs_only: bool = False,
+    batch: bool = DEFAULT_BATCH,
+    discard_batch_state: bool = False,
+    batch_parallel: int = DEFAULT_BATCH_PARALLEL,
+    download_workers: int = DEFAULT_DOWNLOAD_WORKERS,
 ) -> tuple[Path, int]:
     """Check every proofread section of a book, or just one, one exercise at a time."""
     print(f"reading the reviewed {book_id}", flush=True)
@@ -1378,15 +2090,56 @@ def check_book(
             )
         if tasks:
             workers = min(len(tasks), max_workers)
-            opening = (
-                f"checking {len(tasks)} exercise(s) across {len(pending)} section(s), "
-                f"with {workers} worker(s)"
-            )
+            if batch:
+                opening = (
+                    f"checking {len(tasks)} exercise(s) across {len(pending)} "
+                    f"section(s) through the Batch API"
+                )
+            else:
+                opening = (
+                    f"checking {len(tasks)} exercise(s) across {len(pending)} section(s), "
+                    f"with {workers} worker(s)"
+                )
             if skipped:
                 opening += f"; {skipped} already checked"
             if log_hits:
                 opening += f"; {log_hits} from logs"
             print(opening, flush=True)
+
+        book_dir = OUTPUT_DIR / book_id
+        state = BatchState(batch_state_path(book_dir, BATCH_STAGE))
+        store = ReviewStore(
+            book_id=book_id,
+            meta=meta,
+            envelope_keys=envelope_keys,
+            papers=papers,
+            written=written,
+            prompt_text=prompt.text,
+            stage_dir=stage_dir,
+            work_rows=work_rows,
+        )
+        if discard_batch_state:
+            if state.path.is_file():
+                print(
+                    "  discarding local batch state "
+                    "(the remote job is not cancelled)",
+                    flush=True,
+                )
+            state.forget()
+        data = state.load()
+        if data:
+            pending_saved = saved_keys_pending(store, data)
+            if not pending_saved:
+                print("  dropping fully-applied batch state", flush=True)
+                state.forget()
+                data = None
+            else:
+                reason = state_mismatch(data, book_id, model, thinking, section)
+                if reason:
+                    raise RuntimeError(
+                        f"{reason}. Pass --discard-batch-state to drop the local "
+                        "JSON only (the remote job is not cancelled)."
+                    )
 
         if not tasks:
             pass
@@ -1397,19 +2150,24 @@ def check_book(
             logger = ApiLogger(OUTPUT_DIR / book_id)
 
             prompt_cache: ReviewPromptCache | None = None
+            lock: BatchLock | None = None
+            if batch or state.path.is_file():
+                lock = BatchLock(batch_lock_path(book_dir, BATCH_STAGE))
+                lock.acquire()
             try:
-                print("  caching the examiner prompt", flush=True)
-                holder = ReviewPromptCache(client, model, prompt.text, book_id)
-                name = holder.current()
-                if name is None:
-                    print(
-                        "    cache failed; sending the prompt with each call",
-                        flush=True,
-                    )
-                else:
-                    prompt_cache = holder
-                    tokens = prompt_cache.leases[name][0]
-                    print(f"    cached, {tokens} token(s)", flush=True)
+                if not batch:
+                    print("  caching the examiner prompt", flush=True)
+                    holder = ReviewPromptCache(client, model, prompt.text, book_id)
+                    name = holder.current()
+                    if name is None:
+                        print(
+                            "    cache failed; sending the prompt with each call",
+                            flush=True,
+                        )
+                    else:
+                        prompt_cache = holder
+                        tokens = prompt_cache.leases[name][0]
+                        print(f"    cached, {tokens} token(s)", flush=True)
 
                 with Progress(len(tasks)) as progress:
                     run = Run(
@@ -1422,39 +2180,99 @@ def check_book(
                         prompt=prompt,
                         prompt_cache=prompt_cache,
                         progress=progress,
+                        section=section,
+                        update=update,
+                        store=store,
                     )
-                    with ThreadPoolExecutor(max_workers=workers) as pool:
-                        futures = {
-                            pool.submit(check_question, run, *task): task
-                            for task in tasks
-                        }
-                        for future in as_completed(futures):
-                            task = futures[future]
-                            row = task[0]
-                            call_name = f"{row['number']} {task[3]['id']}"
-                            try:
-                                name, found, line = future.result()
-                            except Exception as error:  # noqa: BLE001
-                                failures.append(
-                                    f"{row['number']} {task[3]['id']}: "
-                                    f"{type(error).__name__}: {error}"
+                    jobs = jobs_from_tasks(run, tasks)
+                    adopted: list[dict[str, Any]] = []
+                    prefetched: dict[str, BatchStatus] = {}
+                    if entries(state.load()):
+                        adopted, prefetched = resume_saved_jobs(run, state)
+                    leftover = [
+                        job
+                        for job in jobs
+                        if not store.has(job.row["stem"], job.exercise["id"])
+                    ]
+                    abandoned_keys: set[str] = set()
+                    if leftover or adopted:
+                        if batch:
+                            _got, failures, abandoned_keys = check_exercises_batch(
+                                run,
+                                leftover,
+                                state,
+                                adopted=adopted,
+                                parallel=batch_parallel,
+                                prefetched=prefetched,
+                                download_workers=download_workers,
+                            )
+                        else:
+                            if adopted:
+                                _got, failures, abandoned_keys = check_exercises_batch(
+                                    run,
+                                    leftover,
+                                    state,
+                                    adopted=adopted,
+                                    parallel=batch_parallel,
+                                    submit_leftovers=False,
+                                    prefetched=prefetched,
+                                    download_workers=download_workers,
                                 )
-                                progress.done(
-                                    call_name,
-                                    f"  {call_name}: failed, "
-                                    f"{one_line(f'{type(error).__name__}: {error}')}",
-                                )
-                                continue
-                            if row["stem"] in written:
-                                written[row["stem"]].update(found)
-                            progress.done(name, line)
-                            for issues in found.values():
-                                for issue in issues:
-                                    progress.say(
-                                        f"    {issue.exercise}  {issue.type}  "
-                                        f"{one_line(issue.reason)}"
-                                    )
+                                leftover = [
+                                    job
+                                    for job in leftover
+                                    if not store.has(job.row["stem"], job.exercise["id"])
+                                    and job.item not in abandoned_keys
+                                ]
+                            if leftover:
+                                with ThreadPoolExecutor(max_workers=workers) as pool:
+                                    futures = {
+                                        pool.submit(
+                                            check_question,
+                                            run,
+                                            job.row,
+                                            job.document,
+                                            job.group,
+                                            job.exercise,
+                                        ): job
+                                        for job in leftover
+                                    }
+                                    for future in as_completed(futures):
+                                        job = futures[future]
+                                        try:
+                                            name, found, line = future.result()
+                                        except Exception as error:  # noqa: BLE001
+                                            failures.append(
+                                                f"{job.name}: "
+                                                f"{type(error).__name__}: {error}"
+                                            )
+                                            progress.done(
+                                                job.name,
+                                                f"  {job.name}: failed, "
+                                                f"{one_line(f'{type(error).__name__}: {error}')}",
+                                            )
+                                            continue
+                                        if job.row["stem"] in written:
+                                            written[job.row["stem"]].update(found)
+                                        progress.done(name, line)
+                                        for issues in found.values():
+                                            for issue in issues:
+                                                progress.say(
+                                                    f"    {issue.exercise}  {issue.type}  "
+                                                    f"{one_line(issue.reason)}"
+                                                )
+            except KeyboardInterrupt:
+                if lock is not None:
+                    print(
+                        "interrupted; batch state kept, rerun to resume",
+                        flush=True,
+                    )
+                    sys.stderr.flush()
+                    os._exit(130)
+                raise
             finally:
+                if lock is not None:
+                    lock.release()
                 cache_names = prompt_cache.names if prompt_cache else []
                 if cache_names:
                     dropped = drop_caches(client, cache_names)
@@ -1712,7 +2530,23 @@ def check_replenish(
     )
     kept = repair_groups_mark_placement(repair_groups_excessive_tashkeel(kept))
     if len(kept) != 1:
-        raise ValueError("replacements split the set into more than one group")
+        # Form-set stems ("Choose the correct answer…") are boilerplate, so
+        # repaired() unpacks the set into standalones. That is for packing
+        # new_questions replies, not for putting members back in one set.
+        if is_form_set_group(merged):
+            kept = [
+                merged.model_copy(
+                    update={
+                        "exercises": [
+                            exercise
+                            for group in kept
+                            for exercise in group.exercises
+                        ]
+                    }
+                )
+            ]
+        else:
+            raise ValueError("replacements split the set into more than one group")
     group = kept[0]
     sizes = sizes_for(group)
     if len(group.exercises) not in sizes:
@@ -2417,12 +3251,27 @@ def review_book(
     thinking: str,
     update: bool,
     max_workers: int,
+    *,
+    batch: bool = DEFAULT_BATCH,
+    discard_batch_state: bool = False,
+    batch_parallel: int = DEFAULT_BATCH_PARALLEL,
+    download_workers: int = DEFAULT_DOWNLOAD_WORKERS,
 ) -> int:
     """Proofread, check and accept a book, or one section of it. Returns the stage's exit code."""
     documents, _ = proofread_book(book_id, section)
     papers = {stem: paper for stem, paper in documents}
     _, failed = check_book(
-        book_id, section, papers, model, thinking, update, max_workers
+        book_id,
+        section,
+        papers,
+        model,
+        thinking,
+        update,
+        max_workers,
+        batch=batch,
+        discard_batch_state=discard_batch_state,
+        batch_parallel=batch_parallel,
+        download_workers=download_workers,
     )
     accept_book(book_id, section, documents, model, thinking, max_workers)
     return 1 if failed else 0
@@ -2472,7 +3321,39 @@ def main() -> int:
         action="store_true",
         help="write section reviews from successful 00_api_call_logs only; no model calls",
     )
+    parser.add_argument(
+        "--batch",
+        action=argparse.BooleanOptionalAction,
+        default=DEFAULT_BATCH,
+        help="check through the Gemini Batch API (default); "
+        "--no-batch calls unary generateContent with "
+        f"{MAX_WORKERS} workers",
+    )
+    parser.add_argument(
+        "--discard-batch-state",
+        action="store_true",
+        help="delete data/output/<book>/00_questions_review_batch_state.json only; "
+        "does not cancel the remote Batch job",
+    )
+    parser.add_argument(
+        "--batch-parallel",
+        type=int,
+        default=DEFAULT_BATCH_PARALLEL,
+        metavar="N",
+        help="0 = no cap (default); N = at most N jobs in flight",
+    )
+    parser.add_argument(
+        "--download-workers",
+        type=int,
+        default=DEFAULT_DOWNLOAD_WORKERS,
+        metavar="N",
+        help="parallel downloads of finished batch jobs; 1 = serial",
+    )
     args = parser.parse_args()
+    if args.batch_parallel < 0:
+        parser.error("--batch-parallel must be >= 0")
+    if args.download_workers < 1:
+        parser.error("--download-workers must be at least 1")
 
     try:
         if args.strip_figures and args.strip_undrawn_figures:
@@ -2508,6 +3389,10 @@ def main() -> int:
             args.thinking_level,
             args.update,
             max(1, args.workers),
+            batch=args.batch,
+            discard_batch_state=args.discard_batch_state,
+            batch_parallel=args.batch_parallel,
+            download_workers=args.download_workers,
         )
     except RuntimeError as error:
         print(f"FAILED: {error}", file=sys.stderr)

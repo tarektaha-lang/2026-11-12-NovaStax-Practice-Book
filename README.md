@@ -1,6 +1,6 @@
 # NovaStax Practice Book
 
-A short command guide is in [USAGE.md](USAGE.md).
+A short command guide is in [USAGE.md](USAGE.md). Copy-paste cheat sheet: [COMMANDS.md](COMMANDS.md).
 
 This project turns textbook source PDFs and a book table of contents into a complete
 practice book:
@@ -165,7 +165,8 @@ python3 -B scripts/pipeline.py mathematics_en_eg08_t1 \
 ```
 
 `--model` does not select the speech model. Use `--tts-model` for `audios.py`.
-`transcripts.py` and `audios.py` default to the Gemini Batch API.
+`transcripts.py`, `audios.py`, `new_questions.py` and `questions_review.py`
+default to the Gemini Batch API.
 `--transcripts-batch` / `--no-transcripts-batch` forward `--batch` / `--no-batch`
 to `transcripts` and `ar_transcripts` only (omitted, those scripts keep Batch).
 `--tts-batch` (the pipeline default) forwards `--batch` to `audios`;
@@ -269,7 +270,8 @@ Every stage script takes `book_id` and `--help`. Section-scoped scripts take
 | `package.py` | `--dry-run-catalog`, `--no-output-backup` |
 | `papers.py` | `--allow-missing-figures`, `--report-english-glosses` / `--no-report-english-glosses`, `--section-only`, `--output-dir`, `--selection-from` \| `--membership-from` |
 | `groups.py` | `--no-pdf`, `--section-only`, `--papers-dir`, `--output-dir` |
-| `questions_review.py` | `--update`, `--model`, `--thinking-level` (default high), `--workers`, `--strip-figures` |
+| `new_questions.py` | `--update`, `--model`, `--thinking-level` (default high), `--workers`, `--force-generate`, `--batch` / `--no-batch`, `--discard-batch-state`, `--batch-parallel N`, `--download-workers N` |
+| `questions_review.py` | `--update`, `--model`, `--thinking-level` (default high), `--workers`, `--strip-figures`, `--batch` / `--no-batch`, `--discard-batch-state`, `--batch-parallel N`, `--download-workers N` |
 | `cost.py` | `--step STEP`, `-o / --output` |
 
 Run `python3 -B scripts/<stage>.py --help` for the rest; `--help` makes no call.
@@ -286,11 +288,12 @@ python3 -B scripts/cost.py mathematics_ar_eg08_t1
 python3 -B scripts/<stage>.py --help
 ```
 
-## Gemini Batch for transcripts and speech
+## Gemini Batch for transcripts, speech, new questions and review
 
-`transcripts.py` and `audios.py` submit every chunk of the current attempt
-round at once through the Gemini Batch API (half the standard token rate in
-`prices.json`, billed when the job lands). A job may take up to 24 hours.
+`transcripts.py`, `audios.py`, `new_questions.py` and `questions_review.py`
+submit every chunk of the current attempt round at once through the Gemini
+Batch API (half the standard token rate in `prices.json`, billed when the job
+lands). A job may take up to 24 hours.
 `--batch-parallel N` caps how many jobs are in flight (`0 = no cap (default);
 N = at most N jobs in flight`). Jobs that are already finished and only
 downloading do not count toward that cap. `--download-workers N` (default 3;
@@ -305,6 +308,8 @@ python3 -B scripts/transcripts.py mathematics_en_eg07_t1 -s 1.2
 python3 -B scripts/transcripts.py mathematics_en_eg07_t1 -s 1.2 --no-batch
 python3 -B scripts/transcripts.py mathematics_en_eg07_t1 --unary-fallback 5
 python3 -B scripts/audios.py mathematics_en_eg07_t1 -s 1.2 --no-batch
+python3 -B scripts/new_questions.py mathematics_en_eg07_t1 -s 1.2 --no-batch
+python3 -B scripts/questions_review.py mathematics_en_eg07_t1 -s 1.2 --no-batch
 python3 -B scripts/pipeline.py mathematics_en_eg07_t1 --from transcripts --batch-parallel 2
 python3 -B scripts/audios.py mathematics_en_eg07_t1 --download-workers 2
 ```
@@ -316,8 +321,9 @@ without spending an attempt; create is retried after any live job finishes, or
 after a 60s ×1.5 (cap 600s) wait when nothing is live.
 
 In-flight jobs are recorded as a `jobs` list in
-`data/output/<book_id>/00_transcripts_batch_state.json` or
-`00_audios_batch_state.json` (a legacy single `job` object is still read and
+`data/output/<book_id>/00_transcripts_batch_state.json`,
+`00_audios_batch_state.json`, `00_new_questions_batch_state.json` or
+`00_questions_review_batch_state.json` (a legacy single `job` object is still read and
 converted on the first save). English and Arabic books never share a state file.
 A rerun adopts every still-running saved job and submits leftover chunks in the
 same round (overlap). `--discard-batch-state` deletes only that local JSON; it
@@ -328,7 +334,8 @@ To switch a book that already has an in-flight job: Ctrl-C the run (safe; the
 remote job keeps going), then rerun the same command **without `--update`**. Do
 not pass `--discard-batch-state` while a job is running.
 
-`00_transcripts_batch.lock` and `00_audios_batch.lock` allow one run per book at
+`00_transcripts_batch.lock`, `00_audios_batch.lock`,
+`00_new_questions_batch.lock` and `00_questions_review_batch.lock` allow one run per book at
 a time (released on Ctrl-C). `--no-batch` still takes the lock when a state file
 exists: it polls and applies every saved job, then voices the rest unary.
 
@@ -622,10 +629,11 @@ explicit translation maximum: 100
 
 The CLI can override the worker default. Model-backed generation, review, and
 translation stages default to 25 concurrent unary calls because that is fast
-without creating the large quota bursts seen at 100. Transcript and speech
-stages default to the Gemini Batch API instead; 25 concurrent unary calls apply
-there only with `--no-batch` (or `--no-transcripts-batch` / `--no-tts-batch` on
-the pipeline). Translation still accepts an explicit value up to 100:
+without creating the large quota bursts seen at 100. Transcripts, speech, new
+questions and question review default to the Gemini Batch API instead; 25
+concurrent unary calls apply there only with `--no-batch` (or
+`--no-transcripts-batch` / `--no-tts-batch` on the pipeline). Translation
+still accepts an explicit value up to 100:
 
 ```bash
 python3 -B scripts/translate.py mathematics_en_eg08_t1 --workers 100
@@ -779,8 +787,12 @@ Important paths include:
 00_api_call_logs/             one folder per model/API call
 00_transcripts_batch_state.json  in-flight Gemini Batch jobs for transcripts
 00_audios_batch_state.json    in-flight Gemini Batch jobs for speech
+00_new_questions_batch_state.json  in-flight Gemini Batch jobs for new questions
+00_questions_review_batch_state.json  in-flight Gemini Batch jobs for question review
 00_transcripts_batch.lock     exclusive lock; one transcripts run per book
 00_audios_batch.lock          exclusive lock; one audios run per book
+00_new_questions_batch.lock   exclusive lock; one new_questions run per book
+00_questions_review_batch.lock  exclusive lock; one questions_review run per book
 00_translation_state/         translation fingerprints and acceptance state
 01_frontmatter/               cover/title/copyright/contents artifacts
 02_section_sources/           cropped section source PDFs

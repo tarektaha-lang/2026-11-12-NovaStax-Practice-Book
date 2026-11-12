@@ -26,6 +26,7 @@ from src.latex import (  # noqa: E402
     arabic_tikz_nodes,
     canonical_tikz_arrows,
     begin_document,
+    body_to_latex,
     drawing_tex,
     clock_array_cells,
     compile_pdf,
@@ -43,6 +44,7 @@ from src.latex import (  # noqa: E402
     paper_tex,
     preamble,
     profile_tikz,
+    replace_marker,
     row_breaks_before_rules,
     math_delimiters_as_text,
     rtl_latin_layout,
@@ -56,6 +58,7 @@ from src.latex import (  # noqa: E402
     tally_maths,
     to_latex,
     wrap_arabic_decimal_runs,
+    wrap_ipa_in_maths,
     WORD_PIN,
 )
 from new_questions import ExerciseGroup, repaired  # noqa: E402
@@ -270,6 +273,15 @@ class LatexDirectionTests(unittest.TestCase):
                 r"$S = \{x : x \text{ رقم في العدد } 4,400,331\}$"
             ), inline=True),
         )
+
+    def test_indian_lakhs_are_ordinary_commas_in_math(self) -> None:
+        self.assertEqual(tight_thousands("2,04,300"), r"2{,}04{,}300")
+        self.assertEqual(tight_thousands("1,24,42,373"), r"1{,}24{,}42{,}373")
+        self.assertEqual(tight_thousands("46,200"), r"46{,}200")
+        self.assertEqual(tight_thousands("4,400,331"), r"4{,}400{,}331")
+        rendered = to_latex(r"$2,04,300$")
+        self.assertIn(r"2{,}04{,}300", rendered)
+        self.assertNotIn("2,04,300", rendered)
 
     def test_unit_only_math_island_is_not_turned_into_display_math(self) -> None:
         self.assertEqual(
@@ -758,6 +770,25 @@ class LatexDirectionTests(unittest.TestCase):
         )
         self.assertEqual(to_latex(r"$logos$"), r"$logos$")
 
+    def test_maths_slash_and_prime_stay_maths(self) -> None:
+        self.assertEqual(maths_for_face(r"$f'(0)$"), r"$f'(0)$")
+        self.assertEqual(
+            maths_for_face(r"$f^{-1}(y) = (y - 5)^{1/3}$"),
+            r"$f^{-1}(y) = (y - 5)^{1/3}$",
+        )
+        self.assertEqual(maths_for_face(r"$e^{x/2}$"), r"$e^{x/2}$")
+        self.assertEqual(
+            maths_for_face(r"$(2 - x)^{-1/2}$"),
+            r"$(2 - x)^{-1/2}$",
+        )
+        self.assertEqual(wrap_ipa_in_maths("f'(0)"), "f'(0)")
+        self.assertEqual(wrap_ipa_in_maths("e^{x/2}"), "e^{x/2}")
+        self.assertEqual(
+            maths_for_face("$५$"), r"$\text{\devanagarisnippet{५}}$"
+        )
+        self.assertIn(r"\CounterTallyMarks{5}", tally_maths(r"\cancel{||||}"))
+        self.assertEqual(wrap_ipa_in_maths("/eə/"), r"\text{/eə/}")
+
     def test_grid_number_steps_mirror_for_rtl(self) -> None:
         ltr = grid_lines(Profile("en", "western", "latin"))
         rtl = grid_lines(RTL_LATIN)
@@ -929,8 +960,17 @@ class LatexDirectionTests(unittest.TestCase):
         self.assertIn("1/2", half)
         self.assertNotIn(r"\parallel", half)
         tally = to_latex(r"$////\backslash\ ///$")
-        self.assertIn(r"\CounterTallyMarks{8}", tally)
+        self.assertIn(r"\scalebox{0.8}{\CounterTallyMarks{8}}", tally)
         self.assertNotIn(r"\parallel", tally)
+
+    def test_inline_tally_is_scaled_table_tally_is_not(self) -> None:
+        inline = tally_maths(r"\cancel{||||}")
+        self.assertIn(r"\scalebox{0.8}{\CounterTallyMarks{5}}", inline)
+        table = tally_maths(r"\begin{array}{c} \cancel{||||} \end{array}")
+        self.assertIn(r"\CounterTallyMarks{5}", table)
+        self.assertNotIn(r"\scalebox", table)
+        paper = to_latex(r"bundles of five (${\cancel{||||}}\;$)")
+        self.assertIn(r"\scalebox{0.8}{\CounterTallyMarks{5}}", paper)
 
     def test_doubled_command_is_one_backslash(self) -> None:
         result = to_latex("$\\\\frac{1 + \\\\sqrt{10}}{2}$")
@@ -942,6 +982,86 @@ class LatexDirectionTests(unittest.TestCase):
         self.assertIn("\\\\", result)
         self.assertNotIn("\\\\b", result)
         self.assertIn(r"\begin{array}", result)
+
+    def test_two_column_text_table_wraps_instead_of_scaling(self) -> None:
+        proof = (
+            r"$$\begin{array}{l|l} \text{Statements} & \text{Reasons} \\ "
+            r"\hline AM = MB & \text{Corresponding parts of congruent triangles (CPCT)}"
+            r" \end{array}$$"
+        )
+        rendered = to_latex(proof)
+        self.assertNotIn(r"\tablefit", rendered)
+        self.assertIn(r"\begin{tabularx}{\linewidth}", rendered)
+        self.assertIn(r"{l|>{\raggedright\arraybackslash}X}", rendered)
+        self.assertIn("Corresponding parts of congruent triangles (CPCT)", rendered)
+        self.assertNotIn(r"\text{Corresponding parts", rendered)
+        numeric = to_latex(r"$$\begin{array}{c|c} 1 & 2 \\ 3 & 4 \end{array}$$")
+        self.assertIn(r"\tablefit", numeric)
+        self.assertNotIn(r"\begin{tabularx}", numeric)
+
+    def test_proof_table_keeps_step_narrow_and_splits_long_math(self) -> None:
+        proof = (
+            r"$$\begin{array}{c|l|l} \text{Step} & \text{Statement} & \text{Reason} \\ "
+            r"\hline 1 & a^2=\left(2m+1\right)^2=4m^2+4m+1 & \text{Algebraic expansion}"
+            r" \end{array}$$"
+        )
+        rendered = to_latex(proof)
+        self.assertIn(r"\begin{tabularx}{\linewidth}", rendered)
+        self.assertIn("{c|", rendered)
+        self.assertEqual(rendered.count(r"arraybackslash}X"), 1)
+        self.assertIn("|l}", rendered)
+        self.assertIn("$a^2$ $=$ $\\left(2m+1\\right)^2$ $=$ $4m^2+4m+1$", rendered)
+        self.assertIn("Algebraic expansion", rendered)
+        self.assertNotIn(r"\tablefit", rendered)
+
+    def test_short_text_table_stays_natural_width(self) -> None:
+        table = (
+            r"$$\begin{array}{c|l} I & \text{Mean} \\ "
+            r"\hline II & \text{Standard deviation} \end{array}$$"
+        )
+        rendered = to_latex(table)
+        self.assertIn(r"\tablefit", rendered)
+        self.assertNotIn(r"\begin{tabularx}", rendered)
+        self.assertIn(r"\begin{array}{c|l}", rendered)
+
+    def test_step_number_control_space_does_not_eat_math_dollar(self) -> None:
+        proof = (
+            r"$$\begin{array}{l|l} \text{Statements} & \text{Comment} \\ "
+            r"\hline 1.\ \text{Assume the archer scored }10\text{ points} "
+            r"& \text{Negation} \end{array}$$"
+        )
+        rendered = to_latex(proof)
+        self.assertIn("$1.$ Assume the archer scored $10$ points", rendered)
+        self.assertNotIn(r"$1.\$", rendered)
+
+    def test_table_beside_figure_uses_full_measure(self) -> None:
+        drawings = {
+            "lines": {
+                "width": 80,
+                "tikz": r"\begin{tikzpicture}\draw (0,0)--(1,0);\end{tikzpicture}",
+            }
+        }
+        stem = "Complete the table by identifying all the angle pairs:"
+        table = r"$$\begin{array}{l|l} A & B \\ C & D \end{array}$$"
+        rendered = body_to_latex(f"{stem} {table}", ["lines"], drawings)
+        first, _, rest = rendered.split(r"\besidefigure{", 1)[1].partition("}{")
+        self.assertEqual(first, stem)
+        self.assertNotIn(r"\tablefit", first)
+        self.assertIn(r"\tablefit", rest)
+        self.assertIn(r"\begin{array}", rest)
+        plain = body_to_latex("Which angle is opposite?", ["lines"], drawings)
+        self.assertIn(r"\besidefigure{Which angle is opposite?}", plain)
+        self.assertNotIn(r"\tablefit", plain)
+
+    def test_punctuation_after_figure_marker_is_dropped(self) -> None:
+        text = "As shown in [figure 1], an L-shaped piece"
+        self.assertEqual(
+            replace_marker(text, 1, r"\widefigure{X}"),
+            r"As shown in \widefigure{X} an L-shaped piece",
+        )
+        rendered = body_to_latex(text, ["L shape"], {})
+        self.assertNotIn(", an L-shaped", rendered)
+        self.assertIn("an L-shaped", rendered)
 
     def test_punctuation_after_display_math_is_dropped(self) -> None:
         table = r"$$\begin{array}{c} a \end{array}$$، حيث $\bar{X} = 2.6$"
@@ -1036,6 +1156,13 @@ class ProseMarkupTests(unittest.TestCase):
 
     def test_markdown_bold_becomes_textbf(self) -> None:
         self.assertEqual(escape_prose("** Bold **"), r"\textbf{Bold}")
+
+    def test_markdown_italic_becomes_textit(self) -> None:
+        self.assertEqual(escape_prose("*Amalasiddhi*"), r"\textit{Amalasiddhi}")
+        self.assertEqual(
+            escape_prose("**Bold** and *Amalasiddhi*"),
+            r"\textbf{Bold} and \textit{Amalasiddhi}",
+        )
 
     def test_blank_control_space_is_not_printed(self) -> None:
         self.assertEqual(

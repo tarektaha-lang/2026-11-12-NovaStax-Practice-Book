@@ -746,6 +746,24 @@ class TextProblemsV2Tests(unittest.TestCase):
         problems = text_problems("Find $x$.", "أوجد \u200e$x$.", "stem", AR_META)
         self.assertTrue(any("bidi" in problem for problem in problems))
 
+    def test_foreign_glyph_in_maths_is_allowed(self) -> None:
+        problems = text_problems(
+            r"The Devanagari symbol $५$ and the Hindu-Arabic symbol $5$",
+            r"The Devanagari symbol $५$ and the Hindu-Arabic symbol $5$",
+            "exercise_108.text",
+            EN_META,
+        )
+        self.assertFalse(any("unsupported character" in problem for problem in problems))
+
+    def test_foreign_glyph_in_prose_is_reported(self) -> None:
+        problems = text_problems(
+            "The Devanagari symbol ५",
+            "The Devanagari symbol ५",
+            "exercise_108.text",
+            EN_META,
+        )
+        self.assertTrue(any("unsupported character" in problem for problem in problems))
+
     def test_ratio_good_translation_passes(self) -> None:
         problems = text_problems(
             "scale 1 : 2,500",
