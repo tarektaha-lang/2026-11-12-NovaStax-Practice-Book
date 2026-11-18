@@ -396,6 +396,30 @@ class CacheRecoveryTests(unittest.TestCase):
         self.assertEqual(second, "cache/2")
         self.assertEqual(holder.names, ["cache/1", "cache/2"])
 
+    def test_review_prompt_cache_uses_given_ttl(self) -> None:
+        seen: dict[str, str] = {}
+
+        class FakeClient:
+            class caches:
+                @staticmethod
+                def create(**kwargs):
+                    seen["ttl"] = kwargs["config"].ttl
+
+                    class Usage:
+                        total_token_count = 100
+
+                    class Cache:
+                        name = "cache/1"
+                        usage_metadata = Usage()
+
+                    return Cache()
+
+        holder = ReviewPromptCache(
+            FakeClient(), "model", "prompt", "book", ttl_seconds=86400
+        )
+        self.assertEqual(holder.current(), "cache/1")
+        self.assertEqual(seen["ttl"], "86400s")
+
 
 if __name__ == "__main__":
     unittest.main()

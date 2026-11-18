@@ -197,6 +197,20 @@ class JsonlTests(unittest.TestCase):
         thinking = payload["generationConfig"]["thinkingConfig"]
         self.assertIn(thinking["thinkingLevel"].lower(), ("medium", "MEDIUM".lower()))
 
+    def test_cached_content_is_request_field_not_generation_config(self) -> None:
+        request = types.InlinedRequest(
+            contents=["exercise json"],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                cached_content="cachedContents/abc",
+                thinking_config=types.ThinkingConfig(thinking_level="high"),
+            ),
+        )
+        payload = gemini_batch.jsonl_request_payload(request, api_client=None)
+        self.assertEqual(payload["cachedContent"], "cachedContents/abc")
+        self.assertNotIn("cachedContent", payload.get("generationConfig", {}))
+        self.assertNotIn("cached_content", payload.get("generationConfig", {}))
+
     def test_jsonl_src_writes_key_and_uploads(self) -> None:
         uploaded_paths: list[str] = []
 

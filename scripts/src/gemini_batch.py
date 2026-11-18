@@ -494,7 +494,12 @@ def jsonl_request_payload(request: types.InlinedRequest, api_client: Any = None)
         mode="json",
         by_alias=True,
         exclude_none=True,
-        exclude={"response_schema", "http_options", "should_return_http_response"},
+        exclude={
+            "response_schema",
+            "http_options",
+            "should_return_http_response",
+            "cached_content",
+        },
     )
     schema = config.response_schema
     if schema is not None:
@@ -505,6 +510,10 @@ def jsonl_request_payload(request: types.InlinedRequest, api_client: Any = None)
             )
     if generation:
         payload["generationConfig"] = generation
+    # cachedContent is a GenerateContentRequest field, not generationConfig.
+    # Putting it in generationConfig 400s: Unknown name "cached_content".
+    if config.cached_content:
+        payload["cachedContent"] = config.cached_content
     return payload
 
 

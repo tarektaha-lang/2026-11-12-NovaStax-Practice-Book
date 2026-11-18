@@ -113,7 +113,7 @@ def review_job() -> questions_review.Job:
     )
 
 
-def review_run(store: ReviewStore):
+def review_run(store: ReviewStore, prompt_cache=None):
     return SimpleNamespace(
         client=object(),
         model="gemini-3.8-flash",
@@ -121,6 +121,7 @@ def review_run(store: ReviewStore):
         book_id="book",
         thinking="high",
         prompt=SimpleNamespace(text="prompt", files=[]),
+        prompt_cache=prompt_cache,
         progress=Progress(),
         section=None,
         update=False,
@@ -154,6 +155,16 @@ class DefaultModeTests(unittest.TestCase):
         self.assertEqual(review.metadata["item"], "1.1-exercise_1")
         self.assertIn("|a2", objective.metadata["log_key"])
         self.assertIn("|a3", review.metadata["log_key"])
+        self.assertEqual(review.contents, ["prompt", "part"])
+        self.assertIsNone(review.config.cached_content)
+
+    def test_review_batch_request_omits_prompt_when_cached(self) -> None:
+        cache = SimpleNamespace(current=lambda: "cachedContents/abc")
+        review = questions_review.batch_request(
+            review_run(ReviewStore(), prompt_cache=cache), review_job(), 1
+        )
+        self.assertEqual(review.contents, ["part"])
+        self.assertEqual(review.config.cached_content, "cachedContents/abc")
 
 
 class RetryTests(unittest.TestCase):

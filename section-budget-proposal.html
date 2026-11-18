@@ -1,0 +1,1175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Section Exercise Budgets</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: one reading column set on faint graph paper; wide tables and code scroll inside their own frames. */
+:root {
+  --paper: #f3f6f7;
+  --sheet: #ffffff;
+  --ink: #15212a;
+  --ink-soft: #4b5b67;
+  --rule: #d6dfe4;
+  --grid: #e3eaee;
+  --accent: #0a6b70;
+  --accent-ink: #ffffff;
+  --accent-soft: #dff0ef;
+  --today: #8f5410;
+  --today-soft: #f5ebdd;
+  --warn: #9e3a29;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1418;
+    --sheet: #141c21;
+    --ink: #e2e9ed;
+    --ink-soft: #9db0bb;
+    --rule: #29353d;
+    --grid: #182228;
+    --accent: #5cc3c2;
+    --accent-ink: #062224;
+    --accent-soft: #15322f;
+    --today: #e2a55e;
+    --today-soft: #31251a;
+    --warn: #f08b77;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1418;
+  --sheet: #141c21;
+  --ink: #e2e9ed;
+  --ink-soft: #9db0bb;
+  --rule: #29353d;
+  --grid: #182228;
+  --accent: #5cc3c2;
+  --accent-ink: #062224;
+  --accent-soft: #15322f;
+  --today: #e2a55e;
+  --today-soft: #31251a;
+  --warn: #f08b77;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+}
+.sheet {
+  max-width: 880px;
+  margin: 0 auto;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding-inline: clamp(18px, 5vw, 56px);
+  padding-block: clamp(28px, 5vw, 52px);
+  display: grid;
+  gap: 48px;
+}
+.sheet > * { min-width: 0; }
+
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.6rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p, ul, ol { margin: 0; max-width: 68ch; }
+ul, ol { padding-left: 1.25em; display: grid; gap: 8px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+strong { font-weight: 600; }
+a { color: var(--accent); }
+
+section { display: grid; gap: 16px; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+header { display: grid; gap: 14px; }
+.lede { font-size: 1.1rem; color: var(--ink-soft); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-size: 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 2px 10px;
+  color: var(--ink-soft);
+}
+.chip.status { border-color: var(--accent); color: var(--accent); }
+
+.summary {
+  background: var(--accent-soft);
+  border-radius: 6px;
+  padding: 20px 22px;
+  display: grid;
+  gap: 10px;
+}
+.summary ul { max-width: none; }
+
+.formula {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.7;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre;
+  color: var(--ink);
+}
+.note { font-size: 0.92rem; color: var(--ink-soft); }
+
+.steps { list-style: none; padding: 0; counter-reset: step; gap: 14px; max-width: none; }
+.steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.steps li::before {
+  content: counter(step);
+  font-family: var(--font-display);
+  font-weight: 600;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-size: 0.95rem;
+}
+.steps li > div { min-width: 0; }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
+  background: var(--paper);
+}
+td.num, th.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.today { color: var(--today); }
+.levels-cell { font-family: var(--font-mono); font-size: 0.85rem; white-space: nowrap; }
+
+/* Calculator */
+.calc {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+}
+.calc-in {
+  padding: 18px;
+  border-right: 1px solid var(--rule);
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  background: var(--paper);
+}
+.field { display: grid; gap: 4px; }
+.field label { font-size: 0.82rem; color: var(--ink-soft); font-weight: 500; }
+.field input {
+  font: 500 1.05rem var(--font-mono);
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--sheet);
+  color: var(--ink);
+  width: 100%;
+}
+.field input:focus-visible, .lvl:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.today-line { font-size: 0.85rem; color: var(--today); }
+.calc-out { padding: 18px; display: grid; gap: 18px; min-width: 0; }
+.range-line { font-size: 0.95rem; }
+.range-line strong { font-family: var(--font-mono); }
+.lvl-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.lvl {
+  font: inherit;
+  border: 1px solid var(--rule);
+  background: var(--sheet);
+  color: var(--ink);
+  border-radius: 4px;
+  padding: 8px 4px;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+}
+.lvl .k { font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); }
+.lvl .t { font-family: var(--font-mono); font-weight: 500; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.lvl[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.lvl[aria-pressed="true"] .k { color: var(--accent-ink); }
+.objs { display: grid; gap: 10px; }
+.obj {
+  display: grid;
+  grid-template-columns: 7.5rem 4.2rem minmax(0, 1fr) 3rem;
+  gap: 10px;
+  align-items: center;
+}
+.obj .id { font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink-soft); }
+.obj select {
+  font: 500 0.9rem var(--font-mono);
+  padding: 4px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--sheet);
+  color: var(--ink);
+}
+.blocks { display: flex; flex-wrap: wrap; gap: 3px; min-width: 0; }
+.blocks span {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+.obj .share { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+.legend { font-size: 0.82rem; color: var(--ink-soft); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.legend .swatch { width: 14px; height: 10px; border-radius: 2px; background: var(--accent); opacity: 0.85; display: inline-block; }
+
+.two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.two-col > div { display: grid; gap: 10px; align-content: start; min-width: 0; }
+
+details {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0 16px;
+}
+details[open] { padding-bottom: 16px; }
+summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details .formula { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.decisions { list-style: none; padding: 0; gap: 10px; max-width: none; }
+.decisions li {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.decisions li::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  margin-top: 4px;
+  border: 1.5px solid var(--accent);
+  border-radius: 3px;
+}
+.warn { color: var(--warn); }
+
+h4 { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; margin: 0; line-height: 1.3; }
+section > h3:not(:first-of-type) { margin-top: 14px; }
+
+/* The level ladder, drawn to scale between the section's minimum and maximum */
+.ladder {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--paper);
+  padding: 40px 28px 40px;
+}
+.ladder-track { position: relative; height: 4px; background: var(--rule); border-radius: 2px; }
+.ladder .ghost {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  background: var(--ink-soft);
+  opacity: 0.45;
+}
+.ladder .tick {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+}
+.ladder .tick b, .ladder .tick i {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.ladder .tick b { bottom: 20px; font: 500 0.88rem var(--font-mono); color: var(--ink); }
+.ladder .tick i { top: 20px; font-style: normal; font-size: 0.72rem; letter-spacing: 0.06em; color: var(--ink-soft); }
+
+/* One call, as four boxes: who does what */
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px; }
+.flow-box {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+}
+.flow-box.model { background: var(--accent-soft); border-color: var(--accent); }
+.flow-box + .flow-box::before {
+  content: "→";
+  position: absolute;
+  left: -23px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-weight: 600;
+}
+.flow-box .who { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.flow-box ul { font-size: 0.86rem; gap: 4px; padding-left: 1.1em; }
+td.lvl-num { font-family: var(--font-display); font-weight: 600; color: var(--accent); white-space: nowrap; }
+tr.total-row td { font-weight: 600; background: var(--paper); }
+pre.json { white-space: pre; }
+.scroll-pre { max-height: 460px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.formula mark.fill { background: var(--today-soft); color: var(--ink); border-radius: 2px; padding: 0 2px; }
+.step-no {
+  display: inline-grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  margin-right: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.85rem;
+  vertical-align: 0.1em;
+}
+section > h4 { margin-top: 4px; }
+section > * { min-width: 0; }
+td code, p code, li code { overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .flow { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .flow-box + .flow-box::before { content: "↓"; left: 50%; top: -24px; transform: translateX(-50%); }
+}
+
+@media (max-width: 680px) {
+  .calc { grid-template-columns: minmax(0, 1fr); }
+  .calc-in { border-right: 0; border-bottom: 1px solid var(--rule); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .calc-in .today-line { grid-column: 1 / -1; }
+  .two-col { grid-template-columns: minmax(0, 1fr); }
+  .obj { grid-template-columns: 6.6rem 3.8rem minmax(0, 1fr) 2.6rem; gap: 8px; }
+  .lvl .t { font-size: 0.95rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lvl { transition: background-color 120ms ease, color 120ms ease; }
+}
+</style>
+</head>
+<body>
+<main class="sheet">
+
+<header>
+  <div class="eyebrow">NovaStax Practice Book · budgets stage</div>
+  <h1>Section Exercise Budgets</h1>
+  <p class="lede">A proposal to change how many practice exercises each section of a book gets. Today a fixed formula sets the number from the objective count. Under this proposal, Python works out a sensible range for each section from the textbook's own questions and its objectives, and the model decides where in that range the section belongs.</p>
+  <div class="meta">
+    <span class="chip status">Proposal for discussion</span>
+    <span class="chip">Revised 18 November 2026</span>
+    <span class="chip">Nothing implemented yet</span>
+  </div>
+</header>
+
+<div class="summary">
+  <h2>In short</h2>
+  <ul>
+    <li><strong>The model judges, Python does the arithmetic.</strong> The model picks a level from 1 to 5 for the section and for each objective. Python turns those levels into exercise counts.</li>
+    <li><strong>Every section has a range.</strong> At least 20 exercises and at most 148, and between 1.5 and 3 times what the textbook prints when it prints enough to go on.</li>
+    <li><strong>Everything is a multiple of 4.</strong> Every total and every objective's share, so each objective's sets fill whole rows.</li>
+    <li><strong>Same cost as today, or less.</strong> At most one model call per section, and none when no answer could change the result. Each budget is written once and only asked for again when its inputs change.</li>
+  </ul>
+</div>
+
+<section id="why">
+  <h2>Why change the formula</h2>
+  <p>Today every section gets <code>48 + 12 × objectives</code> exercises, and the model only decides how to divide them between the objectives.</p>
+  <ul>
+    <li><strong>The objective count depends on how the spec was written.</strong> The same lesson written as 8 objectives gets 144 exercises. Written as 2 objectives, it gets 72.</li>
+    <li><strong>Subject and grade play no part in the total.</strong> A Grade 3 Arabic section and a Grade 12 math section with the same objective count get the same number.</li>
+    <li><strong>The textbook plays no part either.</strong> A section the textbook drills with 60 questions and one it barely touches are sized the same.</li>
+    <li><strong>The floor is too high for small sections.</strong> Even one objective gets 60, which is a lot for a language section where one item can be a whole passage.</li>
+  </ul>
+</section>
+
+<section id="how">
+  <h2>How the new budget works</h2>
+  <ol class="steps">
+    <li><div><strong>Extract the textbook's questions first.</strong> The <code>source_questions</code> stage moves ahead of <code>budgets</code>, so each section's question count is known before it is budgeted. A section being budgeted without a usable extract is refused.</div></li>
+    <li><div><strong>Python works out the section's range and five level totals.</strong> Both are explained in the next two parts.</div></li>
+    <li><div><strong>The model reads the section and picks levels.</strong> One level for the section, which picks its total, and one level per objective, which says how the total is shared. When no answer could change the result, Python skips the call and writes the budget itself.</div></li>
+    <li><div><strong>Python works out each objective's share in blocks of 4.</strong> Every objective gets one block first, and the rest of the total is shared in proportion to the objective levels.</div></li>
+    <li><div><strong>Python checks the reply and writes the budget once.</strong> A reply that fails a check is asked for again, up to 4 attempts as today. Later runs skip the section unless its spec or its extract changes, or the run is forced with <code>--update</code>.</div></li>
+  </ol>
+</section>
+
+<section id="range">
+  <h2>The range for each section</h2>
+  <p>Every section gets a least and a most number of exercises. Python works both out from how many questions the section's source books print and how many objectives it has.</p>
+<pre class="formula">s = questions the section's source books print ÷ number of source books
+    (the average per book; for a one-book section, simply the count)
+n = objectives in the section
+
+minimum = max(1.5 × s, 4 × n, 20)    rounded up to a multiple of 4
+maximum = max(3 × s, 20 × n)         rounded up to a multiple of 4
+both capped at 148</pre>
+  <h3>The settings</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th class="num">Value</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Least per objective</td><td class="num">4</td><td>One row of a set. Enough for a definition or a piece of notation.</td></tr>
+        <tr><td>Most per objective</td><td class="num">20</td><td>When the objectives set the range, the levels become 4, 8, 12, 16 and 20 per objective.</td></tr>
+        <tr><td>Section minimum</td><td class="num">20</td><td>No section is too small for a real block of practice.</td></tr>
+        <tr><td>Textbook factors</td><td class="num">1.5 and 3</td><td>Level 3 is about 2.25 times the textbook. A typical math section lands close to today's total.</td></tr>
+        <tr><td>Section cap</td><td class="num">148</td><td>Just above today's largest common total (144, for 8 objectives).</td></tr>
+        <tr><td>Levels</td><td class="num">5</td><td>Fine enough to tell sections apart, coarse enough that the model repeats its choice.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">When the textbook prints no questions for a section, the objective count and the floor of 20 set the range, and the model is told there are none. When the count looks unreliable (under 2 questions per source page), it still counts towards the range, since the textbook prints at least that many. The model is told the count is low for its pages, which is normal for long items such as passages but may also mean some questions were missed.</p>
+  <p class="note"><strong>Sections drawn from more than one book.</strong> Some Egyptian books draw every section from more than one source book. The extracted count is the total across all of them, so s is that total divided by the number of books, which is the average per book. Two books with 30 and 50 questions give s = 80 ÷ 2 = 40, so the section stays on the same scale as a one-book section. Every section of such a book has the same books and no question is printed in both, so the average is exact. Python warns if a book's sections ever have different numbers of books.</p>
+</section>
+
+<section id="level-totals">
+  <h2>The five levels</h2>
+  <p>Python then turns the range into five fixed totals, one per level. The model never sees this formula; it only picks one of the five totals.</p>
+<pre class="formula">level k = minimum + (k − 1) × (maximum − minimum) ÷ 4
+          rounded to a multiple of 4, for k = 1 … 5</pre>
+  <h3>Reading the formula</h3>
+  <p>The level formula places five evenly spaced stops between the section's minimum and maximum. Think of a ladder with five rungs: the bottom rung is the minimum and the top rung is the maximum.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Part</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr><td><code>minimum</code>, <code>maximum</code></td><td>The two ends of this section's range, from the previous part.</td></tr>
+        <tr><td><code>maximum − minimum</code></td><td>The distance from one end of the range to the other.</td></tr>
+        <tr><td><code>÷ 4</code></td><td>Five levels have four gaps between them, so this is the size of one step.</td></tr>
+        <tr><td><code>(k − 1)</code></td><td>How many steps to climb from level 1. Level 1 climbs none and stays at the minimum. Level 5 climbs four and reaches the maximum.</td></tr>
+        <tr><td>rounded to a multiple of 4</td><td>Divide by 4, round to the nearest whole number (an exact half rounds up), then multiply by 4 again. Every level then fills whole rows of 4.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Worked example.</strong> A section with a minimum of 60 and a maximum of 120. The distance is 120 − 60 = 60, so one step is 60 ÷ 4 = 15.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Level</th><th class="num">Steps climbed</th><th>Before rounding</th><th class="num">÷ 4</th><th class="num">Nearest whole</th><th class="num">Level total</th></tr></thead>
+      <tbody>
+        <tr><td class="lvl-num">1</td><td class="num">0</td><td class="num">60 + 0 × 15 = 60</td><td class="num">15</td><td class="num">15</td><td class="num"><strong>60</strong></td></tr>
+        <tr><td class="lvl-num">2</td><td class="num">1</td><td class="num">60 + 1 × 15 = 75</td><td class="num">18.75</td><td class="num">19</td><td class="num"><strong>76</strong></td></tr>
+        <tr><td class="lvl-num">3</td><td class="num">2</td><td class="num">60 + 2 × 15 = 90</td><td class="num">22.5</td><td class="num">23</td><td class="num"><strong>92</strong></td></tr>
+        <tr><td class="lvl-num">4</td><td class="num">3</td><td class="num">60 + 3 × 15 = 105</td><td class="num">26.25</td><td class="num">26</td><td class="num"><strong>104</strong></td></tr>
+        <tr><td class="lvl-num">5</td><td class="num">4</td><td class="num">60 + 4 × 15 = 120</td><td class="num">30</td><td class="num">30</td><td class="num"><strong>120</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ladder" role="img" aria-label="The five levels on a scale from 60 to 120: level 1 is 60, level 2 is 76, level 3 is 92, level 4 is 104, level 5 is 120.">
+    <div class="ladder-track">
+      <span class="ghost" style="left: 25%"></span>
+      <span class="ghost" style="left: 50%"></span>
+      <span class="ghost" style="left: 75%"></span>
+      <span class="tick" style="left: 0%"><b>60</b><i>L1</i></span>
+      <span class="tick" style="left: 26.667%"><b>76</b><i>L2</i></span>
+      <span class="tick" style="left: 53.333%"><b>92</b><i>L3</i></span>
+      <span class="tick" style="left: 73.333%"><b>104</b><i>L4</i></span>
+      <span class="tick" style="left: 100%"><b>120</b><i>L5</i></span>
+    </div>
+  </div>
+  <p class="note">Drawn to scale. The faint marks are the exact quarter points before rounding (75, 90 and 105). Rounding moves each level to its nearest multiple of 4, so the gaps come out as 16, 16, 12 and 16 instead of exactly 15 each.</p>
+  <ul>
+    <li><strong>When the steps are already multiples of 4, nothing moves.</strong> A section with no textbook questions and 5 objectives has a range of 20–100, so each step is 20 and the levels are 20, 40, 60, 80 and 100.</li>
+    <li><strong>When the minimum equals the maximum, every level is the same.</strong> One objective with 5 textbook questions has a range of 20–20, so each step is 0 and all five levels are 20.</li>
+  </ul>
+</section>
+
+<section id="deciding">
+  <h2>How the model decides the levels</h2>
+  <p>In one call the model makes two kinds of judgment: one level for the section, which picks its total, and one level for each objective, which says how that total is shared. It never writes a number of exercises. Each level comes with a description, so the model is matching the section to a description rather than inventing a count.</p>
+
+  <h3>Why levels instead of a number</h3>
+  <ul>
+    <li><strong>A free number drifts.</strong> Asked twice, a model choosing any number between 20 and 100 can answer 40 and then 70. A choice from five fixed totals repeats, and when it does change, it moves a whole level, which is easy to spot.</li>
+    <li><strong>The model still makes every judgment.</strong> Subject, grade, how demanding the content is, and how heavily the textbook drills the section compared with the rest of the book. Python only does the arithmetic.</li>
+    <li><strong>Every reply can be checked exactly.</strong> With a free number, the only possible check is whether it falls inside the range.</li>
+  </ul>
+
+  <h3>The section level</h3>
+  <p>How much practice the section needs, from light to heavy. Level 3 is the starting point, a typical lesson for this book, and the model moves away from it only for a reason it states in its reasoning.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Level</th><th>The section looks like</th><th>Example in a Grade 7 math book</th></tr></thead>
+      <tbody>
+        <tr><td class="lvl-num">1</td><td>Much lighter than a typical section: one or two simple objectives, mostly recognition, little that is new for this grade.</td><td>A unit opener that introduces vocabulary</td></tr>
+        <tr><td class="lvl-num">2</td><td>A little lighter than typical: practice of skills learners already partly know.</td><td>Reviewing place value before integers</td></tr>
+        <tr><td class="lvl-num">3</td><td>A typical lesson for this book and grade.</td><td>Adding integers</td></tr>
+        <tr><td class="lvl-num">4</td><td>Heavier than typical: a new procedure, or several objectives that each need real practice.</td><td>Multiplying and dividing integers</td></tr>
+        <tr><td class="lvl-num">5</td><td>Much heavier: a core procedure that needs fluency, multi-step reasoning, or common errors to unlearn.</td><td>Solving two-step equations</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>What the model weighs to choose it:</p>
+  <ul>
+    <li><strong>How demanding the content is for this grade,</strong> read from the spec's teaching points, notation and page excerpts.</li>
+    <li><strong>The objectives:</strong> how many there are, and how many of them are heavy.</li>
+    <li><strong>The section's role:</strong> the spec says whether the section teaches, revises or assesses. Revision and assessment sections usually need less new practice, unless the spec shows they drill a lot.</li>
+    <li><strong>Subject and grade:</strong> what one exercise asks of a learner, and how much repetition learners of this age need.</li>
+    <li><strong>The book profile,</strong> to see what a typical section of this book looks like. If some sections have not been extracted yet, the profile says how many it covers.</li>
+  </ul>
+  <p><strong>Heavier means more demanding, not more questions.</strong> The range already grows with the textbook's question count, so a section the textbook drills more than most is not, on its own, a reason for a higher level. When the textbook prints no questions for the section, the model judges from the spec and the book profile alone.</p>
+
+  <h3>The objective levels</h3>
+  <p>How much of the section's practice each objective needs compared with the section's other objectives. These levels act as weights: every objective gets one block of 4 first, and Python shares the rest of the total in proportion to the levels.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Level</th><th>The objective is</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td class="lvl-num">1</td><td>Recognition: a definition, a piece of notation, a fact to state.</td><td>Read and write integer notation</td></tr>
+        <tr><td class="lvl-num">2</td><td>A simple skill that needs only a little practice.</td><td>Name the opposite of an integer</td></tr>
+        <tr><td class="lvl-num">3</td><td>A typical skill of the section.</td><td>Place integers on a number line</td></tr>
+        <tr><td class="lvl-num">4</td><td>A demanding skill, or one the rest of the section builds on.</td><td>Use integers in real contexts</td></tr>
+        <tr><td class="lvl-num">5</td><td>The section's core: a procedure that needs fluency.</td><td>Compare and order integers</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li><strong>The model weighs</strong> breadth (how much of the section the objective takes up), depth of skill, cognitive demand (applying and justifying need more than identifying), how much later work depends on it, and where the spec warns of common errors.</li>
+    <li><strong>The textbook's count per objective is a hint, not the answer.</strong> An objective the textbook never drills still needs real practice, so it is never given level 1 for that reason alone.</li>
+    <li><strong>Giving every objective the same level</strong> is treated as not having decided. A section with one objective gives it level 5. Python writes 5 even if the model says otherwise, since that objective takes the whole total at any level, so a reply is never rejected for it.</li>
+  </ul>
+</section>
+
+<section id="sharing">
+  <h2>Sharing the total between objectives</h2>
+  <p>The section level picks the total. Python then shares it between the objectives in blocks of 4, using the objective levels as weights.</p>
+  <ol class="steps">
+    <li><div><strong>Cut the total into blocks of 4.</strong></div></li>
+    <li><div><strong>Give every objective one block first,</strong> so no objective ends below 4 exercises.</div></li>
+    <li><div><strong>Share the remaining blocks in proportion to the objective levels,</strong> rounding each share down.</div></li>
+    <li><div><strong>Give the blocks left over to the largest fractions,</strong> with ties going to the earlier objective in the spec.</div></li>
+  </ol>
+  <p><strong>Worked example.</strong> Level 3 of a 60–120 section is 92 exercises, which is 23 blocks. One block each leaves 23 − 4 = 19. The objective levels 1, 5, 3 and 3 add up to 12, so each objective's exact share of the 19 is 19 × its level ÷ 12. Rounding down uses 16 blocks and leaves 3, which go to the largest fractions (0.92, 0.75 and 0.75).</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Objective</th><th class="num">Level</th><th class="num">First block</th><th class="num">Share of the other 19</th><th class="num">Rounded down</th><th class="num">Leftover</th><th class="num">Blocks</th><th class="num">Exercises</th></tr></thead>
+      <tbody>
+        <tr><td><code>objective_1</code></td><td class="num">1</td><td class="num">1</td><td class="num">1.58</td><td class="num">1</td><td class="num"></td><td class="num">2</td><td class="num"><strong>8</strong></td></tr>
+        <tr><td><code>objective_2</code></td><td class="num">5</td><td class="num">1</td><td class="num">7.92</td><td class="num">7</td><td class="num">+1</td><td class="num">9</td><td class="num"><strong>36</strong></td></tr>
+        <tr><td><code>objective_3</code></td><td class="num">3</td><td class="num">1</td><td class="num">4.75</td><td class="num">4</td><td class="num">+1</td><td class="num">6</td><td class="num"><strong>24</strong></td></tr>
+        <tr><td><code>objective_4</code></td><td class="num">3</td><td class="num">1</td><td class="num">4.75</td><td class="num">4</td><td class="num">+1</td><td class="num">6</td><td class="num"><strong>24</strong></td></tr>
+        <tr class="total-row"><td>Total</td><td class="num">12</td><td class="num">4</td><td class="num">19</td><td class="num">16</td><td class="num">+3</td><td class="num">23</td><td class="num">92</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li>The shares always add up to the total, and each is at least 4 and a multiple of 4.</li>
+    <li>A higher level never gets fewer exercises than a lower one, and two equal levels end at most one block apart.</li>
+    <li>When the total is exactly 4 per objective, there is nothing left to share and the levels change nothing: 20 exercises for 5 objectives gives 4 each.</li>
+    <li>A section with one objective gives it the whole total.</li>
+  </ul>
+</section>
+
+<section id="model">
+  <h2>One call, start to finish</h2>
+  <p>This follows one section through the whole call: section 2.2, <em>Reading and Evaluating Complex Expressions</em>, of the Grade 7 India book (<code>mathematics_en_in07_p1</code>). The book line, the section titles and the page ranges come from that book's real table of contents. The objectives and question counts are made up, because the book has not been through the specs and source_questions stages yet.</p>
+
+  <div class="flow">
+    <div class="flow-box">
+      <span class="who">Python prepares</span>
+      <h4>Inputs</h4>
+      <ul>
+        <li>Book context</li>
+        <li>Book profile</li>
+        <li>The five level totals</li>
+        <li>Textbook question counts</li>
+        <li>The reviewed spec</li>
+      </ul>
+    </div>
+    <div class="flow-box model">
+      <span class="who">The model judges</span>
+      <h4>Levels</h4>
+      <ul>
+        <li>One section level, 1 to 5</li>
+        <li>One level per objective, 1 to 5</li>
+        <li>Its reasons</li>
+      </ul>
+    </div>
+    <div class="flow-box">
+      <span class="who">Python calculates</span>
+      <h4>Counts</h4>
+      <ul>
+        <li>Checks the reply</li>
+        <li>Total = the chosen level's total</li>
+        <li>Shares in blocks of 4</li>
+      </ul>
+    </div>
+    <div class="flow-box">
+      <span class="who">Written once</span>
+      <h4>Budget file</h4>
+      <ul>
+        <li>Total and level</li>
+        <li>Reasoning</li>
+        <li>Exercises per objective</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3><span class="step-no">1</span>Python reads the book's files</h3>
+  <p>Before any call goes out, Python reads these files. A section being budgeted that has no usable extract, or that is no longer in the table of contents, stops the run before any call is made. Sections not being budgeted in this run that have no extract yet are left out of the book profile, and the profile says how many sections it covers.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>File</th><th>Where it is</th><th>What is taken from it</th></tr></thead>
+      <tbody>
+        <tr><td>Table of contents</td><td><code>data/input/&lt;book_id&gt;/&lt;book_id&gt;.xml</code></td><td>The <code>&lt;book&gt;</code> element's attributes, which become the book context line. The section list, the page ranges and how many source books each section draws on, which reach the call through the reviewed book and the section PDFs.</td></tr>
+        <tr><td>Reviewed book</td><td><code>data/output/&lt;book_id&gt;/04_book_review/book_after_review.json</code></td><td>Every section's number, title, module path and reviewed spec, and the book's attributes for the budget file.</td></tr>
+        <tr><td>Textbook question extracts</td><td><code>data/output/&lt;book_id&gt;/07_section_source_questions/&lt;stem&gt;.json</code></td><td>Each section's question count (the total across all its source books), how many questions have no objective tag, and the count per objective. Every section's count goes into the book profile.</td></tr>
+        <tr><td>Section PDFs</td><td><code>data/output/&lt;book_id&gt;/02_section_sources/&lt;stem&gt;_&lt;md5&gt;.pdf</code></td><td>The page count only, to tell a sparse extract (under 2 questions per page) from a section that asks little.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Where the table of contents fits</h4>
+  <p>The table of contents file is never sent to the model. Two things from it reach the call:</p>
+  <ul>
+    <li><strong>The <code>&lt;book&gt;</code> element becomes one line of book context.</strong> Python reads its attributes, drops a term of 0 (a book that runs the whole year), turns the country code into the country's name, and writes the result as one line. That line goes into the instructions.</li>
+    <li><strong>The list of sections becomes the book profile.</strong> The sections the table of contents lists, as the review stage left them, become the rows of the book profile, each with its objective count and textbook question count added.</li>
+  </ul>
+<pre class="formula">From data/input/mathematics_en_in07_p1/mathematics_en_in07_p1.xml:
+&lt;book subject="Mathematics" grade="7" term="0" language_code="en" language="English"
+      academic_year="26-27" numerals="western" notation="latin" country_code="in"
+      country="India" cover_illustration="mathematics_005"&gt;
+    &lt;module level="1" number="2" title="Arithmetic Expressions"&gt;
+        &lt;module level="2" number="2" title="Reading and Evaluating Complex Expressions"&gt;
+            &lt;source md5="0ddfeb73…" start_page="59.29" end_page="77.46"/&gt;
+
+Becomes the book context line:
+Subject: Mathematics | Grade: 7 | Language: English | Language code: en | Numerals: western | Notation: latin | Country: Republic of India</pre>
+  <p class="note">This line is produced by the code that already builds every stage's prompt, run on the real file. The term is left out because the book runs the whole year. Academic year and cover illustration are not part of the context.</p>
+
+  <h3><span class="step-no">2</span>Python works out the range and the level totals</h3>
+<pre class="formula">40 textbook questions from 1 source book, so s = 40 ÷ 1 = 40
+n = 4 objectives
+
+minimum = max(1.5 × 40, 4 × 4, 20) = max(60, 16, 20) = 60
+maximum = max(3 × 40, 20 × 4)      = max(120, 80)     = 120
+one step = (120 − 60) ÷ 4 = 15
+
+level totals: 60 · 76 · 92 · 104 · 120
+
+reliability: 40 questions over 19 source pages = 2.1 per page, so the count is used as normal</pre>
+
+  <h3><span class="step-no">3</span>Python builds part 1 of the call: the instructions</h3>
+  <p>The instructions are the stage's prompt file with two pieces filled in for this book. The highlighted parts are filled in by Python: the book context line from step 1, and the language rules for an English book (<code>prompts/budgets/language/en.md</code>). Every section of the book gets the same instructions.</p>
+<pre class="formula scroll-pre">You are an expert K–12 assessment designer deciding how much practice one section of a practice book needs, and how that practice is shared among the objectives the section teaches.
+
+## Task
+You receive one section: its reviewed spec (what it teaches, the objectives it serves, the teaching points behind them, its glossary, the equations and notations it uses, and short excerpts from the pages), how many questions the textbook itself prints for it, and a profile of the whole book. You make two judgements:
+
+1. A section level from 1 to 5: how much practice this section needs. Each level stands for a fixed number of exercises, listed with the section.
+2. An objective level from 1 to 5 for every objective: how much of the section's practice that objective needs compared with the section's other objectives.
+
+You return levels only. The exercise counts are worked out from them.
+
+Book context:
+<mark class="fill">Subject: Mathematics | Grade: 7 | Language: English | Language code: en | Numerals: western | Notation: latin | Country: Republic of India</mark>
+
+## You judge, you write nothing
+Write no exercises. No stems, no questions, no worked examples, no sample items, not even one to illustrate a point. Another call writes the exercises later, from the counts your levels produce. Your entire answer is a level for the section, a level per objective, and a few sentences on how you arrived at them.
+
+## The section level
+The section comes with five totals, one per level, from the least to the most practice that suits it. They are already set from the textbook's question count and the number of objectives: do not recompute them, and do not answer with a number of your own. Choose the level from:
+
+- Difficulty. How demanding the section's content is for this grade: new procedures, multi-step reasoning and subtle distinctions need more practice than definitions and recognition.
+- The objectives. How many there are, and how many of them are heavy.
+- The section's role. The spec's `role` says whether the section teaches, revises or assesses. Revision and assessment sections usually need less new practice than teaching sections, unless the spec shows they drill a lot.
+- Subject and grade. What one exercise asks of a learner differs by subject, and what counts as enough practice differs by grade: younger learners need more repetition on each new skill.
+- The book profile. Use it to see what a typical section of this book looks like. When the profile covers only some of the book's sections, compare against those.
+
+A heavier section is a more demanding one, not one with more questions. The five totals already grow with the textbook's question count, so a section the textbook drills more than most is not, on its own, a reason to choose a higher level.
+
+Level 3 is a typical section of this book. Levels 1 and 5 are for sections clearly lighter or clearly heavier than most. Say why you chose the level in `reasoning`.
+
+When a section is drawn from more than one source book, its question count is also given as the average per book, and the book profile is on that same per-book scale.
+
+When the section says its question count is low for its pages, that is normal for long items such as passages, but the extraction may also have missed questions: weigh the count together with the spec. When no questions were extracted, judge from the spec and the book profile alone.
+
+## The objective levels
+Each objective's level says how much of the section's practice it needs compared with the other objectives:
+
+- 1: recognition, such as a definition, a piece of notation or a fact to state.
+- 3: a typical skill of the section.
+- 5: the section's core, such as a procedure that needs fluency or the skill the rest of the section depends on.
+
+Weigh breadth, depth of skill, cognitive demand, foundation value and failure risk.
+
+The textbook's count per objective is a hint, not the answer: one question can carry two objectives, questions tagged with none count toward the section but toward no objective, and an objective the textbook never drills still needs real practice. Never give an objective level 1 only because the textbook has no questions for it.
+
+Giving every objective the same level is almost always a sign of not having decided. A section with one objective gives it level 5.
+
+## Field rules
+- level: the section level, a whole number from 1 to 5.
+- objectives: one entry per objective in the spec, in the spec's own order, each with its `id` exactly as the spec prints it and its `level` from 1 to 5. Never invent, omit or merge an id.
+- reasoning: two to four sentences in English, for the maintainer: first the section level and why, set against the spec and the book profile; then which objectives got the highest and lowest levels, and why. Name objectives by id.
+
+<mark class="fill">## Language: English
+The spec you are weighing is in English. Your `reasoning` is in English as well, as the field rule says, and names objectives by their ids rather than by quoting them.</mark>
+
+## Abort
+Abort only when the section cannot be judged at all: no objectives, or a spec so empty there is nothing to judge. On abort, give one line in `abort_reason` and return no level and no objectives.
+
+## Output
+Return the response envelope JSON: status, abort_reason, reasoning, level, objectives.</pre>
+
+  <h3><span class="step-no">4</span>Python builds part 2 of the call: the section message</h3>
+  <p>Everything specific to this section. Each section of the book gets its own.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Block</th><th>Comes from</th><th>Why the model needs it</th></tr></thead>
+      <tbody>
+        <tr><td>The five level totals</td><td>Step 2</td><td>The only totals the model can choose between.</td></tr>
+        <tr><td>Textbook questions: the total, how many have no objective tag, and the count per objective; with more than one source book, also the average per book</td><td>This section's extract</td><td>How much the textbook already practises the section and each objective. When none were extracted, this block says so and the model judges from the spec and the profile. When the count is under 2 per page, it says the count is low for its pages: normal for long items, but some may have been missed.</td></tr>
+        <tr><td>Book profile: every section's number, title, objective count and textbook questions per source book, with this section marked</td><td>The reviewed book and every section's extract</td><td>Shows what a typical section of this book looks like. The same table goes with every call. Sections not extracted yet are marked "not extracted", and the profile line says how many sections it covers.</td></tr>
+        <tr><td>Section spec: number, title, module path and the reviewed spec</td><td>The reviewed book</td><td>What the section teaches and how demanding it is.</td></tr>
+      </tbody>
+    </table>
+  </div>
+<pre class="formula scroll-pre">Section level totals (exercises): 1 = 60, 2 = 76, 3 = 92, 4 = 104, 5 = 120
+
+Textbook questions for this section: 40, 3 of them tagged with no objective.
+Per objective (a question can carry two tags): objective_1 12, objective_2 18, objective_3 0, objective_4 13
+
+Book profile (textbook questions per source book): 44 sections, about 22 per section.
+section | title                                       | objectives | textbook questions
+1.1     | A Lakh Varieties!                           | 3          | 21
+1.2     | Land of Tens                                | 2          | 14
+1.3     | Of Crores and Crores!                       | 2          | 9
+1.4     | Exact and Approximate Values                | 3          | 24
+1.5     | Patterns in Products                        | 3          | 17
+1.6     | Did You Ever Wonder...?                     | 2          | 6
+2.1     | Simple Expressions                          | 3          | 26
+2.2     | Reading and Evaluating Complex Expressions  | 4          | 40   &lt;- this section
+3.1     | The Need for Smaller Units                  | 2          | 8
+...     (35 more sections)
+
+Section spec JSON:
+{
+  "number": "2.2",
+  "title": "Reading and Evaluating Complex Expressions",
+  "module_path": "2. Arithmetic Expressions > 2. Reading and Evaluating Complex Expressions",
+  "spec": {
+    "role": "teach",
+    "overview": "Learners move from single-operation expressions to expressions that mix the four operations and brackets ...",
+    "objectives": [
+      { "id": "objective_1", "text": "Identify the terms of an arithmetic expression" },
+      { "id": "objective_2", "text": "Evaluate expressions with several operations using the order of operations" },
+      { "id": "objective_3", "text": "Use brackets to change the value of an expression" },
+      { "id": "objective_4", "text": "Compare two expressions without evaluating them fully" }
+    ],
+    "prerequisites": [ { "text": "Add, subtract, multiply and divide whole numbers" } ],
+    "out_of_scope": [ { "text": "Expressions with letters", "reason": "Letter-numbers start in Chapter 4" } ],
+    "glossary": [ { "term": "term", "definition": "a part of an expression joined to the rest by + or −" } ],
+    "teaching_points": [ { "title": "Splitting an expression into terms", "notes": "..." }, "..." ],
+    "excerpts": [ "..." ],
+    "equations": [ "..." ],
+    "notations": [ "..." ]
+  }
+}</pre>
+  <p class="note">The spec is sent whole and on one line. It is shown formatted and shortened here. The question text is not sent; the counts are. For a section drawn from two books, the first textbook line reads instead: <code>Textbook questions for this section: 80 across 2 source books, 40 per book on average; 3 of them tagged with no objective.</code></p>
+
+  <h3><span class="step-no">5</span>Python makes the call</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Model</td><td><code>gemini-3.8-flash</code>, the stage's default today</td></tr>
+        <tr><td>Thinking level</td><td>High</td></tr>
+        <tr><td>What is sent</td><td>Two parts in one request: the instructions (step 3), then the section message (step 4)</td></tr>
+        <tr><td>Reply format</td><td>JSON, held to the reply schema in step 6</td></tr>
+        <tr><td>Attempts</td><td>Up to 4. After a broken reply or a failed check, Python waits 2, 4, then 8 seconds and asks again</td></tr>
+        <tr><td>Calls at once</td><td>One per section, at most 25 at the same time</td></tr>
+        <tr><td>Sections set without a call</td><td>When all five totals are equal and either the section has one objective or the total gives every objective exactly 4, no answer could change the result. Python writes the budget itself and makes no call.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="step-no">6</span>The model replies</h3>
+<pre class="formula json">{
+  "status": "ok",
+  "abort_reason": "",
+  "reasoning": "The textbook drills this section more than most, but the range
+    already reflects that. Evaluating expressions with several operations is a
+    typical Grade 7 skill, so level 3. objective_2 (evaluate using the order of
+    operations) is the core skill and gets 5; objective_1 (identify terms) is
+    recognition and gets 1. objective_3 gets 3 even though the textbook has no
+    questions for it.",
+  "level": 3,
+  "objectives": [
+    { "id": "objective_1", "level": 1 },
+    { "id": "objective_2", "level": 5 },
+    { "id": "objective_3", "level": 3 },
+    { "id": "objective_4", "level": 3 }
+  ]
+}</pre>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Field</th><th>Values</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>status</code></td><td><code>ok</code> or <code>abort</code></td><td>Abort only when the section cannot be judged at all: no objectives, or an empty spec.</td></tr>
+        <tr><td><code>abort_reason</code></td><td>One line</td><td>Only on abort; empty otherwise.</td></tr>
+        <tr><td><code>reasoning</code></td><td>2–4 sentences, English</td><td>The section level and why, then the highest and lowest objective levels and why.</td></tr>
+        <tr><td><code>level</code></td><td>Whole number, 1–5</td><td>The section level. It must be a real whole number: <code>"3"</code>, <code>3.0</code> or <code>true</code> is rejected when the reply is read, and the reply is asked for again.</td></tr>
+        <tr><td><code>objectives</code></td><td>One <code>{id, level}</code> per objective, in the spec's order</td><td>The objective levels, 1–5 each.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="step-no">7</span>Python checks the reply and works out the counts</h3>
+  <p><strong>Checks.</strong> A reply that fails any of them is asked for again, as in step 5.</p>
+  <ul>
+    <li>The status is <code>ok</code> or <code>abort</code>. On abort, the section is reported in the run's summary and nothing is written.</li>
+    <li>The section level is a whole number from 1 to 5.</li>
+    <li>Every objective in the spec appears exactly once, and no id appears that the spec does not have.</li>
+    <li>Every objective level is a whole number from 1 to 5.</li>
+  </ul>
+  <p>Two things are corrected rather than rejected. The objective levels are put back in the spec's order before sharing, so a tie always goes to the earlier objective in the spec, whatever order the model used. And a one-objective section is written as level 5.</p>
+  <p><strong>The counts.</strong> Level 3 is 92 exercises. Shared as in <a href="#sharing">Sharing the total between objectives</a>, the objective levels 1, 5, 3 and 3 give 8, 36, 24 and 24.</p>
+
+  <h3><span class="step-no">8</span>Python writes the results</h3>
+  <p><strong>The budget file:</strong> <code>data/output/mathematics_en_in07_p1/06_section_budgets/02_02.json</code>. Same place and same outer shape as today. Inside <code>budget</code>, <code>level</code> is new, and each objective now carries its <code>level</code>.</p>
+<pre class="formula json">{
+  "book_id": "mathematics_en_in07_p1",
+  "subject": "Mathematics",
+  "grade": "7",
+  "…": "the book's other attributes, as today",
+  "number": "2.2",
+  "title": "Reading and Evaluating Complex Expressions",
+  "module_path": "2. Arithmetic Expressions > 2. Reading and Evaluating Complex Expressions",
+  "budget": {
+    "total": 92,
+    "level": 3,
+    "reasoning": "The textbook prints 40 questions here against a book average of about 22 ...",
+    "objectives": [
+      { "id": "objective_1", "level": 1, "exercises": 8 },
+      { "id": "objective_2", "level": 5, "exercises": 36 },
+      { "id": "objective_3", "level": 3, "exercises": 24 },
+      { "id": "objective_4", "level": 3, "exercises": 24 }
+    ]
+  }
+}</pre>
+  <p class="note">Later stages read only each objective's <code>exercises</code>, so they need no change. On later runs the file is reused only if it still matches: the same objectives, and the same total and shares under the current extract. Otherwise, or with <code>--update</code>, the section is asked for again. A file in today's format (no <code>level</code>) is always asked for again, with a warning that the section's exercises will then need writing again.</p>
+
+  <p><strong>The call log:</strong> one folder per attempt, as for every model call today, under <code>data/output/mathematics_en_in07_p1/00_api_call_logs/&lt;date-time&gt;_2.2_section_budget/</code>.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>File</th><th>Holds</th></tr></thead>
+      <tbody>
+        <tr><td><code>prompt.txt</code></td><td>Part 1, the instructions, exactly as sent</td></tr>
+        <tr><td><code>section.txt</code></td><td>Part 2, the section message, exactly as sent</td></tr>
+        <tr><td><code>response.json</code>, <code>response_text.txt</code></td><td>The model's full response and its reply text</td></tr>
+        <tr><td><code>call.json</code></td><td>Model, attempt, token usage, duration, status, and the section's details, below</td></tr>
+      </tbody>
+    </table>
+  </div>
+<pre class="formula json">{
+  "page_number": "2.2",
+  "step": "section_budget",
+  "attempt": 1,
+  "api": "gemini",
+  "model": "gemini-3.8-flash",
+  "usage": { "…": "token counts" },
+  "duration_seconds": 14.2,
+  "status": "success",
+  "book_id": "mathematics_en_in07_p1",
+  "section": "2.2",
+  "section_title": "Reading and Evaluating Complex Expressions",
+  "objectives": 4,
+  "source_questions": 40,
+  "sources": 1,
+  "questions_per_book": 40,
+  "source_pages": 19,
+  "source_reliable": true,
+  "level_totals": [60, 76, 92, 104, 120],
+  "set_without_call": false,
+  "thinking_level": "high",
+  "returned": "ok",
+  "prompt_files": ["prompts/budgets/core.md", "prompts/budgets/language/en.md"]
+}</pre>
+  <p class="note">New in <code>call.json</code>: <code>source_questions</code>, <code>sources</code>, <code>questions_per_book</code>, <code>source_pages</code>, <code>source_reliable</code>, <code>level_totals</code> and <code>set_without_call</code>. They replace today's <code>total_exercises</code>, so each call can be read back with the numbers it was given.</p>
+</section>
+
+<section id="examples">
+  <h2>Worked examples</h2>
+  <p>Illustrative sections. No book had been through the new stages when this was written, so these are not real book figures.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Section</th><th class="num">Today</th><th class="num">Range</th><th>Level 1 → 5</th></tr></thead>
+      <tbody>
+        <tr><td>Math, 40 questions, 4 objectives</td><td class="num today">96</td><td class="num">60–120</td><td class="levels-cell">60 · 76 · 92 · 104 · 120</td></tr>
+        <tr><td>One objective, 30 questions</td><td class="num today">60</td><td class="num">48–92</td><td class="levels-cell">48 · 60 · 72 · 80 · 92</td></tr>
+        <tr><td>Language, 8 questions, 3 objectives</td><td class="num today">84</td><td class="num">20–60</td><td class="levels-cell">20 · 32 · 40 · 52 · 60</td></tr>
+        <tr><td>No questions, 5 objectives</td><td class="num today">108</td><td class="num">20–100</td><td class="levels-cell">20 · 40 · 60 · 80 · 100</td></tr>
+        <tr><td>No questions, 2 objectives</td><td class="num today">72</td><td class="num">20–40</td><td class="levels-cell">20 · 24 · 32 · 36 · 40</td></tr>
+        <tr><td>8 objectives, 20 questions</td><td class="num today">144</td><td class="num">32–148</td><td class="levels-cell">32 · 60 · 92 · 120 · 148</td></tr>
+        <tr><td>One objective, 5 questions</td><td class="num today">60</td><td class="num">20</td><td class="levels-cell">20 at every level</td></tr>
+        <tr><td>Heavy, 100 questions, 5 objectives</td><td class="num today">108</td><td class="num">148</td><td class="levels-cell">148 at every level (cap)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>At level 3, a typical math section stays close to today's total. Language sections and sections with no textbook questions get less than today, which is the intent. Only very heavy sections get more, and the cap stops them at 148.</p>
+</section>
+
+<section id="try">
+  <h2>Try a section</h2>
+  <p>Enter a section's textbook question count (across all its source books), how many source books it has, and its objective count, then pick levels the way the model would.</p>
+  <div class="calc">
+    <div class="calc-in">
+      <div class="field">
+        <label for="in-s">Textbook questions</label>
+        <input id="in-s" type="number" min="0" max="800" step="1" value="40" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="in-b">Source books</label>
+        <input id="in-b" type="number" min="1" max="5" step="1" value="1" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="in-n">Objectives</label>
+        <input id="in-n" type="number" min="1" max="12" step="1" value="4" inputmode="numeric">
+      </div>
+      <p class="today-line" id="out-today"></p>
+    </div>
+    <div class="calc-out">
+      <p class="range-line" id="out-range"></p>
+      <div>
+        <div class="lvl-row" id="out-levels" role="group" aria-label="Section level"></div>
+      </div>
+      <div class="objs" id="out-objs" aria-live="polite"></div>
+      <p class="legend"><span class="swatch" aria-hidden="true"></span> one block = one row of 4 exercises</p>
+    </div>
+  </div>
+</section>
+
+<section id="risks">
+  <h2>Risks and how they are handled</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Risk</th><th>How it is handled</th></tr></thead>
+      <tbody>
+        <tr><td>The model puts most sections at the same level</td><td>Read the levels and the reasoning on the first book. If they bunch, adjust the level descriptions in the prompt or the factors.</td></tr>
+        <tr><td>Re-runs give different totals</td><td>Budgets are written once and skipped afterwards. A level choice repeats far more reliably than a free number.</td></tr>
+        <tr><td>Existing books are budgeted again</td><td>Old budgets do not match the new level totals, so re-running an existing book budgets every section again, and those sections' exercises must then be written again. Python prints a warning for each. New books are not affected.</td></tr>
+        <tr><td>Translated books keep old budgets</td><td>A <code>--translate</code> run treats any existing budget file as done, so twin books would never pick up the new rules. Fix: count a budget file as done only when it is in the new format. The Arabic copy of each budget is also re-copied when the English one changes.</td></tr>
+        <tr><td>Small sections have little room</td><td>One objective with 6 or fewer textbook questions always gets 20. At the floor, objective levels cannot fully separate: 20 exercises shared by levels 1, 5 and 3 gives 4, 8 and 8.</td></tr>
+        <tr><td>Heavy sections reach the cap</td><td>A section with 97 or more textbook questions gets 148 at every level, so its level makes no difference.</td></tr>
+        <tr><td>Spare exercises grow as a share</td><td><code>new_questions</code> writes 8 spare exercises per objective, so a share of 4 would mean 12 written for 4 printed. In this change, non-Arabic books write 4 spares for a share of 8 or less and 8 otherwise. Math books reject far fewer exercises than they have spares (225 rejected against 2,784 spares in one book). Arabic books keep 8 until their rejection rate is measured. The cap ships only after a before-and-after check of paper fill on one math book.</td></tr>
+        <tr><td>Cost</td><td>Unchanged or lower: at most one Flash call per section, none when no answer could change the result. The book profile adds about 1k tokens per call for the books checked.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var N_MIN = 4, N_MAX = 20, MIN_SECTION = 20, CAP = 148, LO = 1.5, HI = 3, LEVELS = 5;
+  var PATTERN = [1, 5, 3, 3, 2, 4, 3, 2, 5, 1, 3, 4];
+
+  var inS = document.getElementById("in-s");
+  var inN = document.getElementById("in-n");
+  var inB = document.getElementById("in-b");
+  var outToday = document.getElementById("out-today");
+  var outRange = document.getElementById("out-range");
+  var outLevels = document.getElementById("out-levels");
+  var outObjs = document.getElementById("out-objs");
+
+  var sectionLevel = 3;
+  var objectiveLevels = PATTERN.slice();
+
+  function halfUp(x) { return Math.floor(x + 0.5); }
+
+  function clampInt(value, lo, hi, fallback) {
+    var v = parseInt(value, 10);
+    if (isNaN(v)) { return fallback; }
+    return Math.min(hi, Math.max(lo, v));
+  }
+
+  function sectionRange(s, n) {
+    var capUnits = CAP / 4;
+    var lo = Math.ceil(Math.max(LO * s, N_MIN * n, MIN_SECTION) / 4);
+    var hi = Math.ceil(Math.max(HI * s, N_MAX * n) / 4);
+    return [Math.min(lo, capUnits) * 4, Math.min(hi, capUnits) * 4];
+  }
+
+  function levelTotals(s, n) {
+    var r = sectionRange(s, n);
+    var a = r[0] / 4, b = r[1] / 4, out = [];
+    for (var k = 0; k < LEVELS; k++) {
+      out.push(4 * halfUp(a + k * (b - a) / (LEVELS - 1)));
+    }
+    return out;
+  }
+
+  // One block of 4 to every objective first, then the rest in proportion to the levels.
+  // Leftover blocks after rounding down go to the largest fractions, ties to the earlier objective.
+  function split(total, weights) {
+    var rest = Math.max(0, total / 4 - weights.length);
+    var sum = weights.reduce(function (x, y) { return x + y; }, 0);
+    var raw = weights.map(function (w) { return rest * w / sum; });
+    var out = raw.map(Math.floor);
+    var order = raw.map(function (_, i) { return i; }).sort(function (i, j) {
+      return (raw[j] - out[j]) - (raw[i] - out[i]) || i - j;
+    });
+    var left = rest - out.reduce(function (x, y) { return x + y; }, 0);
+    for (var i = 0; i < order.length && left > 0; i++) { out[order[i]] += 1; left -= 1; }
+    return out.map(function (u) { return 4 * (1 + u); });
+  }
+
+  function plain(x) { return Number.isInteger(x) ? String(x) : x.toFixed(1); }
+
+  function renderLevels(totals) {
+    outLevels.textContent = "";
+    totals.forEach(function (total, index) {
+      var level = index + 1;
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "lvl";
+      button.id = "lvl-" + level;
+      button.setAttribute("aria-pressed", String(level === sectionLevel));
+      button.setAttribute("aria-label", "Level " + level + ", " + total + " exercises");
+      var k = document.createElement("span");
+      k.className = "k";
+      k.textContent = "Level " + level;
+      var t = document.createElement("span");
+      t.className = "t";
+      t.textContent = total;
+      button.appendChild(k);
+      button.appendChild(t);
+      button.addEventListener("click", function () { sectionLevel = level; render(); });
+      outLevels.appendChild(button);
+    });
+  }
+
+  function renderObjectives(total, n) {
+    var weights = objectiveLevels.slice(0, n);
+    var shares = split(total, weights);
+    outObjs.textContent = "";
+    for (var i = 0; i < n; i++) {
+      var row = document.createElement("div");
+      row.className = "obj";
+
+      var id = document.createElement("label");
+      id.className = "id";
+      id.htmlFor = "obj-level-" + (i + 1);
+      id.textContent = "objective_" + (i + 1);
+
+      var select = document.createElement("select");
+      select.id = "obj-level-" + (i + 1);
+      for (var l = 1; l <= 5; l++) {
+        var option = document.createElement("option");
+        option.value = String(l);
+        option.textContent = "L" + l;
+        if (l === weights[i]) { option.selected = true; }
+        select.appendChild(option);
+      }
+      (function (index) {
+        select.addEventListener("change", function (event) {
+          objectiveLevels[index] = parseInt(event.target.value, 10);
+          render();
+          var again = document.getElementById("obj-level-" + (index + 1));
+          if (again) { again.focus(); }
+        });
+      })(i);
+
+      var blocks = document.createElement("div");
+      blocks.className = "blocks";
+      blocks.setAttribute("aria-hidden", "true");
+      for (var b = 0; b < shares[i] / 4; b++) {
+        blocks.appendChild(document.createElement("span"));
+      }
+
+      var share = document.createElement("span");
+      share.className = "share";
+      share.textContent = shares[i];
+
+      row.appendChild(id);
+      row.appendChild(select);
+      row.appendChild(blocks);
+      row.appendChild(share);
+      outObjs.appendChild(row);
+    }
+  }
+
+  function render() {
+    var count = clampInt(inS.value, 0, 800, 0);
+    var books = clampInt(inB.value, 1, 5, 1);
+    var s = count / books;
+    var n = clampInt(inN.value, 1, 12, 1);
+    var range = sectionRange(s, n);
+    var totals = levelTotals(s, n);
+    var total = totals[sectionLevel - 1];
+
+    outToday.textContent = "Today's formula: 48 + 12 × " + n + " = " + (48 + 12 * n);
+    outRange.innerHTML = "";
+    var step = (range[1] - range[0]) / 4;
+    var stepText = Number.isInteger(step) ? String(step) : step.toFixed(2);
+    var perBook = books > 1
+      ? "Per book: s = " + count + " ÷ " + books + " = " + plain(s) + ". "
+      : "";
+    var text = perBook + (range[0] === range[1]
+      ? "Range: <strong>" + range[0] + "</strong> at every level. The section level makes no difference here."
+      : "Range: <strong>" + range[0] + "–" + range[1] + "</strong>. One step is (" + range[1] + " − " + range[0] + ") ÷ 4 = " + stepText + " before rounding. Level " + sectionLevel + " gives <strong>" + total + "</strong> exercises.");
+    outRange.innerHTML = text;
+
+    renderLevels(totals);
+    renderObjectives(total, n);
+  }
+
+  inS.addEventListener("input", render);
+  inN.addEventListener("input", render);
+  inB.addEventListener("input", render);
+  render();
+})();
+</script>
+</body>
+</html>

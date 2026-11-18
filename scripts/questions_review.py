@@ -18,8 +18,9 @@ The second pass puts those exercises in front of the model and asks which ones a
 wrong and why, listing every defect on an exercise rather than stopping at the first
 type. It does not send the section spec and does not check the curriculum. One call
 per exercise. By default those calls go through the Gemini Batch API
-(``--batch-parallel N``; 0 = no cap). --no-batch is the previous thread pool, and
-caches the examiner prompt so a book of unary calls does not resend it. A section's
+(``--batch-parallel N``; 0 = no cap). The examiner prompt is cached on both
+paths; Batch keeps the cache for 24h so a queued job still hits it. --no-batch
+is the previous thread pool. A section's
 report is written once every call for that section has landed, because a report
 holding some of its exercises is not a report. The report is tied to the exercises
 as they stand, by a hash, so a section that is rewritten is checked again rather
@@ -233,6 +234,7 @@ RATE_LIMIT_PAUSE = 30.0
 # Lower on the command line when the account's spending rate cannot carry it.
 MAX_WORKERS = 25
 CACHE_TTL_SECONDS = 3600
+CACHE_BATCH_TTL_SECONDS = 24 * 3600
 CACHE_REFRESH_MARGIN_SECONDS = 300
 CACHE_TTL = f"{CACHE_TTL_SECONDS}s"
 # Gemini returns 403 when explicit cache TTL expires mid-run; refresh instead of failing.
@@ -802,6 +804,7 @@ def create_prompt_cache(
     model: str,
     prompt: str,
     book_id: str,
+    ttl_seconds: int = CACHE_TTL_SECONDS,
 ) -> tuple[str, int]:
     """Cache the examiner prompt for the calls that follow."""
     cache = client.caches.create(
@@ -810,7 +813,7 @@ def create_prompt_cache(
             display_name=cache_display_name(book_id),
             system_instruction=prompt,
             contents=["The next message is the exercise JSON to check."],
-            ttl=CACHE_TTL,
+            ttl=f"{ttl_seconds}s",
         ),
     )
     if not cache.name:
@@ -842,11 +845,13 @@ class ReviewPromptCache:
         model: str,
         prompt: str,
         book_id: str,
+        ttl_seconds: int = CACHE_TTL_SECONDS,
     ) -> None:
         self._client = client
         self._model = model
         self._prompt = prompt
         self._book_id = book_id
+        self.ttl_seconds = ttl_seconds
         self._lock = threading.Lock()
         self._name: str | None = None
         self._created_at = 0.0
@@ -868,12 +873,16 @@ class ReviewPromptCache:
         if (
             self._name
             and (now - self._created_at)
-            < (CACHE_TTL_SECONDS - CACHE_REFRESH_MARGIN_SECONDS)
+            < (self.ttl_seconds - CACHE_REFRESH_MARGIN_SECONDS)
         ):
             return self._name
         try:
             name, tokens = create_prompt_cache(
-                self._client, self._model, self._prompt, self._book_id
+                self._client,
+                self._model,
+                self._prompt,
+                self._book_id,
+                ttl_seconds=self.ttl_seconds,
             )
         except Exception:  # noqa: BLE001
             return self._name
@@ -905,6 +914,7 @@ def log_cache_storage(
     tokens: int,
     seconds: float,
     dropped: bool,
+    ttl_seconds: int = CACHE_TTL_SECONDS,
 ) -> None:
     """Record the explicit cache's measured token-hours as a priced lifecycle item."""
     item = "cache_" + hashlib.sha256(name.encode("utf-8")).hexdigest()[:12]
@@ -926,7 +936,7 @@ def log_cache_storage(
             "book_id": book_id,
             "cache_name": name,
             "cache_deleted": dropped,
-            "cache_ttl_seconds": 3600,
+            "cache_ttl_seconds": ttl_seconds,
         },
         files={
             "cache.json": {
@@ -1473,13 +1483,14 @@ def job_context(run: Run, job: Job) -> dict:
 
 
 def batch_request(run: Run, job: Job, attempt: int) -> types.InlinedRequest:
+    cached = run.prompt_cache.current() if run.prompt_cache is not None else None
     return types.InlinedRequest(
-        contents=check_contents(run.prompt.text, [job.part]),
+        contents=check_contents(run.prompt.text, [job.part], cached),
         metadata={
             "item": job.item,
             "log_key": f"{run.book_id}|{job.item}|a{attempt}",
         },
-        config=check_config(run.thinking),
+        config=check_config(run.thinking, cached),
     )
 
 
@@ -1518,6 +1529,11 @@ def apply_check_row(
         result=result,
         error_message=error_message,
         duration=elapsed,
+        cached_content=(
+            run.prompt_cache.names[-1]
+            if run.prompt_cache is not None and run.prompt_cache.names
+            else None
+        ),
         batch=True,
         batch_name=batch_name,
         batch_key=f"{run.book_id}|{job.item}|a{attempt}",
@@ -2155,19 +2171,26 @@ def check_book(
                 lock = BatchLock(batch_lock_path(book_dir, BATCH_STAGE))
                 lock.acquire()
             try:
-                if not batch:
-                    print("  caching the examiner prompt", flush=True)
-                    holder = ReviewPromptCache(client, model, prompt.text, book_id)
-                    name = holder.current()
-                    if name is None:
-                        print(
-                            "    cache failed; sending the prompt with each call",
-                            flush=True,
-                        )
-                    else:
-                        prompt_cache = holder
-                        tokens = prompt_cache.leases[name][0]
-                        print(f"    cached, {tokens} token(s)", flush=True)
+                print("  caching the examiner prompt", flush=True)
+                holder = ReviewPromptCache(
+                    client,
+                    model,
+                    prompt.text,
+                    book_id,
+                    ttl_seconds=(
+                        CACHE_BATCH_TTL_SECONDS if batch else CACHE_TTL_SECONDS
+                    ),
+                )
+                name = holder.current()
+                if name is None:
+                    print(
+                        "    cache failed; sending the prompt with each call",
+                        flush=True,
+                    )
+                else:
+                    prompt_cache = holder
+                    tokens = prompt_cache.leases[name][0]
+                    print(f"    cached, {tokens} token(s)", flush=True)
 
                 with Progress(len(tasks)) as progress:
                     run = Run(
@@ -2274,7 +2297,17 @@ def check_book(
                 if lock is not None:
                     lock.release()
                 cache_names = prompt_cache.names if prompt_cache else []
-                if cache_names:
+                ttl_seconds = (
+                    prompt_cache.ttl_seconds
+                    if prompt_cache is not None
+                    else CACHE_TTL_SECONDS
+                )
+                if cache_names and state.path.is_file():
+                    print(
+                        "  keeping prompt cache for in-flight batch jobs",
+                        flush=True,
+                    )
+                elif cache_names:
                     dropped = drop_caches(client, cache_names)
                     failed_names = {
                         row.split(":", 1)[0] for row in dropped
@@ -2284,7 +2317,9 @@ def check_book(
                     for name in cache_names:
                         tokens, created = leases[name]
                         was_dropped = name not in failed_names
-                        elapsed = now - created if was_dropped else 3600.0
+                        elapsed = (
+                            now - created if was_dropped else float(ttl_seconds)
+                        )
                         log_cache_storage(
                             logger,
                             book_id=book_id,
@@ -2293,6 +2328,7 @@ def check_book(
                             tokens=tokens,
                             seconds=elapsed,
                             dropped=was_dropped,
+                            ttl_seconds=ttl_seconds,
                         )
                     if dropped:
                         print(
